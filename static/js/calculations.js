@@ -33,16 +33,21 @@ function calcularResultados() {
         atualizarValor('print_esp_relativa', espessuraRelativa.toFixed(2));
     }
 
-    // Cálculo do Índice de Massa
+    // Cálculo da Massa do VE e Índice de Massa
     const superficie = parseFloat(document.getElementById('superficie').value) || 0;
     const espSepto = parseFloat(document.getElementById('esp_diast_septo').value) || 0;
     const espPPVE = parseFloat(document.getElementById('esp_diast_ppve').value) || 0;
 
-    if (superficie > 0 && espSepto > 0 && espPPVE > 0 && diamDiastFinal > 0) {
-        // Fórmula de Devereux
-        const massa = 0.8 * (1.04 * Math.pow((espSepto + diamDiastFinal + espPPVE), 3) - Math.pow(diamDiastFinal, 3)) + 0.6;
-        const indiceMassa = massa / superficie;
-        atualizarValor('print_indice_massa', indiceMassa.toFixed(1));
+    if (espSepto > 0 && espPPVE > 0 && diamDiastFinal > 0) {
+        // Fórmula de Devereux para Massa do VE
+        const massaVE = 0.8 * (1.04 * Math.pow((espSepto + diamDiastFinal + espPPVE), 3) - Math.pow(diamDiastFinal, 3)) + 0.6;
+        atualizarValor('print_massa_ve', massaVE.toFixed(1));
+
+        // Cálculo do Índice de Massa se a superfície corpórea estiver disponível
+        if (superficie > 0) {
+            const indiceMassa = massaVE / superficie;
+            atualizarValor('print_indice_massa', indiceMassa.toFixed(1));
+        }
     }
 }
 

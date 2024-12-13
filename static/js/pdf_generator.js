@@ -56,6 +56,8 @@ function gerarPDF() {
         ["Espessura da Parede", document.getElementById('esp_diast_ppve').value + " mm" || 'N/D', 
          "Espessura Relativa", document.getElementById('print_esp_relativa').textContent || 'N/D'],
         ["Ventrículo Direito", document.getElementById('vd').value + " mm" || 'N/D',
+         "Massa do VE", document.getElementById('print_massa_ve').textContent + " g" || 'N/D'],
+        ["Espessura do VE", document.getElementById('esp_ve').value + " mm" || 'N/D',
          "Índice de Massa", document.getElementById('print_indice_massa').textContent + " g/m²" || 'N/D']
     ];
 
