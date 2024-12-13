@@ -21,8 +21,9 @@ function gerarPDF() {
         const superficie = document.getElementById('superficie')?.value || '';
 
         // Título centralizado
-        doc.setFontSize(12);
-        doc.text("Identificação", pageWidth / 2, margin, { align: 'center' });
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text("Identificação do Paciente", pageWidth / 2, margin, { align: 'center' });
 
         // Dados do Paciente - Tabela
         doc.autoTable({
@@ -38,19 +39,21 @@ function gerarPDF() {
                 ["Superfície Corpórea", superficie]
             ],
             styles: {
-                fontSize: 8,
-                cellPadding: 3,
+                fontSize: 10,
+                cellPadding: 5,
                 lineWidth: 0.5,
-                lineColor: [200, 200, 200]
+                lineColor: [150, 150, 150]
             },
             headStyles: {
-                fillColor: [220, 230, 241],
+                fillColor: [240, 240, 240],
+                textColor: [0, 0, 0],
                 fontStyle: 'bold'
             },
             alternateRowStyles: {
                 fillColor: [245, 245, 245]
             },
-            margin: { left: margin }
+            margin: { left: margin, right: margin },
+            tableWidth: "auto"
         });
 
         // Cálculos e Medidas - Tabela
@@ -59,10 +62,10 @@ function gerarPDF() {
             head: [[{
                 content: 'Cálculos e Medidas',
                 colSpan: 6,
-                styles: { halign: 'center', fillColor: [38, 201, 158], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 }
+                styles: { halign: 'center', fillColor: [30, 144, 255], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 12 }
             }]],
             body: [
-                ['Medida', 'Valor', 'Un', 'Cálculo', 'Resultado', 'Un'],
+                ['Medida', 'Valor', 'Unidade', 'Cálculo', 'Resultado', 'Unidade'],
                 ['Aorta', document.getElementById('aorta')?.value || '', 'mm', 'Volume Diastólico Final', document.getElementById('print_volume_diast_final')?.textContent || '', 'ml'],
                 ['Aorta Ascendente', document.getElementById('aorta_asc')?.value || '', 'mm', 'Volume Sistólico', document.getElementById('print_volume_sistolico')?.textContent || '', 'ml'],
                 ['Átrio Esquerdo', document.getElementById('atrio')?.value || '', 'mm', 'Massa do VE', document.getElementById('print_massa_ve')?.textContent || '', 'g'],
@@ -73,43 +76,43 @@ function gerarPDF() {
                 ['Espessura da Parede', document.getElementById('esp_diast_ppve')?.value || '', 'mm', 'Índice de massa', document.getElementById('print_indice_massa')?.textContent || '', 'g/m²']
             ],
             styles: {
-                fontSize: 8,
-                cellPadding: 3,
+                fontSize: 10,
+                cellPadding: 5,
                 lineWidth: 0.5,
-                lineColor: [200, 200, 200]
+                lineColor: [150, 150, 150]
             },
             columnStyles: {
                 0: { cellWidth: 35 },
-                1: { cellWidth: 15, halign: 'center' },
-                2: { cellWidth: 10, halign: 'center' },
-                3: { cellWidth: 35 },
-                4: { cellWidth: 15, halign: 'center' },
-                5: { cellWidth: 10, halign: 'center' }
+                1: { cellWidth: 25, halign: 'center' },
+                2: { cellWidth: 20, halign: 'center' },
+                3: { cellWidth: 40 },
+                4: { cellWidth: 25, halign: 'center' },
+                5: { cellWidth: 20, halign: 'center' }
             },
-            margin: { left: margin }
+            margin: { left: margin, right: margin },
+            tableWidth: "auto"
         });
 
-        // Texto do Laudo
-        const laudoContent = document.getElementById('editor')?.innerText || '';
-        
-        if (doc.autoTable.previous.finalY + 20 > doc.internal.pageSize.height - margin) {
-            doc.addPage();
-        }
+        // Adiciona uma nova página para o laudo
+        doc.addPage();
 
+        // Configurações do laudo
+        const laudoMargin = 20;
+        doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
-        doc.text("Laudo", margin, doc.autoTable.previous.finalY + 20);
 
-        doc.setFontSize(9);
-        const textLines = doc.splitTextToSize(laudoContent, pageWidth - 2 * margin);
-        let currentY = doc.autoTable.previous.finalY + 30;
+        // Obtém o texto do laudo do editor
+        const laudoContent = document.getElementById('editor')?.innerText || '';
+        const laudoLines = doc.splitTextToSize(laudoContent, pageWidth - 2 * laudoMargin);
 
-        textLines.forEach(line => {
-            if (currentY > doc.internal.pageSize.height - margin) {
+        let y = laudoMargin;
+        laudoLines.forEach(line => {
+            if (y > doc.internal.pageSize.height - laudoMargin) {
                 doc.addPage();
-                currentY = margin + 10;
+                y = laudoMargin;
             }
-            doc.text(line, margin, currentY);
-            currentY += 5;
+            doc.text(line, laudoMargin, y);
+            y += 7;
         });
 
         // Numeração das páginas
@@ -117,10 +120,11 @@ function gerarPDF() {
         for (let i = 1; i <= totalPages; i++) {
             doc.setPage(i);
             doc.setFontSize(8);
-            doc.text(`Página ${i} de ${totalPages}`, pageWidth - 25, doc.internal.pageSize.height - 10);
+            doc.text(`Página ${i} de ${totalPages}`, pageWidth - 30, doc.internal.pageSize.height - 10);
         }
 
-        doc.save("laudo_ecocardiograma.pdf");
+        // Salva o PDF
+        doc.save(`laudo_${nome.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`);
         console.log("PDF gerado com sucesso");
     } catch (error) {
         console.error("Erro ao gerar PDF:", error);
