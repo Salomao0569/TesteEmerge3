@@ -23,29 +23,41 @@ function calcularMassaVE() {
     return Math.round(0.8 * (1.04 * Math.pow((DDVE + PPVE + SIV), 3) - Math.pow(DDVE, 3)) + 0.6);
 }
 
-function calculateResults() {
+function calcularResultados() {
     const elementos = {
         peso: document.getElementById('peso'),
-        altura: document.getElementById('altura')
+        altura: document.getElementById('altura'),
+        leftAtrium: document.getElementById('leftAtrium'),
+        aorta: document.getElementById('aorta'),
+        diastolicDiameter: document.getElementById('diastolicDiameter'),
+        systolicDiameter: document.getElementById('systolicDiameter'),
+        septumThickness: document.getElementById('septumThickness'),
+        wallThickness: document.getElementById('wallThickness'),
+        rightVentricle: document.getElementById('rightVentricle')
     };
 
     // Valores numéricos com fallback para 0
     const valores = {
-        ...measures,
         peso: elementos.peso && elementos.peso.value ? parseFloat(elementos.peso.value) : 0,
-        altura: elementos.altura && elementos.altura.value ? parseFloat(elementos.altura.value) : 0
+        altura: elementos.altura && elementos.altura.value ? parseFloat(elementos.altura.value) : 0,
+        ...Object.entries(elementos).reduce((acc, [key, element]) => {
+            if (element && key !== 'peso' && key !== 'altura') {
+                acc[key] = element.value ? parseFloat(element.value) : 0;
+            }
+            return acc;
+        }, {})
     };
 
-    const diastolicVolume = measures.diastolicDiameter ? 
-        7 * Math.pow(Number(measures.diastolicDiameter) / 10, 3) / (2.4 + Number(measures.diastolicDiameter) / 10) : '';
-    const systolicVolume = measures.systolicDiameter ? 
-        7 * Math.pow(Number(measures.systolicDiameter) / 10, 3) / (2.4 + Number(measures.systolicDiameter) / 10) : '';
+    const diastolicVolume = valores.diastolicDiameter ? 
+        7 * Math.pow(valores.diastolicDiameter / 10, 3) / (2.4 + valores.diastolicDiameter / 10) : '';
+    const systolicVolume = valores.systolicDiameter ? 
+        7 * Math.pow(valores.systolicDiameter / 10, 3) / (2.4 + valores.systolicDiameter / 10) : '';
     const ejectedVolume = diastolicVolume && systolicVolume ? 
         diastolicVolume - systolicVolume : '';
-    const ejectionFraction = measures.diastolicDiameter && measures.systolicDiameter ? 
+    const ejectionFraction = valores.diastolicDiameter && valores.systolicDiameter ? 
         ((diastolicVolume - systolicVolume) / diastolicVolume) * 100 : '';
-    const cavityPercentage = measures.diastolicDiameter && measures.systolicDiameter ? 
-        ((Number(measures.diastolicDiameter) - Number(measures.systolicDiameter)) / Number(measures.diastolicDiameter)) * 100 : '';
+    const cavityPercentage = valores.diastolicDiameter && valores.systolicDiameter ? 
+        ((valores.diastolicDiameter - valores.systolicDiameter) / valores.diastolicDiameter) * 100 : '';
 
     // Cálculo da superfície corpórea (DuBois)
     if (valores.peso > 0 && valores.altura > 0) {
