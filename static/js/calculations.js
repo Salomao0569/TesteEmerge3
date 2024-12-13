@@ -1,10 +1,18 @@
 function calcularMassaVE() {
-    const DDVE = Number(document.getElementById('diam_diast_final').value) / 10;
-    const PPVE = Number(document.getElementById('esp_diast_ppve').value) / 10;
-    const SIV = Number(document.getElementById('esp_diast_septo').value) / 10;
+    const DDVE = Number(document.getElementById('diam_diast_final').value);
+    const PPVE = Number(document.getElementById('esp_diast_ppve').value);
+    const SIV = Number(document.getElementById('esp_diast_septo').value);
     
-    // Fórmula de Devereux com arredondamento para número inteiro
-    return Math.round(0.8 * (1.04 * Math.pow((DDVE + PPVE + SIV), 3) - Math.pow(DDVE, 3)) + 0.6);
+    if (DDVE > 0 && PPVE > 0 && SIV > 0) {
+        // Converte de mm para cm antes de aplicar a fórmula
+        const DDVEcm = DDVE / 10;
+        const PPVEcm = PPVE / 10;
+        const SIVcm = SIV / 10;
+        
+        // Fórmula de Devereux com arredondamento para número inteiro
+        return Math.round(0.8 * (1.04 * Math.pow((DDVEcm + PPVEcm + SIVcm), 3) - Math.pow(DDVEcm, 3)) + 0.6);
+    }
+    return 0;
 }
 
 function calcularResultados() {
@@ -21,11 +29,13 @@ function calcularResultados() {
         const superficie = 0.007184 * Math.pow(peso, 0.425) * Math.pow(altura, 0.725);
         document.getElementById('superficie').value = superficie.toFixed(2);
 
+        // Cálculos que dependem apenas do diâmetro diastólico
         if (diamDiastFinal > 0) {
             // Volume Diastólico Final (Teichholz)
             const volumeDiastFinal = 7 * Math.pow(diamDiastFinal / 10, 3) / (2.4 + diamDiastFinal / 10);
             document.getElementById('print_volume_diast_final').textContent = `${Math.round(volumeDiastFinal)} mL`;
 
+            // Cálculos que dependem do diâmetro sistólico
             if (diamSistFinal > 0) {
                 // Volume Sistólico Final
                 const volumeSistFinal = 7 * Math.pow(diamSistFinal / 10, 3) / (2.4 + diamSistFinal / 10);
@@ -49,20 +59,20 @@ function calcularResultados() {
                 const espessuraRelativa = (2 * espDiastPPVE / diamDiastFinal).toFixed(2);
                 document.getElementById('print_esp_relativa').textContent = espessuraRelativa;
             }
+        }
 
-            // Massa do VE e Índice de Massa
-            if (espDiastSepto > 0 && espDiastPPVE > 0) {
-                const massaVE = calcularMassaVE();
-                document.getElementById('print_massa_ve').textContent = `${massaVE} g`;
+        // Massa do VE e Índice de Massa (podem ser calculados independentemente dos volumes)
+        if (diamDiastFinal > 0 && espDiastSepto > 0 && espDiastPPVE > 0) {
+            const massaVE = calcularMassaVE();
+            document.getElementById('print_massa_ve').textContent = `${massaVE} g`;
 
-                const superficie = parseFloat(document.getElementById('superficie').value) || 0;
-                if (superficie > 0) {
-                    const indiceMassa = (massaVE / superficie).toFixed(1);
-                    document.getElementById('print_indice_massa').textContent = `${indiceMassa} g/m²`;
-                }
+            if (superficie > 0) {
+                const indiceMassa = (massaVE / superficie).toFixed(1);
+                document.getElementById('print_indice_massa').textContent = `${indiceMassa} g/m²`;
             }
         }
     }
+}
 }
 
 // Adiciona event listeners quando o documento estiver carregado
