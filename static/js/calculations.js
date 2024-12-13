@@ -16,79 +16,56 @@ function calcularResultados() {
     const espDiastSepto = parseFloat(document.getElementById('esp_diast_septo').value) || 0;
     const espDiastPPVE = parseFloat(document.getElementById('esp_diast_ppve').value) || 0;
 
-    const diastolicVolume = valores.diastolicDiameter ? 
-        7 * Math.pow(valores.diastolicDiameter / 10, 3) / (2.4 + valores.diastolicDiameter / 10) : '';
-    const systolicVolume = valores.systolicDiameter ? 
-        7 * Math.pow(valores.systolicDiameter / 10, 3) / (2.4 + valores.systolicDiameter / 10) : '';
-    const ejectedVolume = diastolicVolume && systolicVolume ? 
-        diastolicVolume - systolicVolume : '';
-    const ejectionFraction = valores.diastolicDiameter && valores.systolicDiameter ? 
-        ((diastolicVolume - systolicVolume) / diastolicVolume) * 100 : '';
-    const cavityPercentage = valores.diastolicDiameter && valores.systolicDiameter ? 
-        ((valores.diastolicDiameter - valores.systolicDiameter) / valores.diastolicDiameter) * 100 : '';
-
     // Cálculo da superfície corpórea (DuBois)
-    if (valores.peso > 0 && valores.altura > 0) {
-        const superficie = 0.007184 * Math.pow(valores.peso, 0.425) * Math.pow(valores.altura, 0.725);
-        const superficieElement = document.getElementById('superficie');
-        if (superficieElement) {
-            superficieElement.value = superficie.toFixed(2);
-        }
+    if (peso > 0 && altura > 0) {
+        const superficie = 0.007184 * Math.pow(peso, 0.425) * Math.pow(altura, 0.725);
+        document.getElementById('superficie').value = superficie.toFixed(2);
 
-        // Cálculos principais apenas se tiver os valores necessários
-        if (valores.diamDiastFinal > 0) {
+        if (diamDiastFinal > 0) {
             // Volume Diastólico Final (Teichholz)
-            const volumeDiastFinal = 7 * Math.pow(valores.diamDiastFinal / 10, 3) / (2.4 + valores.diamDiastFinal / 10);
-            atualizarValor('print_volume_diast_final', diastolicVolume ? `${Math.round(diastolicVolume)} mL` : '');
+            const volumeDiastFinal = 7 * Math.pow(diamDiastFinal / 10, 3) / (2.4 + diamDiastFinal / 10);
+            document.getElementById('print_volume_diast_final').textContent = `${Math.round(volumeDiastFinal)} mL`;
 
-            if (valores.diamSistFinal > 0) {
+            if (diamSistFinal > 0) {
                 // Volume Sistólico Final
-                const volumeSistFinal = 7 * Math.pow(valores.diamSistFinal / 10, 3) / (2.4 + valores.diamSistFinal / 10);
-                atualizarValor('print_volume_sistolico', systolicVolume ? `${Math.round(systolicVolume)} mL` : '');
+                const volumeSistFinal = 7 * Math.pow(diamSistFinal / 10, 3) / (2.4 + diamSistFinal / 10);
+                document.getElementById('print_volume_sistolico').textContent = `${Math.round(volumeSistFinal)} mL`;
 
                 // Volume Ejetado
                 const volumeEjetado = volumeDiastFinal - volumeSistFinal;
-                atualizarValor('print_volume_ejetado', ejectedVolume ? `${Math.round(ejectedVolume)} mL` : '');
+                document.getElementById('print_volume_ejetado').textContent = `${Math.round(volumeEjetado)} mL`;
 
                 // Fração de Ejeção
                 const fracaoEjecao = (volumeEjetado / volumeDiastFinal) * 100;
-                atualizarValor('print_fracao_ejecao', ejectionFraction ? `${Math.round(ejectionFraction)} %` : '');
+                document.getElementById('print_fracao_ejecao').textContent = `${Math.round(fracaoEjecao)} %`;
 
                 // Percentual de Encurtamento
-                const percentEncurt = ((valores.diamDiastFinal - valores.diamSistFinal) / valores.diamDiastFinal) * 100;
-                atualizarValor('print_percent_encurt', cavityPercentage ? `${Math.round(cavityPercentage)} %` : '');
+                const percentEncurt = ((diamDiastFinal - diamSistFinal) / diamDiastFinal) * 100;
+                document.getElementById('print_percent_encurt').textContent = `${Math.round(percentEncurt)} %`;
             }
 
             // Espessura Relativa da Parede
-            if (valores.espDiastPPVE > 0) {
-                const espessuraRelativa = (2 * valores.espDiastPPVE / valores.diamDiastFinal).toFixed(2);
-                atualizarValor('print_esp_relativa', espessuraRelativa);
+            if (espDiastPPVE > 0) {
+                const espessuraRelativa = (2 * espDiastPPVE / diamDiastFinal).toFixed(2);
+                document.getElementById('print_esp_relativa').textContent = espessuraRelativa;
             }
 
-            // Massa do VE (Fórmula de Devereux)
-            if (valores.espDiastSepto > 0 && valores.espDiastPPVE > 0) {
-                const DDVE = valores.diamDiastFinal / 10;
-                const PPVE = valores.espDiastPPVE / 10;
-                const SIV = valores.espDiastSepto / 10;
-                
-                const massaVE = Math.round(0.8 * (1.04 * Math.pow((DDVE + PPVE + SIV), 3) - Math.pow(DDVE, 3)) + 0.6);
-                atualizarValor('print_massa_ve', `${massaVE} g`);
+            // Massa do VE e Índice de Massa
+            if (espDiastSepto > 0 && espDiastPPVE > 0) {
+                const massaVE = calcularMassaVE();
+                document.getElementById('print_massa_ve').textContent = `${massaVE} g`;
 
-                // Índice de Massa
-                const indiceMassa = (massaVE / superficie).toFixed(1);
-                atualizarValor('print_indice_massa', `${indiceMassa} g/m²`);
+                const superficie = parseFloat(document.getElementById('superficie').value) || 0;
+                if (superficie > 0) {
+                    const indiceMassa = (massaVE / superficie).toFixed(1);
+                    document.getElementById('print_indice_massa').textContent = `${indiceMassa} g/m²`;
+                }
             }
         }
     }
 }
 
-function atualizarValor(id, valor) {
-    const elemento = document.getElementById(id);
-    if (elemento) {
-        elemento.textContent = valor !== 'NaN' ? valor : '';
-    }
-}
-
+// Adiciona event listeners quando o documento estiver carregado
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('input[type="number"]');
     inputs.forEach(input => {
