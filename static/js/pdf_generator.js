@@ -11,8 +11,8 @@ function gerarPDF() {
         const pageWidth = doc.internal.pageSize.width;
         const margin = 15;
 
-        // Obter os dados do paciente com tratamento de undefined
-        const nome = document.getElementById('nome')?.value || '';
+        // Obter os dados do paciente
+        const nome = document.getElementById('nome')?.value || 'Paciente';
         const sexo = document.getElementById('sexo')?.value || '';
         const dataNascimento = document.getElementById('dataNascimento')?.value || '';
         const idade = document.getElementById('idade')?.value || '';
@@ -20,84 +20,96 @@ function gerarPDF() {
         const altura = document.getElementById('altura')?.value || '';
         const superficie = document.getElementById('superficie')?.value || '';
 
-        // Título
-        doc.autoTable({
-            head: [['Identificação']],
-            body: [[
-                {
-                    content: 
-                    `Nome: ${nome}     Sexo: ${sexo}
-                    Data de Nascimento: ${dataNascimento}     Idade: ${idade}
-                    Peso: ${peso} kg     Altura: ${altura} cm     Superfície Corpórea: ${superficie} m²`,
-                    styles: { cellWidth: 'wrap' }
-                }
-            ]],
-            startY: margin,
-            theme: 'plain',
-            styles: {
-                fontSize: 9,
-                cellPadding: 2,
-            },
-            headStyles: {
-                halign: 'center',
-                fontSize: 9,
-                fontStyle: 'bold'
-            },
-            margin: { left: margin, right: margin }
-        });
+        // Título centralizado
+        doc.setFontSize(12);
+        doc.text("Identificação", pageWidth / 2, margin, { align: 'center' });
 
-        // Cálculos e Medidas
+        // Dados do Paciente - Tabela
         doc.autoTable({
-            head: [['Cálculos e Medidas']],
+            startY: margin + 10,
+            head: [["Campo", "Valor"]],
             body: [
-                ['Aorta', '31', 'mm', 'Volume Diastólico Final', '154', 'ml'],
-                ['Aorta Ascendente', '42', 'mm', 'Volume Sistólico', '67', 'ml'],
-                ['Átrio Esquerdo', '31', 'mm', 'Massa do VE', '147', 'g'],
-                ['Vol Atrial Esq. Indexado', '', 'mm', 'Volume Ejetado', '87', 'ml'],
-                ['Diâmetro Diastólico', '48', 'mm', 'Fração de Ejeção', '57', '%'],
-                ['Diâmetro Sistólico', '32', 'mm', 'Percentual Enc. Cavidade', '33', '%'],
-                ['Espessura do Septo', '9', 'mm', 'Espessura Relativa Parede', '0.38', ''],
-                ['Espessura da Parede', '9', 'mm', 'Índice de massa', '74', 'g/m²']
+                ["Nome", nome],
+                ["Sexo", sexo],
+                ["Data de Nascimento", dataNascimento],
+                ["Idade", idade],
+                ["Peso", peso],
+                ["Altura", altura],
+                ["Superfície Corpórea", superficie]
             ],
-            startY: doc.autoTable.previous.finalY + 5,
-            theme: 'plain',
             styles: {
                 fontSize: 8,
-                cellPadding: 1,
-                lineColor: [0, 0, 0],
-                lineWidth: 0.1
+                cellPadding: 3,
+                lineWidth: 0.5,
+                lineColor: [200, 200, 200]
+            },
+            headStyles: {
+                fillColor: [220, 230, 241],
+                fontStyle: 'bold'
+            },
+            alternateRowStyles: {
+                fillColor: [245, 245, 245]
+            },
+            margin: { left: margin }
+        });
+
+        // Cálculos e Medidas - Tabela
+        doc.autoTable({
+            startY: doc.autoTable.previous.finalY + 10,
+            head: [[{
+                content: 'Cálculos e Medidas',
+                colSpan: 6,
+                styles: { halign: 'center', fillColor: [38, 201, 158], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 }
+            }]],
+            body: [
+                ['Medida', 'Valor', 'Un', 'Cálculo', 'Resultado', 'Un'],
+                ['Aorta', document.getElementById('aorta')?.value || '', 'mm', 'Volume Diastólico Final', document.getElementById('print_volume_diast_final')?.textContent || '', 'ml'],
+                ['Aorta Ascendente', document.getElementById('aorta_asc')?.value || '', 'mm', 'Volume Sistólico', document.getElementById('print_volume_sistolico')?.textContent || '', 'ml'],
+                ['Átrio Esquerdo', document.getElementById('atrio')?.value || '', 'mm', 'Massa do VE', document.getElementById('print_massa_ve')?.textContent || '', 'g'],
+                ['Vol Atrial Esq. Indexado', '', '', 'Volume Ejetado', document.getElementById('print_volume_ejetado')?.textContent || '', 'ml'],
+                ['Diâmetro Diastólico', document.getElementById('diam_diast_final')?.value || '', 'mm', 'Fração de Ejeção', document.getElementById('print_fracao_ejecao')?.textContent || '', '%'],
+                ['Diâmetro Sistólico', document.getElementById('diam_sist_final')?.value || '', 'mm', 'Percentual Enc. Cavidade', document.getElementById('print_percent_encurt')?.textContent || '', '%'],
+                ['Espessura do Septo', document.getElementById('esp_diast_septo')?.value || '', 'mm', 'Espessura Relativa Parede', document.getElementById('print_esp_relativa')?.textContent || '', ''],
+                ['Espessura da Parede', document.getElementById('esp_diast_ppve')?.value || '', 'mm', 'Índice de massa', document.getElementById('print_indice_massa')?.textContent || '', 'g/m²']
+            ],
+            styles: {
+                fontSize: 8,
+                cellPadding: 3,
+                lineWidth: 0.5,
+                lineColor: [200, 200, 200]
             },
             columnStyles: {
                 0: { cellWidth: 35 },
-                1: { cellWidth: 10, halign: 'center' },
+                1: { cellWidth: 15, halign: 'center' },
                 2: { cellWidth: 10, halign: 'center' },
                 3: { cellWidth: 35 },
-                4: { cellWidth: 10, halign: 'center' },
+                4: { cellWidth: 15, halign: 'center' },
                 5: { cellWidth: 10, halign: 'center' }
             },
-            margin: { left: margin, right: margin }
+            margin: { left: margin }
         });
 
         // Texto do Laudo
         const laudoContent = document.getElementById('editor')?.innerText || '';
         
-        doc.setFontSize(9);
-        const textLines = doc.splitTextToSize(laudoContent, pageWidth - 2 * margin);
-        
-        if (doc.autoTable.previous.finalY + (textLines.length * 5) > doc.internal.pageSize.height - margin) {
+        if (doc.autoTable.previous.finalY + 20 > doc.internal.pageSize.height - margin) {
             doc.addPage();
-            doc.autoTable.previous.finalY = margin;
         }
 
-        textLines.forEach((line, index) => {
-            const yPos = doc.autoTable.previous.finalY + 10 + (index * 5);
-            if (yPos > doc.internal.pageSize.height - margin) {
+        doc.setFontSize(10);
+        doc.text("Laudo", margin, doc.autoTable.previous.finalY + 20);
+
+        doc.setFontSize(9);
+        const textLines = doc.splitTextToSize(laudoContent, pageWidth - 2 * margin);
+        let currentY = doc.autoTable.previous.finalY + 30;
+
+        textLines.forEach(line => {
+            if (currentY > doc.internal.pageSize.height - margin) {
                 doc.addPage();
-                doc.autoTable.previous.finalY = margin;
-                doc.text(line, margin, margin + ((index % 20) * 5));
-            } else {
-                doc.text(line, margin, yPos);
+                currentY = margin + 10;
             }
+            doc.text(line, margin, currentY);
+            currentY += 5;
         });
 
         // Numeração das páginas
