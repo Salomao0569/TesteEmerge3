@@ -1,4 +1,3 @@
-// Handle automatic calculations for cardiac parameters
 function calcularResultados() {
     const diamDiastFinal = parseFloat(document.getElementById('diam_diast_final').value) || 0;
     const diamSistFinal = parseFloat(document.getElementById('diam_sist_final').value) || 0;
@@ -6,7 +5,6 @@ function calcularResultados() {
     const espDiastPPVE = parseFloat(document.getElementById('esp_diast_ppve').value) || 0;
 
     if (diamDiastFinal > 0 && diamSistFinal > 0) {
-        // Teicholz formula calculations
         const volumeDiastFinal = 7 * Math.pow(diamDiastFinal / 10, 3) / (2.4 + diamDiastFinal / 10);
         const volumeSistolico = 7 * Math.pow(diamSistFinal / 10, 3) / (2.4 + diamSistFinal / 10);
         const volumeEjetado = volumeDiastFinal - volumeSistolico;
@@ -14,7 +12,6 @@ function calcularResultados() {
         const percentualEncurt = ((diamDiastFinal - diamSistFinal) / diamDiastFinal) * 100;
         const espessuraRelativa = (2 * espDiastPPVE) / diamDiastFinal;
 
-        // Update results
         atualizarValor('print_volume_diast_final', volumeDiastFinal.toFixed(0));
         atualizarValor('print_volume_sistolico', volumeSistolico.toFixed(0));
         atualizarValor('print_volume_ejetado', volumeEjetado.toFixed(0));
@@ -31,7 +28,6 @@ function atualizarValor(id, valor) {
     }
 }
 
-// Add event listeners to all input fields
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('input[type="number"]');
     inputs.forEach(input => {
