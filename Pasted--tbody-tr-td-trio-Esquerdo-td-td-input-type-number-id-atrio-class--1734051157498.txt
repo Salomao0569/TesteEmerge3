@@ -1,0 +1,68 @@
+<tbody>
+    <tr>
+        <td>Átrio Esquerdo</td>
+        <td><input type="number" id="atrio" class="form-control" oninput="calcularResultados()"></td>
+        <td>Volume Diastólico Final</td>
+        <td id="print_volume_diast_final"></td>
+    </tr>
+    <tr>
+        <td>Aorta</td>
+        <td><input type="number" id="aorta" class="form-control" oninput="calcularResultados()"></td>
+        <td>Volume Sistólico</td>
+        <td id="print_volume_sistolico"></td>
+    </tr>
+    <tr>
+        <td>Diâmetro Diastólico</td>
+        <td><input type="number" id="diam_diast_final" class="form-control" oninput="calcularResultados()"></td>
+        <td>Volume Ejetado</td>
+        <td id="print_volume_ejetado"></td>
+    </tr>
+    <tr>
+        <td>Diâmetro Sistólico</td>
+        <td><input type="number" id="diam_sist_final" class="form-control" oninput="calcularResultados()"></td>
+        <td>Fração de Ejeção</td>
+        <td id="print_fracao_ejecao"></td>
+    </tr>
+    <tr>
+        <td>Espessura do Septo</td>
+        <td><input type="number" id="esp_diast_septo" class="form-control" oninput="calcularResultados()"></td>
+        <td>Percentual Enc. Cavidade</td>
+        <td id="print_percent_encurt"></td>
+    </tr>
+    <tr>
+        <td>Espessura da Parede (PPVE)</td>
+        <td><input type="number" id="esp_diast_ppve" class="form-control" oninput="calcularResultados()"></td>
+        <td>Espessura Relativa da Parede</td>
+        <td id="print_esp_relativa"></td>
+    </tr>
+    <tr>
+        <td>Ventrículo Direito</td>
+        <td><input type="number" id="vd" class="form-control" oninput="calcularResultados()"></td>
+        <td>Índice de Massa</td>
+        <td id="print_indice_massa"></td>
+    </tr>
+</tbody>
+
+<!-- Modificação no JavaScript para incluir o cálculo do Índice de Massa -->
+<script>
+function calcularResultados() {
+    // ... código existente ...
+
+    // Cálculo do Índice de Massa (exemplo de fórmula - ajuste conforme necessário)
+    const peso = parseFloat(document.getElementById('peso').value) || 0;
+    const altura = parseFloat(document.getElementById('altura').value) || 0;
+    const superficie = parseFloat(document.getElementById('superficie').value) || 0;
+    const espSepto = parseFloat(document.getElementById('esp_diast_septo').value) || 0;
+    const espPPVE = parseFloat(document.getElementById('esp_diast_ppve').value) || 0;
+    const diamDiast = parseFloat(document.getElementById('diam_diast_final').value) || 0;
+
+    if (superficie > 0 && espSepto > 0 && espPPVE > 0 && diamDiast > 0) {
+        // Fórmula de Devereux
+        const massa = 0.8 * (1.04 * Math.pow((espSepto + diamDiast + espPPVE), 3) - Math.pow(diamDiast, 3)) + 0.6;
+        const indiceMassa = massa / superficie;
+        document.getElementById('print_indice_massa').textContent = indiceMassa.toFixed(1);
+    }
+
+    // ... resto do código existente ...
+}
+</script>

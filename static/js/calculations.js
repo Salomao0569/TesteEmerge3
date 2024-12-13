@@ -32,6 +32,18 @@ function calcularResultados() {
         atualizarValor('print_percent_encurt', percentualEncurt.toFixed(0));
         atualizarValor('print_esp_relativa', espessuraRelativa.toFixed(2));
     }
+
+    // Cálculo do Índice de Massa
+    const superficie = parseFloat(document.getElementById('superficie').value) || 0;
+    const espSepto = parseFloat(document.getElementById('esp_diast_septo').value) || 0;
+    const espPPVE = parseFloat(document.getElementById('esp_diast_ppve').value) || 0;
+
+    if (superficie > 0 && espSepto > 0 && espPPVE > 0 && diamDiastFinal > 0) {
+        // Fórmula de Devereux
+        const massa = 0.8 * (1.04 * Math.pow((espSepto + diamDiastFinal + espPPVE), 3) - Math.pow(diamDiastFinal, 3)) + 0.6;
+        const indiceMassa = massa / superficie;
+        atualizarValor('print_indice_massa', indiceMassa.toFixed(1));
+    }
 }
 
 function atualizarValor(id, valor) {

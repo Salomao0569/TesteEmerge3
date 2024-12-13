@@ -14,12 +14,14 @@ function gerarPDF() {
     doc.setFontSize(16);
     doc.text("Laudo de Ecodopplercardiograma", margin, margin);
 
+    // Dados do paciente atualizados para incluir superfície corpórea
     const dadosPaciente = [
         ["Nome", document.getElementById('nome').value || 'N/D'],
         ["Data Nascimento", document.getElementById('dataNascimento').value || 'N/D'],
         ["Sexo", document.getElementById('sexo').value || 'N/D'],
         ["Peso", (document.getElementById('peso').value ? document.getElementById('peso').value + " kg" : 'N/D')],
-        ["Altura", (document.getElementById('altura').value ? document.getElementById('altura').value + " cm" : 'N/D')]
+        ["Altura", (document.getElementById('altura').value ? document.getElementById('altura').value + " cm" : 'N/D')],
+        ["Superfície Corpórea", (document.getElementById('superficie').value ? document.getElementById('superficie').value + " m²" : 'N/D')]
     ];
 
     doc.autoTable({
@@ -28,14 +30,12 @@ function gerarPDF() {
         body: dadosPaciente,
         theme: 'grid',
         styles: { fontSize: 10, cellPadding: 2 },
-        columnStyles: {
-            0: { cellWidth: contentWidth / 2 },
-            1: { cellWidth: contentWidth / 2 }
-        },
+        columnStyles: { 0: { cellWidth: contentWidth / 2 }, 1: { cellWidth: contentWidth / 2 } },
         margin: { left: margin },
         tableWidth: contentWidth
     });
 
+    // Tabela de medidas e cálculos atualizada
     const medidasCalculos = [
         ["Átrio Esquerdo", document.getElementById('atrio').value + " mm" || 'N/D', 
          "Volume Diastólico Final", document.getElementById('print_volume_diast_final').textContent + " ml" || 'N/D'],
@@ -59,16 +59,17 @@ function gerarPDF() {
         body: medidasCalculos,
         theme: 'grid',
         styles: { fontSize: 10, cellPadding: 2, overflow: 'linebreak' },
-        columnStyles: {
-            0: { cellWidth: contentWidth / 4 },
-            1: { cellWidth: contentWidth / 4 },
-            2: { cellWidth: contentWidth / 4 },
-            3: { cellWidth: contentWidth / 4 }
+        columnStyles: { 
+            0: { cellWidth: contentWidth / 4 }, 
+            1: { cellWidth: contentWidth / 4 }, 
+            2: { cellWidth: contentWidth / 4 }, 
+            3: { cellWidth: contentWidth / 4 } 
         },
         margin: { left: margin },
         tableWidth: contentWidth
     });
 
+    // Resto do código para o laudo e numeração de páginas permanece igual
     doc.setFontSize(12);
     const laudoContent = document.getElementById('editor').innerText;
     const textLines = doc.splitTextToSize(laudoContent, contentWidth);
