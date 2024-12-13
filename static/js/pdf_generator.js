@@ -12,6 +12,7 @@ function gerarPDF() {
     const contentWidth = pageWidth - (2 * margin);
 
     doc.setFontSize(16);
+    const nomePaciente = document.getElementById('nome').value;
     const titulo = "Laudo de Ecodopplercardiograma";
     
     // Centralizar o título
