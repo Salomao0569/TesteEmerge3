@@ -102,5 +102,6 @@ function gerarPDF() {
         doc.text(`Página ${i} de ${totalPages}`, pageWidth - margin, doc.internal.pageSize.height - 10, { align: 'right' });
     }
 
-    doc.save("laudo_ecocardiograma.pdf");
+    const nomeArquivo = nomePaciente ? `${nomePaciente.trim().replace(/[^a-zA-Z0-9]/g, '_')}.pdf` : "laudo_ecocardiograma.pdf";
+    doc.save(nomeArquivo);
 }
