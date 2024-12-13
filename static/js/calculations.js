@@ -1,4 +1,17 @@
 function calcularResultados() {
+    // Recupera e calcula a superfície corpórea
+    const peso = parseFloat(document.getElementById('peso').value) || 0;
+    const altura = parseFloat(document.getElementById('altura').value) || 0;
+    
+    // Calcula a superfície corpórea se peso e altura estiverem preenchidos
+    if (peso > 0 && altura > 0) {
+        // Fórmula de DuBois: SC = 0.007184 × peso^0.425 × altura^0.725
+        const superficieCorporea = 0.007184 * Math.pow(peso, 0.425) * Math.pow(altura, 0.725);
+        document.getElementById('superficie').value = superficieCorporea.toFixed(2);
+    } else {
+        document.getElementById('superficie').value = '';
+    }
+
     const diamDiastFinal = parseFloat(document.getElementById('diam_diast_final').value) || 0;
     const diamSistFinal = parseFloat(document.getElementById('diam_sist_final').value) || 0;
     const espDiastSeptal = parseFloat(document.getElementById('esp_diast_septo').value) || 0;
