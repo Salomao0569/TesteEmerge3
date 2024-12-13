@@ -1,7 +1,23 @@
+// Estado global para simular o React useState
+let measures = {
+    leftAtrium: '',
+    aorta: '',
+    diastolicDiameter: '',
+    systolicDiameter: '',
+    septumThickness: '',
+    wallThickness: '',
+    rightVentricle: '',
+};
+
+function handleInputChange(field, value) {
+    measures[field] = value;
+    calcularResultados();
+}
+
 function calcularMassaVE() {
-    const DDVE = Number(document.getElementById('diam_diast_final').value) / 10;
-    const PPVE = Number(document.getElementById('esp_diast_ppve').value) / 10;
-    const SIV = Number(document.getElementById('esp_diast_septo').value) / 10;
+    const DDVE = Number(measures.diastolicDiameter) / 10;
+    const PPVE = Number(measures.wallThickness) / 10;
+    const SIV = Number(measures.septumThickness) / 10;
     
     // Fórmula de Devereux com arredondamento para número inteiro
     return Math.round(0.8 * (1.04 * Math.pow((DDVE + PPVE + SIV), 3) - Math.pow(DDVE, 3)) + 0.6);
@@ -10,21 +26,15 @@ function calcularMassaVE() {
 function calcularResultados() {
     const elementos = {
         peso: document.getElementById('peso'),
-        altura: document.getElementById('altura'),
-        atrio: document.getElementById('atrio'),
-        aorta: document.getElementById('aorta'),
-        diamDiastFinal: document.getElementById('diam_diast_final'),
-        diamSistFinal: document.getElementById('diam_sist_final'),
-        espDiastSepto: document.getElementById('esp_diast_septo'),
-        espDiastPPVE: document.getElementById('esp_diast_ppve'),
-        vd: document.getElementById('vd')
+        altura: document.getElementById('altura')
     };
 
     // Valores numéricos com fallback para 0
-    const valores = {};
-    Object.entries(elementos).forEach(([key, element]) => {
-        valores[key] = element && element.value ? parseFloat(element.value) : 0;
-    });
+    const valores = {
+        ...measures,
+        peso: elementos.peso && elementos.peso.value ? parseFloat(elementos.peso.value) : 0,
+        altura: elementos.altura && elementos.altura.value ? parseFloat(elementos.altura.value) : 0
+    };
 
     // Cálculo da superfície corpórea (DuBois)
     if (valores.peso > 0 && valores.altura > 0) {

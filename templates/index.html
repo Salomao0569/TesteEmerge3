@@ -67,7 +67,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Medida</th>
-                                <th>Valor</th>
+                                <th>Valor (mm)</th>
                                 <th>Cálculo</th>
                                 <th>Resultado</th>
                             </tr>
@@ -75,43 +75,43 @@
                         <tbody>
                             <tr>
                                 <td>Átrio Esquerdo</td>
-                                <td><input type="number" id="atrio" class="form-control" step="0.1" oninput="calcularResultados()"></td>
+                                <td><input type="number" id="leftAtrium" class="form-control" step="0.1" oninput="handleInputChange('leftAtrium', this.value)"></td>
                                 <td>Volume Diastólico Final</td>
                                 <td id="print_volume_diast_final"></td>
                             </tr>
                             <tr>
                                 <td>Aorta</td>
-                                <td><input type="number" id="aorta" class="form-control" step="0.1" oninput="calcularResultados()"></td>
+                                <td><input type="number" id="aorta" class="form-control" step="0.1" oninput="handleInputChange('aorta', this.value)"></td>
                                 <td>Volume Sistólico</td>
                                 <td id="print_volume_sistolico"></td>
                             </tr>
                             <tr>
                                 <td>Diâmetro Diastólico</td>
-                                <td><input type="number" id="diam_diast_final" class="form-control" step="0.1" oninput="calcularResultados()"></td>
+                                <td><input type="number" id="diastolicDiameter" class="form-control" step="0.1" oninput="handleInputChange('diastolicDiameter', this.value)"></td>
                                 <td>Volume Ejetado</td>
                                 <td id="print_volume_ejetado"></td>
                             </tr>
                             <tr>
                                 <td>Diâmetro Sistólico</td>
-                                <td><input type="number" id="diam_sist_final" class="form-control" step="0.1" oninput="calcularResultados()"></td>
+                                <td><input type="number" id="systolicDiameter" class="form-control" step="0.1" oninput="handleInputChange('systolicDiameter', this.value)"></td>
                                 <td>Fração de Ejeção</td>
                                 <td id="print_fracao_ejecao"></td>
                             </tr>
                             <tr>
                                 <td>Espessura do Septo</td>
-                                <td><input type="number" id="esp_diast_septo" class="form-control" step="0.1" oninput="calcularResultados()"></td>
+                                <td><input type="number" id="septumThickness" class="form-control" step="0.1" oninput="handleInputChange('septumThickness', this.value)"></td>
                                 <td>Percentual Enc. Cavidade</td>
                                 <td id="print_percent_encurt"></td>
                             </tr>
                             <tr>
                                 <td>Espessura da Parede (PPVE)</td>
-                                <td><input type="number" id="esp_diast_ppve" class="form-control" step="0.1" oninput="calcularResultados()"></td>
+                                <td><input type="number" id="wallThickness" class="form-control" step="0.1" oninput="handleInputChange('wallThickness', this.value)"></td>
                                 <td>Espessura Relativa da Parede</td>
                                 <td id="print_esp_relativa"></td>
                             </tr>
                             <tr>
                                 <td>Ventrículo Direito</td>
-                                <td><input type="number" id="vd" class="form-control" step="0.1" oninput="calcularResultados()"></td>
+                                <td><input type="number" id="rightVentricle" class="form-control" step="0.1" oninput="handleInputChange('rightVentricle', this.value)"></td>
                                 <td>Massa do VE</td>
                                 <td id="print_massa_ve"></td>
                             </tr>
