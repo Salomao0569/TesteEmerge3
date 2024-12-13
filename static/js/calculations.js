@@ -66,9 +66,12 @@ function calcularResultados() {
             const massaVE = calcularMassaVE();
             document.getElementById('print_massa_ve').textContent = `${massaVE} g`;
 
-            if (superficie > 0) {
+            // Calcula e atualiza o índice de massa do VE
+            if (superficie > 0 && massaVE > 0) {
                 const indiceMassa = (massaVE / superficie).toFixed(1);
                 document.getElementById('print_indice_massa').textContent = `${indiceMassa} g/m²`;
+            } else {
+                document.getElementById('print_indice_massa').textContent = '';
             }
         }
     }
