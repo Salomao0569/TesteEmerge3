@@ -1,52 +1,20 @@
-// Estado global para simular o React useState
-let measures = {
-    leftAtrium: '',
-    aorta: '',
-    diastolicDiameter: '',
-    systolicDiameter: '',
-    septumThickness: '',
-    wallThickness: '',
-    rightVentricle: '',
-};
-
-function handleInputChange(field, value) {
-    measures[field] = value;
-    calcularResultados();
-}
-
 function calcularMassaVE() {
-    const DDVE = Number(measures.diastolicDiameter) / 10;
-    const PPVE = Number(measures.wallThickness) / 10;
-    const SIV = Number(measures.septumThickness) / 10;
+    const DDVE = Number(document.getElementById('diam_diast_final').value) / 10;
+    const PPVE = Number(document.getElementById('esp_diast_ppve').value) / 10;
+    const SIV = Number(document.getElementById('esp_diast_septo').value) / 10;
     
     // Fórmula de Devereux com arredondamento para número inteiro
     return Math.round(0.8 * (1.04 * Math.pow((DDVE + PPVE + SIV), 3) - Math.pow(DDVE, 3)) + 0.6);
 }
 
 function calcularResultados() {
-    const elementos = {
-        peso: document.getElementById('peso'),
-        altura: document.getElementById('altura'),
-        leftAtrium: document.getElementById('leftAtrium'),
-        aorta: document.getElementById('aorta'),
-        diastolicDiameter: document.getElementById('diastolicDiameter'),
-        systolicDiameter: document.getElementById('systolicDiameter'),
-        septumThickness: document.getElementById('septumThickness'),
-        wallThickness: document.getElementById('wallThickness'),
-        rightVentricle: document.getElementById('rightVentricle')
-    };
-
-    // Valores numéricos com fallback para 0
-    const valores = {
-        peso: elementos.peso && elementos.peso.value ? parseFloat(elementos.peso.value) : 0,
-        altura: elementos.altura && elementos.altura.value ? parseFloat(elementos.altura.value) : 0,
-        ...Object.entries(elementos).reduce((acc, [key, element]) => {
-            if (element && key !== 'peso' && key !== 'altura') {
-                acc[key] = element.value ? parseFloat(element.value) : 0;
-            }
-            return acc;
-        }, {})
-    };
+    // Recupera valores dos elementos
+    const peso = parseFloat(document.getElementById('peso').value) || 0;
+    const altura = parseFloat(document.getElementById('altura').value) || 0;
+    const diamDiastFinal = parseFloat(document.getElementById('diam_diast_final').value) || 0;
+    const diamSistFinal = parseFloat(document.getElementById('diam_sist_final').value) || 0;
+    const espDiastSepto = parseFloat(document.getElementById('esp_diast_septo').value) || 0;
+    const espDiastPPVE = parseFloat(document.getElementById('esp_diast_ppve').value) || 0;
 
     const diastolicVolume = valores.diastolicDiameter ? 
         7 * Math.pow(valores.diastolicDiameter / 10, 3) / (2.4 + valores.diastolicDiameter / 10) : '';
