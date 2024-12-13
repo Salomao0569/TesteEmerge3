@@ -39,10 +39,12 @@ function calcularResultados() {
     const espPPVE = parseFloat(document.getElementById('esp_diast_ppve').value) || 0;
 
     if (superficie > 0 && espSepto > 0 && espPPVE > 0 && diamDiastFinal > 0) {
-        // Fórmula de Devereux
-        const massa = 0.8 * (1.04 * Math.pow((espSepto + diamDiastFinal + espPPVE), 3) - Math.pow(diamDiastFinal, 3)) + 0.6;
+        // Fórmula de Devereux modificada para melhor precisão
+        const massa = (0.8 * (1.04 * Math.pow((espSepto + diamDiastFinal + espPPVE), 3) - Math.pow(diamDiastFinal, 3)) + 0.6) * 0.001; // Convertendo para gramas
         const indiceMassa = massa / superficie;
-        atualizarValor('print_indice_massa', indiceMassa.toFixed(1));
+        atualizarValor('print_indice_massa', indiceMassa.toFixed(1) + " g/m²");
+    } else {
+        atualizarValor('print_indice_massa', '');
     }
 }
 

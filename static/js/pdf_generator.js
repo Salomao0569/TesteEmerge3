@@ -37,20 +37,21 @@ function gerarPDF() {
     });
 
     const medidasCalculos = [
-        ["Átrio Esquerdo", document.getElementById('atrio').value + " mm" || 'N/D', 
-         "Volume Diastólico Final", document.getElementById('print_volume_diast_final').textContent + " ml" || 'N/D'],
-        ["Aorta", document.getElementById('aorta').value + " mm" || 'N/D', 
-         "Volume Sistólico", document.getElementById('print_volume_sistolico').textContent + " ml" || 'N/D'],
-        ["Diâmetro Diastólico", document.getElementById('diam_diast_final').value + " mm" || 'N/D', 
-         "Volume Ejetado", document.getElementById('print_volume_ejetado').textContent + " ml" || 'N/D'],
-        ["Diâmetro Sistólico", document.getElementById('diam_sist_final').value + " mm" || 'N/D', 
-         "Fração de Ejeção", document.getElementById('print_fracao_ejecao').textContent + " %" || 'N/D'],
-        ["Espessura do Septo", document.getElementById('esp_diast_septo').value + " mm" || 'N/D', 
-         "Percentual Enc. Cavidade", document.getElementById('print_percent_encurt').textContent + " %" || 'N/D'],
-        ["Espessura da Parede", document.getElementById('esp_diast_ppve').value + " mm" || 'N/D', 
-         "Espessura Relativa", document.getElementById('print_esp_relativa').textContent || 'N/D'],
-        ["Ventrículo Direito", document.getElementById('vd').value + " mm" || 'N/D',
-         "Índice de Massa", document.getElementById('print_indice_massa').textContent + " g/m²" || 'N/D']
+        ["Medida", "Valor", "Un", "Cálculo", "Valor", "Un"],
+        ["Átrio Esquerdo", document.getElementById('atrio').value, "mm", 
+         "Volume Diastólico Final", document.getElementById('print_volume_diast_final').textContent, "ml"],
+        ["Aorta", document.getElementById('aorta').value, "mm", 
+         "Volume Sistólico", document.getElementById('print_volume_sistolico').textContent, "ml"],
+        ["Diâmetro Diastólico", document.getElementById('diam_diast_final').value, "mm", 
+         "Volume Ejetado", document.getElementById('print_volume_ejetado').textContent, "ml"],
+        ["Diâmetro Sistólico", document.getElementById('diam_sist_final').value, "mm", 
+         "Fração de Ejeção", document.getElementById('print_fracao_ejecao').textContent, "%"],
+        ["Espessura do Septo", document.getElementById('esp_diast_septo').value, "mm", 
+         "Percentual Enc. Cavidade", document.getElementById('print_percent_encurt').textContent, "%"],
+        ["Espessura da Parede", document.getElementById('esp_diast_ppve').value, "mm", 
+         "Espessura Relativa", document.getElementById('print_esp_relativa').textContent, ""],
+        ["Ventrículo Direito", document.getElementById('vd').value, "mm",
+         "Índice de Massa", document.getElementById('print_indice_massa').textContent, "g/m²"]
     ];
 
     doc.autoTable({
