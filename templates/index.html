@@ -69,8 +69,42 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Table content from original file -->
-                            <!-- Measurements rows -->
+                            <tr>
+                                <td>Átrio Esquerdo</td>
+                                <td><input type="number" id="atrio" class="form-control" oninput="calcularResultados()"></td>
+                                <td>Volume Diastólico Final</td>
+                                <td id="print_volume_diast_final"></td>
+                            </tr>
+                            <tr>
+                                <td>Aorta</td>
+                                <td><input type="number" id="aorta" class="form-control" oninput="calcularResultados()"></td>
+                                <td>Volume Sistólico</td>
+                                <td id="print_volume_sistolico"></td>
+                            </tr>
+                            <tr>
+                                <td>Diâmetro Diastólico</td>
+                                <td><input type="number" id="diam_diast_final" class="form-control" oninput="calcularResultados()"></td>
+                                <td>Volume Ejetado</td>
+                                <td id="print_volume_ejetado"></td>
+                            </tr>
+                            <tr>
+                                <td>Diâmetro Sistólico</td>
+                                <td><input type="number" id="diam_sist_final" class="form-control" oninput="calcularResultados()"></td>
+                                <td>Fração de Ejeção</td>
+                                <td id="print_fracao_ejecao"></td>
+                            </tr>
+                            <tr>
+                                <td>Espessura do Septo</td>
+                                <td><input type="number" id="esp_diast_septo" class="form-control" oninput="calcularResultados()"></td>
+                                <td>Percentual Enc. Cavidade</td>
+                                <td id="print_percent_encurt"></td>
+                            </tr>
+                            <tr>
+                                <td>Espessura da Parede (PPVE)</td>
+                                <td><input type="number" id="esp_diast_ppve" class="form-control" oninput="calcularResultados()"></td>
+                                <td>Espessura Relativa da Parede</td>
+                                <td id="print_esp_relativa"></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -84,7 +118,19 @@
             </div>
             <div class="card-body">
                 <div contenteditable="true" id="editor" class="form-control editor-area">
-                    <!-- Default report text -->
+                    <p>Exame realizado com ritmo cardíaco regular. Evidenciando:</p>
+                    <p>Cavidades cardíacas com dimensões normais.<br>Raiz da aorta com diâmetro preservado.<br>Espessura miocárdica do ventrículo esquerdo conservada.</p>
+                    <p>Desempenho sistólico do ventrículo esquerdo conservado. Não foram observadas alterações segmentares da contratilidade ventricular.</p>
+                    <p>Função diastólica do ventrículo esquerdo conservada ao doppler mitral espectral.</p>
+                    <p>Ventrículo direito com desempenho sistólico preservado - análise subjetiva.</p>
+                    <p>Valva mitral com abertura e mobilidade conservadas. Colordoppler registrou refluxo discreto.</p>
+                    <p>Valva tricúspide com abertura conservada. Colordoppler registrou refluxo discreto.</p>
+                    <p>Valva aórtica com espessamento em seus folhetos. Abertura e mobilidade conservadas.</p>
+                    <p>Valva pulmonar com abertura e mobilidade conservadas.</p>
+                    <p>Demais fluxos transvalvares com velocidades normais ao colordoppler.</p>
+                    <p>Pericárdio ecograficamente normal.</p>
+                    <p><strong>OPINIÃO:</strong> Ecocardiograma dentro dos limites da normalidade.</p>
+                    <p><em>Obs: A correta interpretação do resultado do exame depende de outros dados do paciente que só o médico solicitante possui.</em></p>
                 </div>
             </div>
         </div>
