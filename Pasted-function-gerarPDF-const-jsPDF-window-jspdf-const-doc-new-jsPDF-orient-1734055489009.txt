@@ -16,7 +16,7 @@ function gerarPDF() {
             {
                 content: 
                 `Nome: ${document.getElementById('nome').value}     Sexo: ${document.getElementById('sexo').value}
-                Data de Nascimento: ${document.getElementById('dataNascimento').value}     
+                Data de Nascimento: ${document.getElementById('dataNascimento').value}     Idade: ${document.getElementById('idade').value}
                 Peso: ${document.getElementById('peso').value}     Altura: ${document.getElementById('altura').value}     Superfície Corpórea: ${document.getElementById('superficie').value}`,
                 styles: { cellWidth: 'wrap' }
             }
@@ -39,13 +39,14 @@ function gerarPDF() {
     doc.autoTable({
         head: [['Cálculos e Medidas']],
         body: [
-            ['Aorta', document.getElementById('aorta').value || '', 'mm', 'Volume Diastólico Final', document.getElementById('print_volume_diast_final').textContent || '', 'ml'],
-            ['Átrio Esquerdo', document.getElementById('atrio').value || '', 'mm', 'Volume Sistólico', document.getElementById('print_volume_sistolico').textContent || '', 'ml'],
-            ['Diâmetro Diastólico', document.getElementById('diam_diast_final').value || '', 'mm', 'Volume Ejetado', document.getElementById('print_volume_ejetado').textContent || '', 'ml'],
-            ['Diâmetro Sistólico', document.getElementById('diam_sist_final').value || '', 'mm', 'Fração de Ejeção', document.getElementById('print_fracao_ejecao').textContent || '', '%'],
-            ['Espessura do Septo', document.getElementById('esp_diast_septo').value || '', 'mm', 'Percentual Enc. Cavidade', document.getElementById('print_percent_encurt').textContent || '', '%'],
-            ['Espessura da Parede', document.getElementById('esp_diast_ppve').value || '', 'mm', 'Espessura Relativa', document.getElementById('print_esp_relativa').textContent || '', ''],
-            ['Ventrículo Direito', document.getElementById('vd').value || '', 'mm', 'Índice de Massa', document.getElementById('print_indice_massa').textContent || '', 'g/m²']
+            ['Aorta', '31', 'mm', 'Volume Diastólico Final', '154', 'ml'],
+            ['Aorta Ascendente', '42', 'mm', 'Volume Sistólico', '67', 'ml'],
+            ['Átrio Esquerdo', '31', 'mm', 'Massa do VE', '147', 'g'],
+            ['Vol Atrial Esq. Indexado', '', 'mm', 'Volume Ejetado', '87', 'ml'],
+            ['Diâmetro Diastólico', '48', 'mm', 'Fração de Ejeção', '57', '%'],
+            ['Diâmetro Sistólico', '32', 'mm', 'Percentual Enc. Cavidade', '33', '%'],
+            ['Espessura do Septo', '9', 'mm', 'Espessura Relativa Parede', '0.38', ''],
+            ['Espessura da Parede', '9', 'mm', 'Índice de massa', '74', 'g/m²']
         ],
         startY: doc.autoTable.previous.finalY + 5,
         theme: 'plain',
@@ -72,7 +73,28 @@ function gerarPDF() {
     });
 
     // Texto do Laudo
-    const laudoText = document.getElementById('editor').innerText;
+    const laudoText = `
+Exame Realizado com ritmo cardíaco regular.
+
+Cavidades Cardíacas com dimensões normais
+Raiz da Aorta com diâmetro Conservado
+Espessura miocárdica do ventrículo esquerdo conservada
+
+Desempenho sistólico biventricular conservado. Não foram observadas alterações segmentares da
+contratilidade ventricular.
+Função Diastólica do ventrículo esquerdo conservada ao Doppler Mitral espectral.
+
+Valva mitral com abertura e mobilidade conservadas. Colordoppler registrou refluxo discreto.
+Valva tricúspide com abertura conservada.
+Valva aórtica com abertura e mobilidade conservadas.
+Valva pulmonar com abertura e mobilidade conservadas.
+
+Demais fluxos transvalvares com velocidades normais ao colordoppler
+Pericárdio ecograficamente normal.
+
+OPINIÃO:
+Ecocardiograma compatível com a normalidade`;
+
     doc.setFontSize(9);
     const textLines = doc.splitTextToSize(laudoText, pageWidth - 2 * margin);
     doc.text(textLines, margin, doc.autoTable.previous.finalY + 10);
