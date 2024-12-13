@@ -8,60 +8,74 @@ function calcularMassaVE() {
 }
 
 function calcularResultados() {
-    // Recupera e calcula a superfície corpórea
-    const peso = parseFloat(document.getElementById('peso').value) || 0;
-    const altura = parseFloat(document.getElementById('altura').value) || 0;
-    let superficieCorporea = 0;
-    
-    if (peso > 0 && altura > 0) {
-        superficieCorporea = 0.007184 * Math.pow(peso, 0.425) * Math.pow(altura, 0.725);
-        document.getElementById('superficie').value = superficieCorporea.toFixed(2);
-    } else {
-        document.getElementById('superficie').value = '';
-    }
+    const elementos = {
+        peso: document.getElementById('peso'),
+        altura: document.getElementById('altura'),
+        atrio: document.getElementById('atrio'),
+        aorta: document.getElementById('aorta'),
+        diamDiastFinal: document.getElementById('diam_diast_final'),
+        diamSistFinal: document.getElementById('diam_sist_final'),
+        espDiastSepto: document.getElementById('esp_diast_septo'),
+        espDiastPPVE: document.getElementById('esp_diast_ppve'),
+        vd: document.getElementById('vd')
+    };
 
-    const diamDiastFinal = parseFloat(document.getElementById('diam_diast_final').value) || 0;
-    const diamSistFinal = parseFloat(document.getElementById('diam_sist_final').value) || 0;
-    const espDiastPPVE = parseFloat(document.getElementById('esp_diast_ppve').value) || 0;
+    // Valores numéricos com fallback para 0
+    const valores = {};
+    Object.entries(elementos).forEach(([key, element]) => {
+        valores[key] = element && element.value ? parseFloat(element.value) : 0;
+    });
 
-    if (diamDiastFinal > 0) {
-        // Volume Diastólico Final
-        const volumeDiastFinal = 108;
-        atualizarValor('print_volume_diast_final', volumeDiastFinal + ' mL');
-
-        if (diamSistFinal > 0) {
-            // Volume Sistólico
-            const volumeSistolico = 41;
-            atualizarValor('print_volume_sistolico', volumeSistolico + ' mL');
-
-            // Volume Ejetado
-            const volumeEjetado = volumeDiastFinal - volumeSistolico;
-            atualizarValor('print_volume_ejetado', volumeEjetado + ' mL');
-
-            // Fração de Ejeção
-            const fracaoEjecao = 62;
-            atualizarValor('print_fracao_ejecao', fracaoEjecao + ' %');
+    // Cálculo da superfície corpórea (DuBois)
+    if (valores.peso > 0 && valores.altura > 0) {
+        const superficie = 0.007184 * Math.pow(valores.peso, 0.425) * Math.pow(valores.altura, 0.725);
+        const superficieElement = document.getElementById('superficie');
+        if (superficieElement) {
+            superficieElement.value = superficie.toFixed(2);
         }
 
-        // Percentual de Encurtamento da Cavidade
-        const percentualEncurt = 33;
-        atualizarValor('print_percent_encurt', percentualEncurt + ' %');
+        // Cálculos principais apenas se tiver os valores necessários
+        if (valores.diamDiastFinal > 0) {
+            // Volume Diastólico Final (Teichholz)
+            const volumeDiastFinal = 7 * Math.pow(valores.diamDiastFinal / 10, 3) / (2.4 + valores.diamDiastFinal / 10);
+            atualizarValor('print_volume_diast_final', `${Math.round(volumeDiastFinal)} mL`);
 
-        if (espDiastPPVE > 0) {
+            if (valores.diamSistFinal > 0) {
+                // Volume Sistólico Final
+                const volumeSistFinal = 7 * Math.pow(valores.diamSistFinal / 10, 3) / (2.4 + valores.diamSistFinal / 10);
+                atualizarValor('print_volume_sistolico', `${Math.round(volumeSistFinal)} mL`);
+
+                // Volume Ejetado
+                const volumeEjetado = volumeDiastFinal - volumeSistFinal;
+                atualizarValor('print_volume_ejetado', `${Math.round(volumeEjetado)} mL`);
+
+                // Fração de Ejeção
+                const fracaoEjecao = (volumeEjetado / volumeDiastFinal) * 100;
+                atualizarValor('print_fracao_ejecao', `${Math.round(fracaoEjecao)} %`);
+
+                // Percentual de Encurtamento
+                const percentEncurt = ((valores.diamDiastFinal - valores.diamSistFinal) / valores.diamDiastFinal) * 100;
+                atualizarValor('print_percent_encurt', `${Math.round(percentEncurt)} %`);
+            }
+
             // Espessura Relativa da Parede
-            const espessuraRelativa = (2 * espDiastPPVE / diamDiastFinal).toFixed(2);
-            atualizarValor('print_esp_relativa', espessuraRelativa);
-            atualizarValor('print_esp_relativa_2', espessuraRelativa);
-        }
+            if (valores.espDiastPPVE > 0) {
+                const espessuraRelativa = (2 * valores.espDiastPPVE / valores.diamDiastFinal).toFixed(2);
+                atualizarValor('print_esp_relativa', espessuraRelativa);
+            }
 
-        // Massa do VE e Índice de Massa
-        const massaVE = calcularMassaVE();
-        if (massaVE) {
-            atualizarValor('print_massa_ve', massaVE + ' g');
-            
-            if (superficieCorporea > 0) {
-                const indiceMassa = (massaVE / superficieCorporea).toFixed(1);
-                atualizarValor('print_indice_massa', indiceMassa + ' g/m²');
+            // Massa do VE (Fórmula de Devereux)
+            if (valores.espDiastSepto > 0 && valores.espDiastPPVE > 0) {
+                const DDVE = valores.diamDiastFinal / 10;
+                const PPVE = valores.espDiastPPVE / 10;
+                const SIV = valores.espDiastSepto / 10;
+                
+                const massaVE = Math.round(0.8 * (1.04 * Math.pow((DDVE + PPVE + SIV), 3) - Math.pow(DDVE, 3)) + 0.6);
+                atualizarValor('print_massa_ve', `${massaVE} g`);
+
+                // Índice de Massa
+                const indiceMassa = (massaVE / superficie).toFixed(1);
+                atualizarValor('print_indice_massa', `${indiceMassa} g/m²`);
             }
         }
     }
