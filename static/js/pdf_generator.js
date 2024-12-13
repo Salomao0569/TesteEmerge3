@@ -56,18 +56,29 @@ function gerarPDF() {
 
     doc.autoTable({
         startY: doc.autoTable.previous.finalY + 10,
-        head: [['Medida', 'Valor', 'Cálculo', 'Resultado']],
+        head: [["Cálculos e Medidas"]],
         body: medidasCalculos,
         theme: 'grid',
-        styles: { fontSize: 10, cellPadding: 2, overflow: 'linebreak' },
+        styles: { 
+            fontSize: 9,
+            cellPadding: 2,
+            overflow: 'linebreak',
+            halign: 'left'
+        },
         columnStyles: {
-            0: { cellWidth: contentWidth / 4 },
-            1: { cellWidth: contentWidth / 4 },
-            2: { cellWidth: contentWidth / 4 },
-            3: { cellWidth: contentWidth / 4 }
+            0: { cellWidth: 35 },
+            1: { cellWidth: 20, halign: 'right' },
+            2: { cellWidth: 15 },
+            3: { cellWidth: 35 },
+            4: { cellWidth: 20, halign: 'right' },
+            5: { cellWidth: 15 }
         },
         margin: { left: margin },
-        tableWidth: contentWidth
+        headStyles: {
+            fillColor: [74, 144, 226],
+            textColor: 255,
+            fontSize: 11
+        }
     });
 
     doc.setFontSize(12);
