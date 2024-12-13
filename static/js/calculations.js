@@ -23,7 +23,7 @@ function calcularMassaVE() {
     return Math.round(0.8 * (1.04 * Math.pow((DDVE + PPVE + SIV), 3) - Math.pow(DDVE, 3)) + 0.6);
 }
 
-function calcularResultados() {
+function calculateResults() {
     const elementos = {
         peso: document.getElementById('peso'),
         altura: document.getElementById('altura')
@@ -35,6 +35,17 @@ function calcularResultados() {
         peso: elementos.peso && elementos.peso.value ? parseFloat(elementos.peso.value) : 0,
         altura: elementos.altura && elementos.altura.value ? parseFloat(elementos.altura.value) : 0
     };
+
+    const diastolicVolume = measures.diastolicDiameter ? 
+        7 * Math.pow(Number(measures.diastolicDiameter) / 10, 3) / (2.4 + Number(measures.diastolicDiameter) / 10) : '';
+    const systolicVolume = measures.systolicDiameter ? 
+        7 * Math.pow(Number(measures.systolicDiameter) / 10, 3) / (2.4 + Number(measures.systolicDiameter) / 10) : '';
+    const ejectedVolume = diastolicVolume && systolicVolume ? 
+        diastolicVolume - systolicVolume : '';
+    const ejectionFraction = measures.diastolicDiameter && measures.systolicDiameter ? 
+        ((diastolicVolume - systolicVolume) / diastolicVolume) * 100 : '';
+    const cavityPercentage = measures.diastolicDiameter && measures.systolicDiameter ? 
+        ((Number(measures.diastolicDiameter) - Number(measures.systolicDiameter)) / Number(measures.diastolicDiameter)) * 100 : '';
 
     // Cálculo da superfície corpórea (DuBois)
     if (valores.peso > 0 && valores.altura > 0) {
@@ -48,24 +59,24 @@ function calcularResultados() {
         if (valores.diamDiastFinal > 0) {
             // Volume Diastólico Final (Teichholz)
             const volumeDiastFinal = 7 * Math.pow(valores.diamDiastFinal / 10, 3) / (2.4 + valores.diamDiastFinal / 10);
-            atualizarValor('print_volume_diast_final', `${Math.round(volumeDiastFinal)} mL`);
+            atualizarValor('print_volume_diast_final', diastolicVolume ? `${Math.round(diastolicVolume)} mL` : '');
 
             if (valores.diamSistFinal > 0) {
                 // Volume Sistólico Final
                 const volumeSistFinal = 7 * Math.pow(valores.diamSistFinal / 10, 3) / (2.4 + valores.diamSistFinal / 10);
-                atualizarValor('print_volume_sistolico', `${Math.round(volumeSistFinal)} mL`);
+                atualizarValor('print_volume_sistolico', systolicVolume ? `${Math.round(systolicVolume)} mL` : '');
 
                 // Volume Ejetado
                 const volumeEjetado = volumeDiastFinal - volumeSistFinal;
-                atualizarValor('print_volume_ejetado', `${Math.round(volumeEjetado)} mL`);
+                atualizarValor('print_volume_ejetado', ejectedVolume ? `${Math.round(ejectedVolume)} mL` : '');
 
                 // Fração de Ejeção
                 const fracaoEjecao = (volumeEjetado / volumeDiastFinal) * 100;
-                atualizarValor('print_fracao_ejecao', `${Math.round(fracaoEjecao)} %`);
+                atualizarValor('print_fracao_ejecao', ejectionFraction ? `${Math.round(ejectionFraction)} %` : '');
 
                 // Percentual de Encurtamento
                 const percentEncurt = ((valores.diamDiastFinal - valores.diamSistFinal) / valores.diamDiastFinal) * 100;
-                atualizarValor('print_percent_encurt', `${Math.round(percentEncurt)} %`);
+                atualizarValor('print_percent_encurt', cavityPercentage ? `${Math.round(cavityPercentage)} %` : '');
             }
 
             // Espessura Relativa da Parede
