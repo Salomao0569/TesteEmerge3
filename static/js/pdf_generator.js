@@ -11,11 +11,9 @@ function gerarPDF() {
     const margin = 20;
     const contentWidth = pageWidth - (2 * margin);
 
-    // Add header
     doc.setFontSize(16);
     doc.text("Laudo de Ecodopplercardiograma", margin, margin);
 
-    // Patient data section
     const dadosPaciente = [
         ["Nome", document.getElementById('nome').value || 'N/D'],
         ["Data Nascimento", document.getElementById('dataNascimento').value || 'N/D'],
@@ -24,7 +22,6 @@ function gerarPDF() {
         ["Altura", (document.getElementById('altura').value ? document.getElementById('altura').value + " cm" : 'N/D')]
     ];
 
-    // Generate patient data table
     doc.autoTable({
         startY: margin + 10,
         head: [['Dados do Paciente', 'Valor']],
@@ -39,7 +36,6 @@ function gerarPDF() {
         tableWidth: contentWidth
     });
 
-    // Measurements and calculations section
     const medidasCalculos = [
         ["Átrio Esquerdo", document.getElementById('atrio').value + " mm" || 'N/D', 
          "Volume Diastólico Final", document.getElementById('print_volume_diast_final').textContent + " ml" || 'N/D'],
@@ -55,7 +51,6 @@ function gerarPDF() {
          "Espessura Relativa", document.getElementById('print_esp_relativa').textContent || 'N/D']
     ];
 
-    // Generate measurements table
     doc.autoTable({
         startY: doc.autoTable.previous.finalY + 10,
         head: [['Medida', 'Valor', 'Cálculo', 'Resultado']],
@@ -72,19 +67,16 @@ function gerarPDF() {
         tableWidth: contentWidth
     });
 
-    // Add report content
     doc.setFontSize(12);
     const laudoContent = document.getElementById('editor').innerText;
     const textLines = doc.splitTextToSize(laudoContent, contentWidth);
     let cursorY = doc.autoTable.previous.finalY + 15;
 
-    // Handle page breaks for report content
     if (cursorY + (textLines.length * 5) > doc.internal.pageSize.height - margin) {
         doc.addPage();
         cursorY = margin;
     }
 
-    // Add report text
     doc.setFontSize(11);
     textLines.forEach(line => {
         if (cursorY > doc.internal.pageSize.height - margin) {
@@ -95,7 +87,6 @@ function gerarPDF() {
         cursorY += 5;
     });
 
-    // Add page numbers
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
@@ -103,6 +94,5 @@ function gerarPDF() {
         doc.text(`Página ${i} de ${totalPages}`, pageWidth - margin, doc.internal.pageSize.height - 10, { align: 'right' });
     }
 
-    // Save the PDF
     doc.save("laudo_ecocardiograma.pdf");
 }
