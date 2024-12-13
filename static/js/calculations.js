@@ -16,6 +16,7 @@ function calcularMassaVE() {
 }
 
 function calcularResultados() {
+    console.log("Iniciando cálculos...");
     // Recupera valores dos elementos
     const peso = parseFloat(document.getElementById('peso').value) || 0;
     const altura = parseFloat(document.getElementById('altura').value) || 0;
@@ -23,6 +24,8 @@ function calcularResultados() {
     const diamSistFinal = parseFloat(document.getElementById('diam_sist_final').value) || 0;
     const espDiastSepto = parseFloat(document.getElementById('esp_diast_septo').value) || 0;
     const espDiastPPVE = parseFloat(document.getElementById('esp_diast_ppve').value) || 0;
+    
+    console.log("Valores obtidos:", { peso, altura, diamDiastFinal, diamSistFinal, espDiastSepto, espDiastPPVE });
 
     // Cálculo da superfície corpórea (DuBois)
     if (peso > 0 && altura > 0) {
@@ -75,7 +78,6 @@ function calcularResultados() {
             }
         }
     }
-}
 }
 
 // Adiciona event listeners quando o documento estiver carregado
