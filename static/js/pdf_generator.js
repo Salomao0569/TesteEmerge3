@@ -9,27 +9,28 @@ function gerarPDF() {
     const pageWidth = doc.internal.pageSize.width;
     const margin = 20;
 
-    // Título
+    // Identificação
     doc.autoTable({
         head: [['Identificação']],
-        body: [[
-            {
-                content: 
-                `Nome: ${document.getElementById('nome').value}     Sexo: ${document.getElementById('sexo').value}
-                Data de Nascimento: ${document.getElementById('dataNascimento').value}     
-                Peso: ${document.getElementById('peso').value}     Altura: ${document.getElementById('altura').value}     Superfície Corpórea: ${document.getElementById('superficie').value}`,
-                styles: { cellWidth: 'wrap' }
-            }
-        ]],
+        body: [
+            ['Nome:', document.getElementById('nome').value, 'Sexo', document.getElementById('sexo').value],
+            ['Data de Nascimento', document.getElementById('dataNascimento').value, 'Data', new Date().toLocaleDateString()],
+            ['Peso:', document.getElementById('peso').value + ' kg', 'Altura:', document.getElementById('altura').value + ' cm'],
+            ['Superfície Corpórea:', document.getElementById('superficie').value + ' m²']
+        ],
         startY: margin,
-        theme: 'plain',
+        theme: 'grid',
         styles: {
-            fontSize: 9,
+            fontSize: 10,
             cellPadding: 2,
+            lineWidth: 0.1,
+            lineColor: [0, 0, 0],
+            minCellHeight: 6
         },
         headStyles: {
             halign: 'center',
-            fontSize: 9,
+            fillColor: false,
+            textColor: [0, 0, 0],
             fontStyle: 'bold'
         },
         margin: { left: margin, right: margin }
@@ -48,38 +49,54 @@ function gerarPDF() {
             ['Ventrículo Direito', document.getElementById('vd').value || '', 'mm', 'Índice de Massa', document.getElementById('print_indice_massa').textContent || '', 'g/m²']
         ],
         startY: doc.autoTable.previous.finalY + 5,
-        theme: 'plain',
+        theme: 'grid',
         styles: {
-            fontSize: 8,
-            cellPadding: 1,
+            fontSize: 10,
+            cellPadding: 2,
+            lineWidth: 0.1,
             lineColor: [0, 0, 0],
-            lineWidth: 0.1
+            minCellHeight: 6
         },
         columnStyles: {
-            0: { cellWidth: 35 },
-            1: { cellWidth: 10, halign: 'center' },
-            2: { cellWidth: 10, halign: 'center' },
-            3: { cellWidth: 35 },
-            4: { cellWidth: 10, halign: 'center' },
-            5: { cellWidth: 10, halign: 'center' }
+            1: { halign: 'center' },
+            2: { halign: 'center' },
+            4: { halign: 'center' },
+            5: { halign: 'center' }
         },
         headStyles: {
             halign: 'center',
-            fontSize: 9,
+            fillColor: false,
+            textColor: [0, 0, 0],
             fontStyle: 'bold'
         },
         margin: { left: margin, right: margin }
     });
 
-    // Texto do Laudo
+    // Laudo - cada linha como uma tabela separada para manter o grid
     const laudoText = document.getElementById('editor').innerText;
-    doc.setFontSize(9);
-    const textLines = doc.splitTextToSize(laudoText, pageWidth - 2 * margin);
-    doc.text(textLines, margin, doc.autoTable.previous.finalY + 10);
+    const laudoLines = laudoText.split('\n');
+
+    laudoLines.forEach((line, index) => {
+        if (line.trim()) {  // Só cria tabela para linhas não vazias
+            doc.autoTable({
+                body: [[line]],
+                startY: doc.autoTable.previous.finalY + (index === 0 ? 5 : 0),
+                theme: 'grid',
+                styles: {
+                    fontSize: 10,
+                    cellPadding: 2,
+                    lineWidth: 0.1,
+                    lineColor: [0, 0, 0],
+                    minCellHeight: 6
+                },
+                margin: { left: margin, right: margin }
+            });
+        }
+    });
 
     // Numeração de página
     doc.setFontSize(8);
-    doc.text('Página 1 de 1', pageWidth - margin, doc.internal.pageSize.height - 10, { align: 'right' });
+    doc.text('Página 1 de 1', pageWidth - 25, doc.internal.pageSize.height - 10);
 
     doc.save("laudo_ecocardiograma.pdf");
 }
