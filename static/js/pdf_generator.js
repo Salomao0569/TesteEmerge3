@@ -1,5 +1,7 @@
 function gerarPDF() {
-    const { jsPDF } = window.jspdf;
+    console.log("Iniciando geração do PDF");
+    try {
+        const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -134,4 +136,8 @@ function gerarPDF() {
     }
 
     doc.save("laudo_ecocardiograma.pdf");
+    console.log("PDF gerado com sucesso");
+    } catch (error) {
+        console.error("Erro ao gerar PDF:", error);
+    }
 }
