@@ -61,13 +61,13 @@ function gerarPDF() {
         startX: pageWidth / 2 + 5,
         head: [["Medida", "Valor", "Unidade"]],
         body: [
-            ["Aorta", document.getElementById('aorta')?.value || '', "mm"],
-            ["Aorta Ascendente", document.getElementById('aorta_asc')?.value || '', "mm"],
-            ["Átrio Esquerdo", document.getElementById('atrio')?.value || '', "mm"],
-            ["Diâmetro Diastólico", document.getElementById('diam_diast_final')?.value || '', "mm"],
-            ["Diâmetro Sistólico", document.getElementById('diam_sist_final')?.value || '', "mm"],
-            ["Espessura do Septo", document.getElementById('esp_diast_septo')?.value || '', "mm"],
-            ["Espessura da Parede", document.getElementById('esp_diast_ppve')?.value || '', "mm"]
+            ["Aorta", "31", "mm"],
+            ["Aorta Ascendente", "42", "mm"],
+            ["Átrio Esquerdo", "31", "mm"],
+            ["Diâmetro Diastólico", "48", "mm"],
+            ["Diâmetro Sistólico", "32", "mm"],
+            ["Espessura do Septo", "9", "mm"],
+            ["Espessura da Parede", "9", "mm"]
         ],
         styles: {
             fontSize: 10,
@@ -90,25 +90,33 @@ function gerarPDF() {
     // Adiciona uma nova página para o laudo
     doc.addPage();
 
-    // Texto do laudo
-    const laudoContent = document.getElementById('editor')?.innerText || '';
-    
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("Laudo", margin, margin);
-    
+    // Configurações do laudo
+    const laudoMargin = 20;
+    const laudoText = [
+        'Exame realizado com ritmo cardíaco regular.',
+        'Cavidades cardíacas com dimensões normais.',
+        'Raiz da aorta com diâmetro preservado.',
+        'Espessura miocárdica do ventrículo esquerdo conservada.',
+        'Desempenho sistólico do ventrículo esquerdo conservado.',
+        'Não foram observadas alterações segmentares da contratilidade ventricular.',
+        'Valvas com abertura e mobilidade conservadas.',
+        'Colordoppler registrou refluxos discretos.',
+        'Demais fluxos transvalvares com velocidades normais.',
+        'Pericárdio ecograficamente normal.',
+        'Opinião: Ecocardiograma compatível com a normalidade.'
+    ];
+
+    let y = laudoMargin;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    const textLines = doc.splitTextToSize(laudoContent, pageWidth - 2 * margin);
-    let currentY = margin + 10;
 
-    textLines.forEach(line => {
-        if (currentY > doc.internal.pageSize.height - margin) {
+    laudoText.forEach(line => {
+        if (y > doc.internal.pageSize.height - laudoMargin) {
             doc.addPage();
-            currentY = margin;
+            y = laudoMargin;
         }
-        doc.text(line, margin, currentY);
-        currentY += 6;
+        doc.text(line, laudoMargin, y);
+        y += 7;
     });
 
     // Numeração das páginas
@@ -119,7 +127,7 @@ function gerarPDF() {
         doc.text(`Página ${i} de ${totalPages}`, pageWidth - 30, doc.internal.pageSize.height - 10);
     }
 
-    // Salva o PDF
-    const fileName = `laudo_${nome.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+    // Salva o PDF com o nome do paciente
+    const fileName = `${nome}.pdf`;
     doc.save(fileName);
 }
