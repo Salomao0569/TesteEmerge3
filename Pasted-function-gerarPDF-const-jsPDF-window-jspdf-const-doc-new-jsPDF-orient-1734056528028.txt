@@ -28,19 +28,19 @@ function gerarPDF() {
                 'Data de Nascimento',
                 document.getElementById('dataNascimento').value || '',
                 'Data',
-                new Date().toLocaleDateString()
+                document.getElementById('idade').value || ''
             ],
             [
                 'Peso:',
-                document.getElementById('peso').value ? document.getElementById('peso').value + ' kg' : '',
-                'Altura:',
-                document.getElementById('altura').value ? document.getElementById('altura').value + ' cm' : ''
-            ],
-            [
-                'Superfície Corpórea:',
-                document.getElementById('superficie').value ? document.getElementById('superficie').value + ' m²' : '',
+                document.getElementById('peso').value || '',
                 '',
                 ''
+            ],
+            [
+                'Altura',
+                document.getElementById('altura').value || '',
+                'Superfície Corpórea:',
+                document.getElementById('superficie').value || ''
             ]
         ],
         theme: 'grid',
@@ -64,14 +64,14 @@ function gerarPDF() {
         }]],
         body: [
             ['Medida', 'Valor', 'Un', 'Cálculo', 'Resultado', 'Un'],
-            ['Aorta', document.getElementById('aorta').value || '', 'mm', 'Volume Diastólico Final', document.getElementById('print_volume_diast_final').textContent || '', 'ml'],
-            ['Aorta Ascendente', document.getElementById('aorta_asc').value || '', 'mm', 'Volume Sistólico', document.getElementById('print_volume_sistolico').textContent || '', 'ml'],
-            ['Átrio Esquerdo', document.getElementById('atrio').value || '', 'mm', 'Massa do VE', document.getElementById('print_massa_ve').textContent || '', 'g'],
-            ['Vol Atrial Esq. Indexado', '', '', 'Volume Ejetado', document.getElementById('print_volume_ejetado').textContent || '', 'ml'],
-            ['Diâmetro Diastólico', document.getElementById('diam_diast_final').value || '', 'mm', 'Fração de Ejeção', document.getElementById('print_fracao_ejecao').textContent || '', '%'],
-            ['Diâmetro Sistólico', document.getElementById('diam_sist_final').value || '', 'mm', 'Percentual Enc. Cavidade', document.getElementById('print_percent_encurt').textContent || '', '%'],
-            ['Espessura do Septo', document.getElementById('esp_diast_septo').value || '', 'mm', 'Espessura Relativa Parede', document.getElementById('print_esp_relativa').textContent || '', ''],
-            ['Espessura da Parede', document.getElementById('esp_diast_ppve').value || '', 'mm', 'Índice de massa', document.getElementById('print_indice_massa').textContent || '', 'g/m²']
+            ['Aorta', '31', 'mm', 'Volume Diastólico Final', '154', 'ml'],
+            ['Aorta Ascendente', '42', 'mm', 'Volume Sistólico', '67', 'ml'],
+            ['Átrio Esquerdo', '31', 'mm', 'Massa do VE', '147', 'g'],
+            ['Vol Atrial Esq. Indexado', '', '', 'Volume Ejetado', '87', 'ml'],
+            ['Diâmetro Diastólico', '48', 'mm', 'Fração de Ejeção', '57', '%'],
+            ['Diâmetro Sistólico', '32', 'mm', 'Percentual Enc. Cavidade', '33', '%'],
+            ['Espessura do Septo', '9', 'mm', 'Espessura Relativa Parede', '0,38', ''],
+            ['Espessura da Parede', '9', 'mm', 'Índice de massa', '74', 'g/m²']
         ],
         styles: {
             fontSize: 8,
