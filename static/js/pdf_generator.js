@@ -14,7 +14,11 @@ function gerarPDF() {
     doc.setFontSize(16);
     const nomePaciente = document.getElementById('nome').value;
     const titulo = nomePaciente ? `Laudo de Ecodopplercardiograma - ${nomePaciente}` : "Laudo de Ecodopplercardiograma";
-    doc.text(titulo, margin, margin);
+    
+    // Centralizar o título
+    const tituloWidth = doc.getStringUnitWidth(titulo) * 16 / doc.internal.scaleFactor;
+    const tituloX = (pageWidth - tituloWidth) / 2;
+    doc.text(titulo, tituloX, margin);
 
     const dadosPaciente = [
         ["Nome", document.getElementById('nome').value || 'N/D'],
