@@ -117,8 +117,6 @@ function gerarPDF() {
             }
         });
         
-        currentY = doc.autoTable.previous.finalY + 15;
-
         // Início do laudo em nova página
         doc.addPage();
         currentY = margin;
@@ -135,18 +133,13 @@ function gerarPDF() {
         const laudoContent = document.getElementById('editor').innerText;
         const splitText = doc.splitTextToSize(laudoContent, contentWidth);
         
-        // Verifica se precisa de nova página
-        if (currentY + doc.getTextDimensions(splitText).h > pageHeight - margin) {
-            doc.addPage();
-            currentY = margin;
-        }
-        
         doc.text(splitText, margin, currentY, {
             maxWidth: contentWidth,
             lineHeightFactor: 1.5
         });
         
-        currentY = doc.getTextDimensions(splitText).h + currentY + 30;
+        const textHeight = doc.getTextDimensions(splitText).h;
+        currentY += textHeight + 30;
 
         // Assinatura do Médico
         const doctorSelect = document.getElementById('selectedDoctor');
