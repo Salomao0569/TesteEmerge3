@@ -205,12 +205,31 @@ function debounce(func, wait) {
 // Salvar conteúdo automaticamente a cada 2 segundos após a última modificação
 const debouncedSave = debounce(saveEditorContent, 2000);
 
+// Atalhos de teclado para o editor
+function setupKeyboardShortcuts(editor) {
+    editor.addEventListener('keydown', function(e) {
+        // Undo: Ctrl+Z
+        if (e.ctrlKey && e.key === 'z') {
+            e.preventDefault();
+            execCommand('undo');
+        }
+        // Redo: Ctrl+Y
+        if (e.ctrlKey && e.key === 'y') {
+            e.preventDefault();
+            execCommand('redo');
+        }
+    });
+}
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
     loadEditorContent();
     
     const editor = document.getElementById('editor');
     if (editor) {
+        // Configurar atalhos de teclado
+        setupKeyboardShortcuts(editor);
+        
         // Salvar quando houver mudanças no conteúdo
         editor.addEventListener('input', debouncedSave);
         
