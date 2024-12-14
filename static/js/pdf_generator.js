@@ -73,7 +73,7 @@ function gerarPDF() {
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.text('CÁLCULOS E MEDIDAS', margin, currentY);
-        currentY += 5;alY;
+        currentY += 5;
 
         // Medidas e Cálculos
         const medidasCalculos = [
