@@ -57,16 +57,39 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => console.error('Erro ao carregar modelo:', error));
     }
 
-    // Carregar conteúdo salvo
+    // Função para limpar formatação indesejada
+    function cleanHTML(html) {
+        return html
+            .replace(/<div><br><\/div>/g, '<br>')
+            .replace(/<div>/g, '<p>')
+            .replace(/<\/div>/g, '</p>')
+            .trim();
+    }
+
+    // Carregar conteúdo salvo mantendo formatação
     const savedContent = localStorage.getItem('editorContent');
     if (savedContent) {
         editor.innerHTML = savedContent;
     }
 
-    // Salvar alterações
+    // Salvar alterações com formatação
     editor.addEventListener('input', () => {
-        localStorage.setItem('editorContent', editor.innerHTML);
+        const content = cleanHTML(editor.innerHTML);
+        localStorage.setItem('editorContent', content);
     });
+
+    // Garantir que a formatação seja mantida ao inserir template
+    window.insertTemplate = function(templateId) {
+        if (!templateId) return;
+        
+        fetch(`/api/templates/${templateId}`)
+            .then(response => response.json())
+            .then(template => {
+                editor.innerHTML = template.content;
+                editor.focus();
+                localStorage.setItem('editorContent', template.content);
+            });
+    }
 
     // Atualizar preview das frases no select
     const phraseSelect = document.getElementById('phraseSelect');
