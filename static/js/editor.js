@@ -9,18 +9,19 @@ function execCommand(command, value = null) {
             return;
         }
 
-        console.log(`Executando comando: ${command}, valor: ${value}`);
-
+        editor.focus();
         if (command === 'fontName') {
-            changeFont(value);
+            document.execCommand('styleWithCSS', false, true);
+            document.execCommand('fontName', false, value);
+            document.execCommand('styleWithCSS', false, false);
         } else {
             document.execCommand(command, false, value);
         }
 
         saveEditorContent();
+        console.log(`Comando executado: ${command}, valor: ${value}`);
     } catch (error) {
         console.error(`Erro ao executar comando ${command}:`, error);
-        console.error(error.stack);
     }
 }
 
