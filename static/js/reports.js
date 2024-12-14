@@ -90,13 +90,23 @@ async function createReport(event) {
             throw new Error('Por favor, insira o conteúdo do laudo');
         }
 
-        const content = reportContent.innerHTML;
-        console.log('Conteúdo do editor:', content);
+        // Capturar o conteúdo HTML mantendo toda a formatação
+        const htmlContent = reportContent.innerHTML;
+        console.log('Conteúdo HTML do editor:', htmlContent);
+
+        // Criar um elemento temporário para verificar se o HTML é válido
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        
+        // Verificar se há conteúdo real além de espaços em branco
+        if (!tempDiv.textContent.trim()) {
+            throw new Error('O conteúdo do laudo não pode estar vazio');
+        }
 
         const reportData = {
             name: reportName,
             category: 'laudo',
-            content: content
+            content: htmlContent // Enviando o HTML completo
         };
 
         console.log('Enviando dados do laudo:', reportData);

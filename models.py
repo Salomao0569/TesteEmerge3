@@ -30,9 +30,14 @@ class Template(db.Model):
         return f'<Template {self.name}>'
 
     def to_dict(self):
+        """Convert template to dictionary preserving HTML formatting"""
         return {
             'id': self.id,
             'name': self.name,
-            'content': self.content,
+            'content': self.content,  # Content is stored as raw HTML
             'category': self.category
         }
+
+    def set_content(self, html_content):
+        """Set content ensuring HTML is preserved"""
+        self.content = html_content
