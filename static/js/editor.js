@@ -35,14 +35,27 @@ async function insertTemplate(templateId) {
     }
 }
 
+// Cache para armazenar templates já carregados
+const templateCache = new Map();
+
+async function getTemplate(templateId) {
+    if (templateCache.has(templateId)) {
+        return templateCache.get(templateId);
+    }
+    
+    const response = await fetch(`/api/templates/${templateId}`);
+    if (!response.ok) throw new Error('Erro ao buscar template');
+    
+    const template = await response.json();
+    templateCache.set(templateId, template);
+    return template;
+}
+
 async function insertPhrase(templateId) {
     if (!templateId) return;
     
     try {
-        const response = await fetch(`/api/templates/${templateId}`);
-        if (!response.ok) throw new Error('Erro ao buscar frase');
-        
-        const template = await response.json();
+        const template = await getTemplate(templateId);
         const editor = document.getElementById('editor');
         
         if (editor) {
@@ -54,10 +67,15 @@ async function insertPhrase(templateId) {
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = template.content;
                 
-                // Limpar qualquer seleção existente
-                range.deleteContents();
+                // Adicionar quebra de linha se necessário
+                if (range.startContainer.nodeType === Node.TEXT_NODE && 
+                    range.startContainer.textContent.trim() !== '') {
+                    const br = document.createElement('br');
+                    tempDiv.insertBefore(br, tempDiv.firstChild);
+                }
                 
-                // Inserir o conteúdo no editor
+                // Limpar qualquer seleção existente e inserir o conteúdo
+                range.deleteContents();
                 const fragment = document.createDocumentFragment();
                 while (tempDiv.firstChild) {
                     fragment.appendChild(tempDiv.firstChild);
@@ -69,11 +87,12 @@ async function insertPhrase(templateId) {
                 selection.removeAllRanges();
                 selection.addRange(range);
                 
-                // Salvar o conteúdo após inserir a frase
+                // Salvar o conteúdo e manter o foco
                 saveEditorContent();
-                
-                // Garantir que o editor mantenha o foco
                 editor.focus();
+                
+                // Limpar a seleção do dropdown
+                document.getElementById('phraseSelect').value = '';
             }
         }
     } catch (error) {
