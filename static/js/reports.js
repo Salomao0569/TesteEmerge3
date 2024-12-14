@@ -25,10 +25,22 @@ function updateReportsList(templates) {
 async function createReport(event) {
     event.preventDefault();
     
+    const reportName = document.getElementById('reportName').value;
+    if (!reportName) {
+        alert('Por favor, insira um nome para o modelo de laudo');
+        return;
+    }
+    
+    const reportContent = document.getElementById('reportContent');
+    if (!reportContent.innerHTML.trim()) {
+        alert('Por favor, insira o conteúdo do laudo');
+        return;
+    }
+
     const reportData = {
-        name: document.getElementById('reportName').value,
+        name: reportName,
         category: 'laudo',
-        content: document.getElementById('reportContent').innerHTML
+        content: reportContent.innerHTML
     };
 
     try {
@@ -40,14 +52,19 @@ async function createReport(event) {
             body: JSON.stringify(reportData)
         });
 
-        if (!response.ok) throw new Error('Erro ao cadastrar modelo de laudo');
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Erro ao cadastrar modelo de laudo');
+        }
 
         // Limpar formulário
         document.getElementById('reportForm').reset();
-        document.getElementById('reportContent').innerHTML = '';
+        reportContent.innerHTML = '<p>Exame realizado com ritmo cardíaco regular. Evidenciando:</p>';
         
         // Recarregar lista de modelos
         await loadReports();
+        
+        alert('Modelo de laudo cadastrado com sucesso!');
     } catch (error) {
         alert('Erro ao cadastrar modelo de laudo: ' + error.message);
     }
