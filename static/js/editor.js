@@ -23,8 +23,10 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('editorContent', editor.innerHTML);
     }
 
-    // Função para inserir frase
-    window.insertPhrase = function(templateId) {
+    // Função para inserir frase selecionada
+    window.insertSelectedPhrase = function() {
+        const select = document.getElementById('phraseSelect');
+        const templateId = select.value;
         if (!templateId) return;
         
         fetch(`/api/templates/${templateId}`)
@@ -40,8 +42,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Função para inserir modelo de laudo
-    window.insertTemplate = function(templateId) {
+    // Função para inserir modelo de laudo selecionado
+    window.insertSelectedTemplate = function() {
+        const select = document.getElementById('templateSelect');
+        const templateId = select.value;
         if (!templateId) return;
         
         fetch(`/api/templates/${templateId}`)
