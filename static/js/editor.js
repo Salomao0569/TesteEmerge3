@@ -12,8 +12,15 @@ function execCommand(command, value = null) {
 
         editor.focus();
         if (command === 'fontName') {
-            document.execCommand('styleWithCSS', false, true);
-            document.execCommand('fontName', false, value);
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const span = document.createElement('span');
+                span.style.fontFamily = value;
+                range.surroundContents(span);
+            } else {
+                editor.style.fontFamily = value;
+            }
         } else {
             document.execCommand(command, false, value);
         }
