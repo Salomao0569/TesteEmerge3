@@ -56,7 +56,7 @@ function gerarPDF() {
             ["Átrio Esquerdo", document.getElementById('atrio').value || 'N/D', 
              "Volume Diastólico Final", document.getElementById('print_volume_diast_final').textContent || 'N/D'],
             ["Aorta", document.getElementById('aorta').value || 'N/D', 
-             "Volume Sistólico", document.getElementById('print_volume_sistolico').textContent || 'N/D'],
+             "Volume Sistólico Final", document.getElementById('print_volume_sist_final').textContent || 'N/D'],
             ["Diâmetro Diastólico", document.getElementById('diam_diast_final').value || 'N/D', 
              "Volume Ejetado", document.getElementById('print_volume_ejetado').textContent || 'N/D'],
             ["Diâmetro Sistólico", document.getElementById('diam_sist_final').value || 'N/D', 
