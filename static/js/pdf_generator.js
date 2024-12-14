@@ -1,10 +1,9 @@
 function gerarPDF() {
-    const { jsPDF } = window.jspdf || {};
-    if (!jsPDF) {
+    if (typeof window.jspdf === 'undefined') {
         alert('Erro: Biblioteca PDF não carregada corretamente');
         return;
     }
-    const doc = new jsPDF({
+    const doc = new window.jspdf.jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
