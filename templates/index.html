@@ -12,48 +12,61 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
     <link href="/static/css/styles.css" rel="stylesheet">
     <style>
-        /* Configuração simples e direta de fontes */
-        .arial-font {
-            font-family: Arial !important;
-        }
+        /* Reset e configuração de fontes */
+        @import url('https://fonts.googleapis.com/css2?family=Arial&family=Georgia&family=Tahoma&family=Times+New+Roman&family=Verdana&display=swap');
 
-        .times-font {
-            font-family: "Times New Roman" !important;
-        }
-
-        .calibri-font {
-            font-family: Calibri !important;
-        }
-
-        .georgia-font {
-            font-family: Georgia !important;
-        }
-
-        .verdana-font {
-            font-family: Verdana !important;
-        }
-
-        .tahoma-font {
-            font-family: Tahoma !important;
-        }
-
-        /* Configuração de fonte padrão para todo o documento */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        /* Configuração do editor */
         .editor-area {
             min-height: 300px;
             padding: 1rem;
             border: 1px solid #ced4da;
             border-radius: 0.25rem;
             background-color: white;
-            font-family: var(--arial);
-            line-height: 1.5;
             font-size: 16px;
+            line-height: 1.5;
+        }
+
+        [contenteditable] {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* Estilos específicos para cada fonte no editor */
+        [style*="font-family: Arial"],
+        [style*="font-family: 'Arial'"] {
+            font-family: Arial, Helvetica, sans-serif !important;
+        }
+
+        [style*="font-family: 'Times New Roman'"],
+        [style*="font-family: Times New Roman"] {
+            font-family: "Times New Roman", Times, serif !important;
+        }
+
+        [style*="font-family: Calibri"],
+        [style*="font-family: 'Calibri'"] {
+            font-family: Calibri, "Segoe UI", sans-serif !important;
+        }
+
+        [style*="font-family: Georgia"],
+        [style*="font-family: 'Georgia'"] {
+            font-family: Georgia, serif !important;
+        }
+
+        [style*="font-family: Verdana"],
+        [style*="font-family: 'Verdana'"] {
+            font-family: Verdana, Geneva, sans-serif !important;
+        }
+
+        [style*="font-family: Tahoma"],
+        [style*="font-family: 'Tahoma'"] {
+            font-family: Tahoma, Geneva, sans-serif !important;
+        }
+
+        /* Força aplicação de fontes em elementos específicos */
+        #editor span,
+        #editor p,
+        #editor div {
+            font-family: inherit;
         }
         
         .editor-area:focus {

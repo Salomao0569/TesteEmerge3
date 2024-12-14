@@ -27,61 +27,24 @@ function execCommand(command, value = null) {
 function applyFontToSelection(fontFamily) {
     try {
         const editor = document.getElementById('editor');
-        const selection = window.getSelection();
+        if (!editor) return;
+
+        // Focar no editor
+        editor.focus();
+
+        // Habilitar styleWithCSS para melhor controle de estilos
+        document.execCommand('styleWithCSS', false, true);
+
+        // Aplicar a fonte
+        document.execCommand('fontName', false, fontFamily);
+
+        // Desabilitar styleWithCSS após a execução
+        document.execCommand('styleWithCSS', false, false);
+
+        console.log(`Fonte ${fontFamily} aplicada com sucesso`);
         
-        if (!selection.rangeCount) {
-            console.log('Nenhuma seleção encontrada');
-            return;
-        }
-
-        const range = selection.getRangeAt(0);
-        
-        if (range.collapsed) {
-            console.log('Nenhum texto selecionado');
-            return;
-        }
-
-        // Mapear nome da fonte para classe CSS
-        const fontClassMap = {
-            'Arial': 'arial-font',
-            'Times New Roman': 'times-font',
-            'Calibri': 'calibri-font',
-            'Georgia': 'georgia-font',
-            'Verdana': 'verdana-font',
-            'Tahoma': 'tahoma-font'
-        };
-
-        const fontClass = fontClassMap[fontFamily];
-        if (!fontClass) {
-            console.error('Fonte não suportada:', fontFamily);
-            return;
-        }
-
-        // Criar div com a classe apropriada
-        const div = document.createElement('div');
-        div.className = fontClass;
-
-        // Se já existe um elemento pai com estilo de fonte, remover a classe
-        const currentBlock = range.commonAncestorContainer.parentElement;
-        if (currentBlock) {
-            Object.values(fontClassMap).forEach(className => {
-                currentBlock.classList.remove(className);
-            });
-        }
-
-        // Aplicar a fonte ao conteúdo selecionado
-        const fragment = range.extractContents();
-        div.appendChild(fragment);
-        range.insertNode(div);
-
-        // Limpar seleção redundante
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        console.log(`Fonte ${fontFamily} aplicada com sucesso usando classe ${fontClass}`);
-        
-        // Forçar atualização do editor
-        editor.normalize();
+        // Salvar o conteúdo
+        saveEditorContent();
         
     } catch (error) {
         console.error('Erro ao aplicar fonte:', error);
