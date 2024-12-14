@@ -11,7 +11,7 @@ function gerarPDF() {
         
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
-        const margin = 20;
+        const margin = 25;
         const contentWidth = pageWidth - (2 * margin);
         let currentY = margin;
 
@@ -131,21 +131,24 @@ function gerarPDF() {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(11);
         const laudoContent = document.getElementById('editor').innerText;
+        const contentWidth = pageWidth - (2 * margin);
         const splitText = doc.splitTextToSize(laudoContent, contentWidth);
         
-        // Calcular altura do texto
-        const textHeight = doc.getTextDimensions(splitText).h;
+        let lines = splitText;
+        let currentPage = 1;
         
-        // Verificar se precisa de nova página
-        if (currentY + textHeight > pageHeight - 60) {
-            doc.addPage();
-            currentY = margin;
+        for (let i = 0; i < lines.length; i++) {
+            if (currentY > pageHeight - margin) {
+                doc.addPage();
+                currentPage++;
+                currentY = margin;
+            }
+            
+            doc.text(lines[i], margin, currentY, {
+                maxWidth: contentWidth
+            });
+            currentY += 7;
         }
-        
-        doc.text(splitText, margin, currentY, {
-            maxWidth: contentWidth,
-            lineHeightFactor: 1.5
-        });
         
         currentY += textHeight + 30;
 
