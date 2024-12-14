@@ -4,8 +4,11 @@ modules = ["python-3.11"]
 channel = "stable-24_05"
 
 [deployment]
-deploymentTarget = "autoscale"
+deploymentTarget = "cloudrun"
 run = ["python", "main.py"]
+
+[env]
+PYTHON_VERSION = "3.11"
 
 [workflows]
 runButton = "Project"
