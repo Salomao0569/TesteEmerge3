@@ -61,16 +61,19 @@ function gerarPDF() {
                 lineColor: [80, 80, 80],
                 lineWidth: 0.1
             },
-            margin: { left: margin, right: margin, top: 5, bottom: 5 },
+            margin: { left: margin, right: margin },
             columnStyles: {
                 0: { fontStyle: 'bold' }
-            },
-            rowStyles: {
-                0: { cellPadding: 4 }
             }
         });
         
-        currentY = doc.autoTable.previous.finalY;
+        currentY = doc.autoTable.previous.finalY + 20;
+        
+        // Título da segunda tabela
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('CÁLCULOS E MEDIDAS', margin, currentY);
+        currentY += 5;alY;
 
         // Medidas e Cálculos
         const medidasCalculos = [
@@ -90,13 +93,8 @@ function gerarPDF() {
              "Massa do VE", document.getElementById('print_massa_ve').textContent || 'N/D']
         ];
 
-        // Título da segunda tabela
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text('CÁLCULOS E MEDIDAS', margin, currentY);
-        
         doc.autoTable({
-            startY: currentY + 5,
+            startY: currentY,
             head: [['Medida', 'Valor', 'Cálculo', 'Resultado']],
             body: medidasCalculos,
             theme: 'striped',
