@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelos de Laudos</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">Sistema de Laudos</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Laudo</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/doctors">Médicos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/templates">Frases</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/reports">Modelos de Laudos</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Cadastro de Modelo de Laudo</h5>
+            </div>
+            <div class="card-body">
+                <form id="reportForm" class="mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label for="reportName" class="form-label">Nome do Modelo</label>
+                            <input type="text" id="reportName" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <!-- Editor Toolbar -->
+                            <div class="editor-toolbar mb-2">
+                                <div class="btn-toolbar" role="toolbar">
+                                    <div class="btn-group me-2" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('bold')" title="Negrito">
+                                            <i class="fas fa-bold"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('italic')" title="Itálico">
+                                            <i class="fas fa-italic"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('underline')" title="Sublinhado">
+                                            <i class="fas fa-underline"></i>
+                                        </button>
+                                    </div>
+                                    <div class="btn-group me-2" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('insertUnorderedList')" title="Lista">
+                                            <i class="fas fa-list-ul"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('insertOrderedList')" title="Lista numerada">
+                                            <i class="fas fa-list-ol"></i>
+                                        </button>
+                                    </div>
+                                    <div class="btn-group me-2" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('justifyLeft')" title="Alinhar à esquerda">
+                                            <i class="fas fa-align-left"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('justifyCenter')" title="Centralizar">
+                                            <i class="fas fa-align-center"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('justifyRight')" title="Alinhar à direita">
+                                            <i class="fas fa-align-right"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('justifyFull')" title="Justificar">
+                                            <i class="fas fa-align-justify"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Editor Area -->
+                            <div contenteditable="true" id="reportContent" class="form-control editor-area" style="min-height: 400px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">Salvar Modelo</button>
+                    </div>
+                </form>
+
+                <!-- Lista de Modelos -->
+                <h5 class="mb-3">Modelos Cadastrados</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nome do Modelo</th>
+                                <th>Conteúdo</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsList">
+                            {% for template in templates %}
+                            {% if template.category == 'laudo' %}
+                            <tr>
+                                <td>{{ template.name }}</td>
+                                <td>{{ template.content[:100] }}...</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteTemplate({{ template.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/editor.js"></script>
+    <script src="/static/js/reports.js"></script>
+</body>
+</html>

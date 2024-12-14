@@ -49,6 +49,17 @@ def templates():
         app.logger.error(f"Erro ao acessar /templates: {str(e)}")
         return str(e), 500
 
+@app.route('/reports')
+def reports():
+    try:
+        app.logger.info("Acessando rota /reports")
+        templates = Template.query.filter_by(category='laudo').all()
+        app.logger.info(f"Modelos de laudo encontrados: {len(templates)}")
+        return render_template('reports.html', templates=templates)
+    except Exception as e:
+        app.logger.error(f"Erro ao acessar /reports: {str(e)}")
+        return str(e), 500
+
 @app.route('/api/templates/<int:id>', methods=['GET'])
 def get_template(id):
     try:
