@@ -95,6 +95,34 @@ function gerarPDF() {
         cursorY += 5;
     });
 
+    // Adicionar assinatura do médico
+    const doctorSelect = document.getElementById('selectedDoctor');
+    if (doctorSelect.value) {
+        const selectedOption = doctorSelect.selectedOptions[0];
+        const doctorName = selectedOption.text;
+        const doctorCRM = selectedOption.dataset.crm;
+        const doctorRQE = selectedOption.dataset.rqe;
+
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        
+        // Adicionar linha em branco antes da assinatura
+        cursorY += 20;
+        
+        // Centralizar assinatura do médico
+        const doctorNameWidth = doc.getStringUnitWidth(doctorName) * 12 / doc.internal.scaleFactor;
+        const doctorNameX = (pageWidth - doctorNameWidth) / 2;
+        doc.text(doctorName, doctorNameX, cursorY);
+        
+        // Adicionar CRM e RQE
+        const crmRqeText = `CRM: ${doctorCRM}${doctorRQE ? `/ RQE: ${doctorRQE}` : ''}`;
+        const crmRqeWidth = doc.getStringUnitWidth(crmRqeText) * 12 / doc.internal.scaleFactor;
+        const crmRqeX = (pageWidth - crmRqeWidth) / 2;
+        
+        cursorY += 10;
+        doc.text(crmRqeText, crmRqeX, cursorY);
+    }
+
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
