@@ -1,4 +1,8 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
+from docx import Document
+from docx.shared import Pt, Inches
+from io import BytesIO
+import html2text
 from models import db, Doctor, Template
 from assets import init_assets
 import logging
@@ -207,6 +211,85 @@ def delete_doctor(id):
         db.session.rollback()
         app.logger.error(f"Erro ao deletar médico: {str(e)}")
         return jsonify({'error': str(e)}), 400
+
+@app.route('/gerar_doc', methods=['POST'])
+def gerar_doc():
+    try:
+        data = request.json
+        doc = Document()
+        
+        # Título
+        doc.add_heading('Laudo de Ecodopplercardiograma', 0)
+        
+        # Dados do Paciente
+        doc.add_heading('Dados do Paciente', level=1)
+        table = doc.add_table(rows=1, cols=2)
+        table.style = 'Table Grid'
+        for row in [
+            ('Nome', data['paciente']['nome']),
+            ('Data Nascimento', data['paciente']['dataNascimento']),
+            ('Sexo', data['paciente']['sexo']),
+            ('Peso', f"{data['paciente']['peso']} kg"),
+            ('Altura', f"{data['paciente']['altura']} cm"),
+            ('Data do Exame', data['paciente']['dataExame'])
+        ]:
+            cells = table.add_row().cells
+            cells[0].text = row[0]
+            cells[1].text = str(row[1])
+
+        # Medidas e Cálculos
+        doc.add_heading('Medidas e Cálculos', level=1)
+        table = doc.add_table(rows=1, cols=4)
+        table.style = 'Table Grid'
+        header_cells = table.rows[0].cells
+        header_cells[0].text = 'Medida'
+        header_cells[1].text = 'Valor'
+        header_cells[2].text = 'Cálculo'
+        header_cells[3].text = 'Resultado'
+        
+        medidas_calculos = [
+            ('Átrio Esquerdo', data['medidas']['atrio'], 'Volume Diastólico Final', data['calculos']['volumeDiastFinal']),
+            ('Aorta', data['medidas']['aorta'], 'Volume Sistólico Final', data['calculos']['volumeSistFinal']),
+            ('Diâmetro Diastólico', data['medidas']['diamDiastFinal'], 'Volume Ejetado', data['calculos']['volumeEjetado']),
+            ('Diâmetro Sistólico', data['medidas']['diamSistFinal'], 'Fração de Ejeção', data['calculos']['fracaoEjecao']),
+            ('Espessura do Septo', data['medidas']['espDiastSepto'], 'Percentual Enc. Cavidade', data['calculos']['percentEncurt']),
+            ('Espessura PPVE', data['medidas']['espDiastPPVE'], 'Espessura Relativa', data['calculos']['espRelativa']),
+            ('Ventrículo Direito', data['medidas']['vd'], 'Massa do VE', data['calculos']['massaVE'])
+        ]
+        
+        for row_data in medidas_calculos:
+            cells = table.add_row().cells
+            for i, value in enumerate(row_data):
+                cells[i].text = str(value)
+
+        # Laudo
+        doc.add_heading('Laudo', level=1)
+        h = html2text.HTML2Text()
+        h.body_width = 0
+        laudo_texto = h.handle(data['laudo'])
+        doc.add_paragraph(laudo_texto)
+        
+        # Assinatura do Médico
+        doc.add_paragraph('\n\n')
+        doc.add_paragraph('_' * 40, style='Heading 1')
+        doc.add_paragraph(data['medico']['nome'])
+        doc.add_paragraph(f"CRM: {data['medico']['crm']}" + (f" / RQE: {data['medico']['rqe']}" if data['medico']['rqe'] else ""))
+        
+        # Salvar documento
+        doc_io = BytesIO()
+        doc.save(doc_io)
+        doc_io.seek(0)
+        
+        return send_file(
+            doc_io,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            as_attachment=True,
+            download_name=f"Laudo_{data['paciente']['nome'].replace(' ', '_')}.docx"
+        )
+        
+    except Exception as e:
+        app.logger.error(f"Erro ao gerar DOC: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
