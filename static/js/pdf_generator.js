@@ -30,6 +30,12 @@ function gerarPDF() {
         const dataExame = document.getElementById('dataExame').value;
         const dataFormatada = dataExame ? new Date(dataExame).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
         
+        // Título da seção de identificação
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DADOS DO PACIENTE', margin, currentY);
+        currentY += 10;
+
         const dadosPaciente = [
             ["Nome", document.getElementById('nome').value || 'N/D'],
             ["Data Nascimento", document.getElementById('dataNascimento').value || 'N/D'],
@@ -41,11 +47,23 @@ function gerarPDF() {
 
         doc.autoTable({
             startY: currentY,
-            head: [['Dados do Paciente', 'Valor']],
+            head: [['Identificação', 'Informação']],
             body: dadosPaciente,
-            theme: 'striped',
-            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-            styles: { fontSize: 10 },
+            theme: 'grid',
+            headStyles: { 
+                fillColor: [41, 128, 185], 
+                textColor: 255,
+                fontSize: 11,
+                fontStyle: 'bold'
+            },
+            styles: { 
+                fontSize: 10,
+                cellPadding: 5
+            },
+            columnStyles: {
+                0: { fontStyle: 'bold', fillColor: [240, 240, 240] },
+                1: { cellWidth: 'auto' }
+            },
             margin: { left: margin, right: margin }
         });
 
