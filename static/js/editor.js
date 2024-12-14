@@ -1,6 +1,26 @@
 
-let currentFontSize = 3; // Valor padrão
+let currentFontSize = 3;
 let lastSavedContent = '';
+
+function applyFont(fontFamily) {
+    const selection = window.getSelection();
+    const editor = document.getElementById('editor');
+    
+    if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const span = document.createElement('span');
+        span.style.fontFamily = fontFamily;
+        
+        if (range.toString().length > 0) {
+            range.surroundContents(span);
+        } else {
+            editor.style.fontFamily = fontFamily;
+        }
+    } else {
+        editor.style.fontFamily = fontFamily;
+    }
+    saveEditorContent();
+}
 
 function execCommand(command, value = null) {
     try {
@@ -12,20 +32,11 @@ function execCommand(command, value = null) {
 
         editor.focus();
         if (command === 'fontName') {
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                const span = document.createElement('span');
-                span.style.fontFamily = value;
-                range.surroundContents(span);
-            } else {
-                editor.style.fontFamily = value;
-            }
+            applyFont(value);
         } else {
             document.execCommand(command, false, value);
         }
         saveEditorContent();
-        console.log(`Comando executado: ${command}, valor: ${value}`);
     } catch (error) {
         console.error(`Erro ao executar comando ${command}:`, error);
     }
@@ -40,7 +51,7 @@ function changeFontSize(direction) {
         } else {
             return;
         }
-
+        
         console.log(`Alterando tamanho da fonte para: ${currentFontSize}`);
         execCommand('fontSize', currentFontSize);
     } catch (error) {
@@ -82,39 +93,11 @@ function loadEditorContent() {
     }
 }
 
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-const debouncedSave = debounce(saveEditorContent, 2000);
-
-function setupKeyboardShortcuts(editor) {
-    editor.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 'z') {
-            e.preventDefault();
-            execCommand('undo');
-        }
-        if (e.ctrlKey && e.key === 'y') {
-            e.preventDefault();
-            execCommand('redo');
-        }
-    });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     const editor = document.getElementById('editor');
     if (editor) {
         loadEditorContent();
-        setupKeyboardShortcuts(editor);
-        editor.addEventListener('input', debouncedSave);
+        editor.addEventListener('input', saveEditorContent);
         editor.addEventListener('blur', saveEditorContent);
         window.addEventListener('beforeunload', saveEditorContent);
         console.log('Editor inicializado com sucesso');
