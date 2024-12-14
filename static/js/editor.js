@@ -9,41 +9,71 @@ function execCommand(command, value = null) {
             return;
         }
 
-        // Focar no editor
-        editor.focus();
-
-        // Habilitar styleWithCSS para melhor controle de estilos
-        document.execCommand('styleWithCSS', false, true);
-
         console.log(`Executando comando: ${command}, valor: ${value}`);
 
-        // Verificar se temos uma seleção
-        const selection = window.getSelection();
-        const hasSelection = selection.rangeCount > 0;
-
-        // Se não há seleção e o comando é fontName, selecionar todo o texto
-        if (!hasSelection && command === 'fontName') {
-            const range = document.createRange();
-            range.selectNodeContents(editor);
-            selection.removeAllRanges();
-            selection.addRange(range);
+        if (command === 'fontName') {
+            applyFontToSelection(value);
+        } else {
+            document.execCommand(command, false, value);
         }
 
-        // Executar o comando
-        const result = document.execCommand(command, false, value);
-        console.log(`Comando executado. Resultado: ${result}`);
-
-        // Desabilitar styleWithCSS após a execução
-        document.execCommand('styleWithCSS', false, false);
-
-        // Salvar o conteúdo
         saveEditorContent();
-
-        return result;
     } catch (error) {
         console.error(`Erro ao executar comando ${command}:`, error);
         console.error(error.stack);
-        return false;
+    }
+}
+
+function applyFontToSelection(fontFamily) {
+    try {
+        const editor = document.getElementById('editor');
+        const selection = window.getSelection();
+        
+        if (!selection.rangeCount) {
+            console.log('Nenhuma seleção encontrada');
+            return;
+        }
+
+        const range = selection.getRangeAt(0);
+        
+        if (range.collapsed) {
+            console.log('Nenhum texto selecionado');
+            return;
+        }
+
+        // Mapear nome da fonte para classe CSS
+        const fontClassMap = {
+            'Arial': 'font-arial',
+            'Times New Roman': 'font-times',
+            'Calibri': 'font-calibri',
+            'Georgia': 'font-georgia',
+            'Verdana': 'font-verdana',
+            'Tahoma': 'font-tahoma'
+        };
+
+        const fontClass = fontClassMap[fontFamily];
+        if (!fontClass) {
+            console.error('Fonte não suportada:', fontFamily);
+            return;
+        }
+
+        // Criar span com a classe apropriada
+        const span = document.createElement('span');
+        span.className = fontClass;
+
+        // Aplicar a fonte ao conteúdo selecionado
+        const fragment = range.extractContents();
+        span.appendChild(fragment);
+        range.insertNode(span);
+
+        // Limpar seleção redundante
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        console.log(`Fonte ${fontFamily} aplicada com sucesso usando classe ${fontClass}`);
+    } catch (error) {
+        console.error('Erro ao aplicar fonte:', error);
+        console.error(error.stack);
     }
 }
 
