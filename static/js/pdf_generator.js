@@ -24,7 +24,7 @@ function gerarPDF() {
         const tituloX = (pageWidth - tituloWidth) / 2;
         doc.text(titulo, tituloX, currentY);
 
-        currentY += 15;
+        currentY += 25;
 
         // Dados do Paciente
         const dataExame = document.getElementById('dataExame').value;
@@ -61,9 +61,12 @@ function gerarPDF() {
                 lineColor: [80, 80, 80],
                 lineWidth: 0.1
             },
-            margin: { left: margin, right: margin },
+            margin: { left: margin, right: margin, top: 5, bottom: 5 },
             columnStyles: {
                 0: { fontStyle: 'bold' }
+            },
+            rowStyles: {
+                0: { cellPadding: 4 }
             }
         });
         
