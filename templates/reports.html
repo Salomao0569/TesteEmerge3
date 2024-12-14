@@ -101,16 +101,22 @@
                         </div>
                         <div class="col-12">
                             <!-- Editor Toolbar -->
-                            <div class="editor-toolbar mb-2">
-                                <div class="btn-toolbar" role="toolbar">
-                                    <div class="btn-group me-2" role="group">
-                                        <button type="button" class="btn btn-primary" onclick="execCommand('undo')" title="Desfazer (Ctrl+Z)" style="padding: 8px 16px;">
-                                            <i class="fas fa-undo"></i> Desfazer
+                            <!-- Barra de Desfazer/Refazer -->
+                            <div class="editor-toolbar mb-3 p-2 border rounded bg-light">
+                                <div class="d-flex justify-content-start">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-lg btn-primary" onclick="execCommand('undo')" title="Desfazer (Ctrl+Z)">
+                                            <i class="fas fa-undo me-2"></i> Desfazer
                                         </button>
-                                        <button type="button" class="btn btn-primary" onclick="execCommand('redo')" title="Refazer (Ctrl+Y)" style="padding: 8px 16px;">
-                                            <i class="fas fa-redo"></i> Refazer
+                                        <button type="button" class="btn btn-lg btn-primary" onclick="execCommand('redo')" title="Refazer (Ctrl+Y)">
+                                            <i class="fas fa-redo me-2"></i> Refazer
                                         </button>
                                     </div>
+                                </div>
+                            </div>
+                            <!-- Barra de Formatação -->
+                            <div class="editor-toolbar mb-2">
+                                <div class="btn-toolbar" role="toolbar">
                                     <div class="btn-group me-2" role="group">
                                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('bold')" title="Negrito">
                                             <i class="fas fa-bold"></i>
