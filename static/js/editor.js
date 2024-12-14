@@ -1,8 +1,22 @@
 let currentFontSize = 3; // Valor padrão
 
 function execCommand(command, value = null) {
+    // Garantir que temos uma seleção válida
+    const editor = document.getElementById('editor');
+    if (!editor) return;
+
+    // Salvar a seleção atual
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+
+    // Aplicar o comando
     document.execCommand(command, false, value);
-    document.getElementById('editor').focus();
+
+    // Restaurar o foco no editor
+    editor.focus();
+
+    // Verificar se o comando foi aplicado corretamente
+    console.log(`Comando aplicado: ${command}, valor: ${value}`);
 }
 
 function changeFontSize(direction) {
@@ -11,6 +25,7 @@ function changeFontSize(direction) {
     } else if (direction === 'decrease' && currentFontSize > 1) {
         currentFontSize--;
     }
+    console.log(`Alterando tamanho da fonte para: ${currentFontSize}`);
     execCommand('fontSize', currentFontSize);
 }
 

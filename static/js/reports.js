@@ -85,13 +85,16 @@ async function createReport(event) {
             throw new Error('Por favor, insira um nome para o modelo de laudo');
         }
         
-        const reportContent = document.getElementById('reportContent');
-        if (!reportContent || !reportContent.innerHTML.trim()) {
+        const editor = document.getElementById('editor');
+        if (!editor || !editor.innerHTML.trim()) {
             throw new Error('Por favor, insira o conteúdo do laudo');
         }
 
         // Capturar o conteúdo HTML mantendo toda a formatação
-        const htmlContent = reportContent.innerHTML;
+        const htmlContent = editor.innerHTML;
+        
+        // Log para debug
+        console.log('HTML capturado:', htmlContent);
         console.log('Conteúdo HTML do editor:', htmlContent);
 
         // Criar um elemento temporário para verificar se o HTML é válido
