@@ -9,65 +9,41 @@ function execCommand(command, value = null) {
             return;
         }
 
-        console.log(`Executando comando: ${command} com valor: ${value}`);
+        // Focar no editor
+        editor.focus();
 
-        if (command === 'fontName') {
-            applyFontToSelection(value);
-        } else {
-            document.execCommand(command, false, value);
-        }
+        // Habilitar styleWithCSS para melhor controle de estilos
+        document.execCommand('styleWithCSS', false, true);
 
-        saveEditorContent();
-    } catch (error) {
-        console.error('Erro ao executar comando:', error);
-        console.error(error.stack);
-    }
-}
+        console.log(`Executando comando: ${command}, valor: ${value}`);
 
-function applyFontToSelection(fontFamily) {
-    try {
+        // Verificar se temos uma seleção
         const selection = window.getSelection();
-        if (!selection.rangeCount) return;
+        const hasSelection = selection.rangeCount > 0;
 
-        const range = selection.getRangeAt(0);
-        const selectedText = range.toString();
-
-        if (!selectedText) {
-            console.log('Nenhum texto selecionado');
-            return;
+        // Se não há seleção e o comando é fontName, selecionar todo o texto
+        if (!hasSelection && command === 'fontName') {
+            const range = document.createRange();
+            range.selectNodeContents(editor);
+            selection.removeAllRanges();
+            selection.addRange(range);
         }
 
-        console.log(`Aplicando fonte ${fontFamily} ao texto: ${selectedText}`);
+        // Executar o comando
+        const result = document.execCommand(command, false, value);
+        console.log(`Comando executado. Resultado: ${result}`);
 
-        // Criar um novo elemento span com a fonte desejada
-        const span = document.createElement('span');
-        span.style.fontFamily = fontFamily;
+        // Desabilitar styleWithCSS após a execução
+        document.execCommand('styleWithCSS', false, false);
 
-        // Se já existe um span pai com estilo de fonte, remova-o
-        const parentSpan = range.startContainer.parentElement;
-        if (parentSpan && parentSpan.tagName === 'SPAN' && parentSpan.style.fontFamily) {
-            const newTextNode = document.createTextNode(parentSpan.textContent);
-            parentSpan.parentNode.replaceChild(newTextNode, parentSpan);
-            // Recriar range após a remoção do span
-            range.setStart(newTextNode, 0);
-            range.setEnd(newTextNode, newTextNode.length);
-        }
+        // Salvar o conteúdo
+        saveEditorContent();
 
-        // Aplicar o novo span
-        const fragment = range.extractContents();
-        span.appendChild(fragment);
-        range.insertNode(span);
-
-        // Atualizar a seleção
-        selection.removeAllRanges();
-        const newRange = document.createRange();
-        newRange.selectNodeContents(span);
-        selection.addRange(newRange);
-
-        console.log('Fonte aplicada com sucesso');
+        return result;
     } catch (error) {
-        console.error('Erro ao aplicar fonte:', error);
+        console.error(`Erro ao executar comando ${command}:`, error);
         console.error(error.stack);
+        return false;
     }
 }
 
