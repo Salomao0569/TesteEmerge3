@@ -24,24 +24,28 @@ function gerarPDF() {
         const tituloX = (pageWidth - tituloWidth) / 2;
         doc.text(titulo, tituloX, currentY);
 
-        // Data do exame alinhada à direita
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        const dataAtual = new Date().toLocaleDateString('pt-BR');
-        doc.text(`Data: ${dataAtual}`, pageWidth - margin, currentY, { align: 'right' });
         currentY += 15;
 
         // Dados do Paciente
+        const dataExame = document.getElementById('dataExame').value;
+        const dataFormatada = dataExame ? new Date(dataExame).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
+        
         const dadosPaciente = [
             ["Nome", document.getElementById('nome').value || 'N/D'],
             ["Data Nascimento", document.getElementById('dataNascimento').value || 'N/D'],
             ["Sexo", document.getElementById('sexo').value || 'N/D'],
             ["Peso", (document.getElementById('peso').value ? document.getElementById('peso').value + " kg" : 'N/D')],
-            ["Altura", (document.getElementById('altura').value ? document.getElementById('altura').value + " cm" : 'N/D')]
+            ["Altura", (document.getElementById('altura').value ? document.getElementById('altura').value + " cm" : 'N/D')],
+            ["Data do Exame", dataFormatada]
         ];
 
+        // Título da primeira tabela
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('IDENTIFICAÇÃO', margin, currentY);
+        
         doc.autoTable({
-            startY: currentY + 15,
+            startY: currentY + 5,
             head: [['Dados do Paciente', 'Valor']],
             body: dadosPaciente,
             theme: 'striped',
@@ -83,8 +87,13 @@ function gerarPDF() {
              "Massa do VE", document.getElementById('print_massa_ve').textContent || 'N/D']
         ];
 
+        // Título da segunda tabela
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('CÁLCULOS E MEDIDAS', margin, currentY);
+        
         doc.autoTable({
-            startY: currentY + 10,
+            startY: currentY + 5,
             head: [['Medida', 'Valor', 'Cálculo', 'Resultado']],
             body: medidasCalculos,
             theme: 'striped',
