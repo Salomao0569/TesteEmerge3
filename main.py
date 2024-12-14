@@ -133,14 +133,21 @@ def create_template():
 @app.route('/api/templates/<int:id>', methods=['DELETE'])
 def delete_template(id):
     try:
+        app.logger.info(f"Recebendo requisição DELETE para template {id}")
         template = Template.query.get_or_404(id)
+        
+        app.logger.info(f"Deletando template: {template.name}")
         db.session.delete(template)
         db.session.commit()
+        
+        app.logger.info(f"Template {id} deletado com sucesso")
         return '', 204
+        
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Erro ao deletar template: {str(e)}")
-        return jsonify({'error': str(e)}), 400
+        error_msg = f"Erro ao deletar template {id}: {str(e)}"
+        app.logger.error(error_msg)
+        return jsonify({'error': error_msg}), 400
 
 @app.route('/api/doctors', methods=['GET'])
 def get_doctors():

@@ -26,11 +26,26 @@ function updateTemplatesTable(templates) {
 async function createTemplate(event) {
     event.preventDefault();
     
-    const templateData = {
-        name: document.getElementById('templateName').value,
-        category: document.getElementById('templateCategory').value,
-        content: document.getElementById('templateContent').value
-    };
+    // Validar campos obrigatórios
+    const name = document.getElementById('templateName').value.trim();
+    const category = document.getElementById('templateCategory').value;
+    const content = document.getElementById('templateContent').value.trim();
+    
+    if (!name) {
+        alert('O nome da frase é obrigatório');
+        return;
+    }
+    if (!category) {
+        alert('A categoria é obrigatória');
+        return;
+    }
+    if (!content) {
+        alert('O conteúdo da frase é obrigatório');
+        return;
+    }
+    
+    const templateData = { name, category, content };
+    console.log('Enviando dados:', templateData);
 
     try {
         const response = await fetch('/api/templates', {
@@ -41,32 +56,60 @@ async function createTemplate(event) {
             body: JSON.stringify(templateData)
         });
 
-        if (!response.ok) throw new Error('Erro ao cadastrar template');
+        const responseData = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(responseData.error || 'Erro ao cadastrar frase');
+        }
 
-        // Limpar formulário
+        console.log('Frase cadastrada com sucesso:', responseData);
+        
+        // Limpar formulário apenas após sucesso
         document.getElementById('templateForm').reset();
         
         // Recarregar lista de templates
         await loadTemplates();
+        
+        alert('Frase cadastrada com sucesso!');
     } catch (error) {
-        alert('Erro ao cadastrar template: ' + error.message);
+        console.error('Erro ao cadastrar frase:', error);
+        alert('Erro ao cadastrar frase: ' + error.message);
     }
 }
 
 // Função para deletar um template
 async function deleteTemplate(id) {
-    if (!confirm('Tem certeza que deseja excluir esta frase?')) return;
+    if (!id) {
+        console.error('ID inválido para deleção');
+        return;
+    }
+
+    if (!confirm('Tem certeza que deseja excluir esta frase?')) {
+        return;
+    }
 
     try {
+        console.log('Deletando template:', id);
         const response = await fetch(`/api/templates/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
 
-        if (!response.ok) throw new Error('Erro ao excluir template');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erro ao excluir frase');
+        }
 
+        console.log('Frase deletada com sucesso');
+        alert('Frase excluída com sucesso!');
+        
+        // Recarregar lista após sucesso
         await loadTemplates();
     } catch (error) {
-        alert('Erro ao excluir template: ' + error.message);
+        console.error('Erro ao excluir frase:', error);
+        alert('Erro ao excluir frase: ' + error.message);
     }
 }
 
