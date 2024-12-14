@@ -54,8 +54,10 @@ def reports():
     try:
         app.logger.info("Acessando rota /reports")
         templates = Template.query.filter_by(category='laudo').all()
+        doctors = Doctor.query.all()
         app.logger.info(f"Modelos de laudo encontrados: {len(templates)}")
-        return render_template('reports.html', templates=templates)
+        app.logger.info(f"Médicos encontrados: {len(doctors)}")
+        return render_template('reports.html', templates=templates, doctors=doctors)
     except Exception as e:
         app.logger.error(f"Erro ao acessar /reports: {str(e)}")
         return str(e), 500
