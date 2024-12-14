@@ -66,8 +66,7 @@ function gerarPDF() {
             ["Espessura PPVE", document.getElementById('esp_diast_ppve').value || 'N/D',
              "Espessura Relativa", document.getElementById('print_esp_relativa').textContent || 'N/D'],
             ["Ventrículo Direito", document.getElementById('vd').value || 'N/D',
-             "Massa do VE", document.getElementById('print_massa_ve').textContent || 'N/D'],
-            ["", "", "Índice de Massa do VE", document.getElementById('print_indice_massa').textContent || 'N/D']
+             "Massa do VE", document.getElementById('print_massa_ve').textContent || 'N/D']
         ];
 
         doc.autoTable({
