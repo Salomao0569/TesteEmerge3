@@ -43,12 +43,12 @@ function applyFontToSelection(fontFamily) {
 
         // Mapear nome da fonte para classe CSS
         const fontClassMap = {
-            'Arial': 'font-arial',
-            'Times New Roman': 'font-times',
-            'Calibri': 'font-calibri',
-            'Georgia': 'font-georgia',
-            'Verdana': 'font-verdana',
-            'Tahoma': 'font-tahoma'
+            'Arial': 'arial-font',
+            'Times New Roman': 'times-font',
+            'Calibri': 'calibri-font',
+            'Georgia': 'georgia-font',
+            'Verdana': 'verdana-font',
+            'Tahoma': 'tahoma-font'
         };
 
         const fontClass = fontClassMap[fontFamily];
