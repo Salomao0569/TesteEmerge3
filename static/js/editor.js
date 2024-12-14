@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('editorContent', editor.innerHTML);
     }
 
-    // Função otimizada para inserir frase
+    // Função para inserir frase
     window.insertPhrase = function(templateId) {
         if (!templateId) return;
         
@@ -40,38 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Configurar drag and drop para frases
-    const phraseSelect = document.getElementById('phraseSelect');
-    phraseSelect.addEventListener('mousedown', function(e) {
-        if (this.value) {
-            e.preventDefault();
-            fetch(`/api/templates/${this.value}`)
-                .then(response => response.json())
-                .then(template => {
-                    const dragText = template.content;
-                    editor.focus();
-                    document.addEventListener('mousemove', onMouseMove);
-                    document.addEventListener('mouseup', function onMouseUp(e) {
-                        document.removeEventListener('mousemove', onMouseMove);
-                        document.removeEventListener('mouseup', onMouseUp);
-                        const range = document.caretRangeFromPoint(e.clientX, e.clientY);
-                        if (range && range.commonAncestorContainer.contains(editor)) {
-                            range.insertNode(document.createTextNode(dragText + '\n'));
-                            localStorage.setItem('editorContent', editor.innerHTML);
-                        }
-                    });
-                });
-        }
-    });
-
-    function onMouseMove(e) {
-        const range = document.caretRangeFromPoint(e.clientX, e.clientY);
-        if (range && range.commonAncestorContainer.contains(editor)) {
-            window.getSelection().removeAllRanges();
-            window.getSelection().addRange(range);
-        }
-    }
-
     // Carregar conteúdo salvo
     const savedContent = localStorage.getItem('editorContent');
     if (savedContent) {
@@ -81,5 +49,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Salvar alterações
     editor.addEventListener('input', () => {
         localStorage.setItem('editorContent', editor.innerHTML);
+    });
+
+    // Atualizar preview das frases no select
+    const phraseSelect = document.getElementById('phraseSelect');
+    phraseSelect.addEventListener('mouseover', function(e) {
+        const option = e.target;
+        if (option.value) {
+            fetch(`/api/templates/${option.value}`)
+                .then(response => response.json())
+                .then(template => {
+                    option.title = template.content;
+                });
+        }
     });
 });

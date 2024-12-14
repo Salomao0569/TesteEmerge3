@@ -194,7 +194,7 @@
                                 <option value="">Selecione um modelo...</option>
                                 {% for template in templates %}
                                 {% if template.category == 'laudo' %}
-                                <option value="{{ template.id }}">{{ template.name }}</option>
+                                <option value="{{ template.id }}" title="{{ template.content }}">{{ template.name }}</option>
                                 {% endif %}
                                 {% endfor %}
                             </select>
@@ -206,21 +206,21 @@
                                 <optgroup label="Normal">
                                     {% for template in templates %}
                                     {% if template.category == 'normal' %}
-                                    <option value="{{ template.id }}">{{ template.name }}</option>
+                                    <option value="{{ template.id }}" title="{{ template.content }}">{{ template.name }}</option>
                                     {% endif %}
                                     {% endfor %}
                                 </optgroup>
                                 <optgroup label="Alterado">
                                     {% for template in templates %}
                                     {% if template.category == 'alterado' %}
-                                    <option value="{{ template.id }}">{{ template.name }}</option>
+                                    <option value="{{ template.id }}" title="{{ template.content }}">{{ template.name }}</option>
                                     {% endif %}
                                     {% endfor %}
                                 </optgroup>
                                 <optgroup label="Conclusão">
                                     {% for template in templates %}
                                     {% if template.category == 'conclusao' %}
-                                    <option value="{{ template.id }}">{{ template.name }}</option>
+                                    <option value="{{ template.id }}" title="{{ template.content }}">{{ template.name }}</option>
                                     {% endif %}
                                     {% endfor %}
                                 </optgroup>
