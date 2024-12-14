@@ -1,32 +1,72 @@
 let currentFontSize = 3; // Valor padrão
+let lastSavedContent = '';
 
 function execCommand(command, value = null) {
-    // Garantir que temos uma seleção válida
-    const editor = document.getElementById('editor');
-    if (!editor) return;
+    try {
+        // Garantir que temos uma seleção válida
+        const editor = document.getElementById('editor');
+        if (!editor) {
+            console.error('Editor não encontrado');
+            return;
+        }
 
-    // Salvar a seleção atual
-    const selection = window.getSelection();
-    const range = selection.getRangeAt(0);
+        // Salvar a seleção atual
+        const selection = window.getSelection();
+        if (!selection.rangeCount) {
+            editor.focus();
+            return;
+        }
 
-    // Aplicar o comando
-    document.execCommand(command, false, value);
+        // Preservar a seleção
+        const range = selection.getRangeAt(0);
+        const savedSelection = {
+            startContainer: range.startContainer,
+            startOffset: range.startOffset,
+            endContainer: range.endContainer,
+            endOffset: range.endOffset
+        };
 
-    // Restaurar o foco no editor
-    editor.focus();
+        // Aplicar o comando
+        document.execCommand(command, false, value);
 
-    // Verificar se o comando foi aplicado corretamente
-    console.log(`Comando aplicado: ${command}, valor: ${value}`);
+        // Restaurar a seleção
+        const newRange = document.createRange();
+        try {
+            newRange.setStart(savedSelection.startContainer, savedSelection.startOffset);
+            newRange.setEnd(savedSelection.endContainer, savedSelection.endOffset);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+        } catch (e) {
+            console.log('Não foi possível restaurar a seleção:', e);
+        }
+
+        // Restaurar o foco no editor
+        editor.focus();
+
+        // Salvar conteúdo após modificação
+        saveEditorContent();
+
+        console.log(`Comando aplicado: ${command}, valor: ${value}`);
+    } catch (error) {
+        console.error('Erro ao executar comando:', error);
+    }
 }
 
 function changeFontSize(direction) {
-    if (direction === 'increase' && currentFontSize < 7) {
-        currentFontSize++;
-    } else if (direction === 'decrease' && currentFontSize > 1) {
-        currentFontSize--;
+    try {
+        if (direction === 'increase' && currentFontSize < 7) {
+            currentFontSize++;
+        } else if (direction === 'decrease' && currentFontSize > 1) {
+            currentFontSize--;
+        } else {
+            return; // Evitar alterações fora do intervalo permitido
+        }
+
+        console.log(`Alterando tamanho da fonte para: ${currentFontSize}`);
+        execCommand('fontSize', currentFontSize);
+    } catch (error) {
+        console.error('Erro ao alterar tamanho da fonte:', error);
     }
-    console.log(`Alterando tamanho da fonte para: ${currentFontSize}`);
-    execCommand('fontSize', currentFontSize);
 }
 
 async function insertTemplate(templateId) {
@@ -115,27 +155,69 @@ async function insertPhrase(templateId) {
 
 function saveEditorContent() {
     const editor = document.getElementById('editor');
-    if (editor) {
-        localStorage.setItem('editorContent', editor.innerHTML);
+    if (!editor) return;
+
+    const currentContent = editor.innerHTML;
+    
+    // Evitar salvamentos desnecessários
+    if (currentContent === lastSavedContent) {
+        return;
+    }
+
+    try {
+        localStorage.setItem('editorContent', currentContent);
+        lastSavedContent = currentContent;
+        console.log('Conteúdo do editor salvo');
+    } catch (error) {
+        console.error('Erro ao salvar conteúdo do editor:', error);
     }
 }
 
 function loadEditorContent() {
     const editor = document.getElementById('editor');
-    const savedContent = localStorage.getItem('editorContent');
-    if (editor && savedContent) {
-        editor.innerHTML = savedContent;
+    if (!editor) return;
+
+    try {
+        const savedContent = localStorage.getItem('editorContent');
+        if (savedContent) {
+            editor.innerHTML = savedContent;
+            lastSavedContent = savedContent;
+            console.log('Conteúdo do editor carregado');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar conteúdo do editor:', error);
     }
 }
 
-// Salvar conteúdo automaticamente a cada 30 segundos
-setInterval(saveEditorContent, 30000);
+// Debounce function para evitar muitas chamadas
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Salvar conteúdo automaticamente a cada 2 segundos após a última modificação
+const debouncedSave = debounce(saveEditorContent, 2000);
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
     loadEditorContent();
+    
     const editor = document.getElementById('editor');
     if (editor) {
-        editor.addEventListener('input', saveEditorContent);
+        // Salvar quando houver mudanças no conteúdo
+        editor.addEventListener('input', debouncedSave);
+        
+        // Salvar quando o editor perder o foco
+        editor.addEventListener('blur', saveEditorContent);
+        
+        // Garantir que o conteúdo seja salvo antes de sair da página
+        window.addEventListener('beforeunload', saveEditorContent);
     }
 });
