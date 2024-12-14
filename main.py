@@ -8,6 +8,8 @@ app = Flask(__name__)
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
+if 'postgresql' in database_url:
+    database_url += '?sslmode=require'
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -193,4 +195,5 @@ def delete_doctor(id):
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
