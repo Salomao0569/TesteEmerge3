@@ -10,11 +10,16 @@ import logging
 import os
 
 app = Flask(__name__)
-database_url = os.environ.get('DATABASE_URL', 'postgresql+pg8000://user:pass@/laudos?unix_sock=/cloudsql/PROJECT_ID:REGION:INSTANCE_NAME/.s.PGSQL.5432')
+
+# Configuração do Cloud SQL
+INSTANCE_CONNECTION_NAME = os.environ.get("INSTANCE_CONNECTION_NAME", "seu-projeto:regiao:instancia")
+DB_USER = os.environ.get("DB_USER", "seu-usuario")
+DB_PASS = os.environ.get("DB_PASS", "sua-senha")
+DB_NAME = os.environ.get("DB_NAME", "laudos")
+
+database_url = f"postgresql+pg8000://{DB_USER}:{DB_PASS}@/{DB_NAME}?unix_sock=/cloudsql/{INSTANCE_CONNECTION_NAME}/.s.PGSQL.5432"
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'connect_args': {'sslmode': 'require'} if 'postgresql' in database_url else {}
-}
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_size': 5, 'max_overflow': 2}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configure logging
