@@ -42,7 +42,7 @@ function calcularResultados() {
             if (diamSistFinal > 0) {
                 // Volume Sistólico Final
                 const volumeSistFinal = 7 * Math.pow(diamSistFinal / 10, 3) / (2.4 + diamSistFinal / 10);
-                document.getElementById('print_volume_sistolico').textContent = `${Math.round(volumeSistFinal)} mL`;
+                document.getElementById('print_volume_sist_final').textContent = `${Math.round(volumeSistFinal)} mL`;
 
                 // Volume Ejetado
                 const volumeEjetado = volumeDiastFinal - volumeSistFinal;
