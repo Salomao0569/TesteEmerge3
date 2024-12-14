@@ -12,13 +12,19 @@ import os
 app = Flask(__name__)
 
 # Configuração PostgreSQL
-database_url = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/laudos')
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_size': 5,
-    'pool_recycle': 1800
-}
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    # Configurar pooling para Neon Serverless Postgres
+    database_url = database_url.replace('.us-east-2', '-pooler.us-east-2')
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_size': 5,
+        'pool_timeout': 30,
+        'pool_recycle': 1800,
+    }
+else:
+    raise Exception("DATABASE_URL não encontrada nas variáveis de ambiente")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
