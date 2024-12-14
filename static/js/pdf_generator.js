@@ -1,4 +1,3 @@
-
 function gerarPDF() {
     window.jsPDF = window.jspdf.jsPDF;
 
@@ -157,18 +156,16 @@ function gerarPDF() {
             const doctorCRM = selectedOption.dataset.crm;
             const doctorRQE = selectedOption.dataset.rqe;
 
-            let assinaturaY = doc.internal.pageSize.height - 45;
-            
             // Linha para assinatura
             doc.setLineWidth(0.5);
-            doc.line(pageWidth/2 - 40, assinaturaY - 5, pageWidth/2 + 40, assinaturaY - 5);
+            doc.line(pageWidth/2 - 40, currentY - 5, pageWidth/2 + 40, currentY - 5);
             
             // Nome do médico e credenciais
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(11);
-            doc.text(doctorName, pageWidth/2, assinaturaY, { align: 'center' });
+            doc.text(doctorName, pageWidth/2, currentY, { align: 'center' });
             doc.setFontSize(10);
-            doc.text(`CRM: ${doctorCRM}${doctorRQE ? ` / RQE: ${doctorRQE}` : ''}`, pageWidth/2, assinaturaY + 7, { align: 'center' });
+            doc.text(`CRM: ${doctorCRM}${doctorRQE ? ` / RQE: ${doctorRQE}` : ''}`, pageWidth/2, currentY + 7, { align: 'center' });
         }
 
         // Salvar PDF
