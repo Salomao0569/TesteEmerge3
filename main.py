@@ -81,6 +81,12 @@ def get_templates():
 def create_template():
     try:
         app.logger.info("Recebendo requisição POST para criar template")
+        
+        if not request.is_json:
+            error_msg = "Requisição deve ser JSON"
+            app.logger.error(error_msg)
+            return jsonify({'error': error_msg}), 400
+            
         data = request.json
         app.logger.info(f"Dados recebidos: {data}")
         
@@ -90,15 +96,32 @@ def create_template():
             app.logger.error(error_msg)
             return jsonify({'error': error_msg}), 400
         
+        # Validar dados
+        if not data['name'].strip():
+            error_msg = "Nome não pode estar vazio"
+            app.logger.error(error_msg)
+            return jsonify({'error': error_msg}), 400
+            
+        if not data['content'].strip():
+            error_msg = "Conteúdo não pode estar vazio"
+            app.logger.error(error_msg)
+            return jsonify({'error': error_msg}), 400
+            
+        app.logger.info(f"Criando template: {data['name']}")
+        app.logger.info(f"Conteúdo: {data['content'][:100]}...")
+        
         template = Template(
             name=data['name'],
             category=data['category'],
             content=data['content']
         )
+        
         db.session.add(template)
         db.session.commit()
+        
         app.logger.info(f"Template criado com sucesso: {template.name}")
         return jsonify(template.to_dict()), 201
+        
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Erro ao criar template: {str(e)}")

@@ -90,16 +90,16 @@ async function createReport(event) {
             throw new Error('Por favor, insira o conteúdo do laudo');
         }
 
-        console.log('Enviando dados do laudo:', {
-            name: reportName,
-            content: reportContent.innerHTML
-        });
+        const content = reportContent.innerHTML;
+        console.log('Conteúdo do editor:', content);
 
         const reportData = {
             name: reportName,
             category: 'laudo',
-            content: reportContent.innerHTML
+            content: content
         };
+
+        console.log('Enviando dados do laudo:', reportData);
 
         const response = await fetch('/api/templates', {
             method: 'POST',
@@ -109,11 +109,14 @@ async function createReport(event) {
             body: JSON.stringify(reportData)
         });
 
-        const responseData = await response.json();
-        
         if (!response.ok) {
-            throw new Error(responseData.error || 'Erro ao cadastrar modelo de laudo');
+            const errorData = await response.json();
+            console.error('Erro na resposta do servidor:', errorData);
+            throw new Error(errorData.error || 'Erro ao cadastrar modelo de laudo');
         }
+
+        const responseData = await response.json();
+        console.log('Resposta do servidor:', responseData);
 
         // Limpar formulário
         document.getElementById('reportForm').reset();
