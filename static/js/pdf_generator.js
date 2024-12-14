@@ -1,5 +1,9 @@
 function gerarPDF() {
-    const { jsPDF } = window.jspdf;
+    const { jsPDF } = window.jspdf || {};
+    if (!jsPDF) {
+        alert('Erro: Biblioteca PDF não carregada corretamente');
+        return;
+    }
     const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
