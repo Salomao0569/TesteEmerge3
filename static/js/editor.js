@@ -24,35 +24,29 @@ function execCommand(command, value = null) {
     }
 }
 
-function changeFont(font) {
+function execCommand(command, value = null) {
     try {
+        const editor = document.getElementById('editor');
+        if (!editor) {
+            console.error('Editor não encontrado');
+            return;
+        }
+
+        // Ativar styleWithCSS para melhor controle de estilos
         document.execCommand('styleWithCSS', false, true);
         
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            
-            // Remove classes de fonte antigas do elemento pai
-            const parentElement = range.commonAncestorContainer.parentElement;
-            if (parentElement) {
-                const fontClasses = ['arial', 'times', 'calibri', 'georgia', 'verdana', 'tahoma'];
-                fontClasses.forEach(fontClass => {
-                    parentElement.classList.remove(`font-family-${fontClass}`);
-                });
-            }
-            
-            // Aplica a nova fonte
-            const span = document.createElement('span');
-            span.className = `font-family-${font.toLowerCase()}`;
-            range.surroundContents(span);
-            
-            console.log(`Fonte ${font} aplicada com sucesso`);
-        }
+        // Executar o comando
+        document.execCommand(command, false, value);
         
+        // Desativar styleWithCSS após a execução
+        document.execCommand('styleWithCSS', false, false);
+        
+        console.log(`Comando executado: ${command}, valor: ${value}`);
+        
+        // Salvar o conteúdo após a modificação
         saveEditorContent();
     } catch (error) {
-        console.error('Erro ao aplicar fonte:', error);
-        console.error(error.stack);
+        console.error(`Erro ao executar comando ${command}:`, error);
     }
 }
 

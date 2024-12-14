@@ -12,17 +12,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
     <link href="/static/css/styles.css" rel="stylesheet">
     <style>
-        /* Configuração essencial de fontes */
+        /* Configuração do editor */
         #editor {
             font-family: Arial, sans-serif;
         }
-
-        .font-family-arial { font-family: Arial, sans-serif !important; }
-        .font-family-times { font-family: "Times New Roman", Times, serif !important; }
-        .font-family-calibri { font-family: Calibri, "Segoe UI", sans-serif !important; }
-        .font-family-georgia { font-family: Georgia, serif !important; }
-        .font-family-verdana { font-family: Verdana, Geneva, sans-serif !important; }
-        .font-family-tahoma { font-family: Tahoma, Geneva, sans-serif !important; }
+        
+        /* Estilo básico do editor */
 
         .editor-area {
             min-height: 300px;
@@ -253,12 +248,12 @@
                         </div>
                         <div class="btn-group me-2" role="group">
                             <select class="form-select form-select-sm" onchange="execCommand('fontName', this.value)" title="Fonte">
-                                <option value="arial">Arial</option>
-                                <option value="times">Times New Roman</option>
-                                <option value="calibri">Calibri</option>
-                                <option value="georgia">Georgia</option>
-                                <option value="verdana">Verdana</option>
-                                <option value="tahoma">Tahoma</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Calibri">Calibri</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Tahoma">Tahoma</option>
                             </select>
                         </div>
                         <div class="btn-group me-2" role="group">
