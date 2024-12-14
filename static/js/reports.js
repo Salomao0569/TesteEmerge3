@@ -90,8 +90,14 @@ async function createReport(event) {
             throw new Error('Por favor, insira o conteúdo do laudo');
         }
 
-        // Capturar o conteúdo HTML mantendo toda a formatação
-        const htmlContent = editor.innerHTML;
+        // Capturar o conteúdo HTML mantendo toda a formatação e espaços
+        const htmlContent = editor.innerHTML
+            .replace(/<div><br><\/div>/g, '<br>')
+            .replace(/<div>/g, '<p>')
+            .replace(/<\/div>/g, '</p>')
+            .replace(/\s+/g, ' ')
+            .replace(/<br\s*\/?>/g, '<br>\n')
+            .trim();
         
         // Log para debug
         console.log('HTML capturado:', htmlContent);

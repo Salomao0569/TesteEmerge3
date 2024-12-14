@@ -84,6 +84,9 @@
     border: 1px solid #ced4da;
     border-radius: 0.25rem;
     background-color: white;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.5;
 }
 
 .editor-area {

@@ -40,7 +40,18 @@ async function insertTemplate(templateId) {
         const editor = document.getElementById('editor');
         
         if (editor) {
-            editor.innerHTML = template.content;
+            // Usar um elemento temporário para preservar a formatação
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = template.content;
+            
+            // Garantir que quebras de linha e espaços sejam preservados
+            const formattedContent = tempDiv.innerHTML
+                .replace(/<div><br><\/div>/g, '<br>')
+                .replace(/<div>/g, '<p>')
+                .replace(/<\/div>/g, '</p>');
+            
+            editor.innerHTML = formattedContent;
+            
             // Salvar o conteúdo após inserir o template
             saveEditorContent();
         }
