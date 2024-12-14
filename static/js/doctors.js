@@ -9,7 +9,6 @@ async function loadDoctors() {
         updateDoctorsSelect(doctors);
     } catch (error) {
         console.error('Erro:', error);
-        alert('Erro ao carregar médicos: ' + error.message);
     }
 }
 
@@ -54,12 +53,7 @@ async function createDoctor(event) {
     const rqe = document.getElementById('doctorRQE').value.trim();
 
     // Validação
-    if (!name) {
-        alert('Nome do médico é obrigatório');
-        return;
-    }
-    if (!crm) {
-        alert('CRM é obrigatório');
+    if (!name || !crm) {
         return;
     }
 
@@ -86,17 +80,13 @@ async function createDoctor(event) {
 
         document.getElementById('doctorForm').reset();
         await loadDoctors();
-        alert('Médico cadastrado com sucesso!');
     } catch (error) {
         console.error('Erro:', error);
-        alert(error.message);
     }
 }
 
 // Função para deletar um médico
 async function deleteDoctor(id) {
-    if (!confirm('Tem certeza que deseja excluir este médico?')) return;
-
     try {
         const response = await fetch(`/api/doctors/${id}`, {
             method: 'DELETE'
@@ -108,10 +98,8 @@ async function deleteDoctor(id) {
         }
 
         await loadDoctors();
-        alert('Médico excluído com sucesso!');
     } catch (error) {
         console.error('Erro:', error);
-        alert(error.message);
     }
 }
 
