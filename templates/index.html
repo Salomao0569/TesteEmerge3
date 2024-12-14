@@ -198,19 +198,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Barra de Desfazer/Refazer -->
-                <div class="editor-toolbar mb-3 p-2 border rounded bg-light">
-                    <div class="d-flex justify-content-start">
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-lg btn-primary" onclick="execCommand('undo')" title="Desfazer (Ctrl+Z)">
-                                <i class="fas fa-undo me-2"></i> Desfazer
-                            </button>
-                            <button type="button" class="btn btn-lg btn-primary" onclick="execCommand('redo')" title="Refazer (Ctrl+Y)">
-                                <i class="fas fa-redo me-2"></i> Refazer
-                            </button>
-                        </div>
-                    </div>
-                </div>
                 <!-- Barra de Formatação -->
                 <div class="editor-toolbar">
                     <div class="btn-toolbar" role="toolbar">
@@ -253,6 +240,12 @@
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('justifyFull')" title="Justificar">
                                 <i class="fas fa-align-justify"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('undo')" title="Desfazer (Ctrl+Z)">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('redo')" title="Refazer (Ctrl+Y)">
+                                <i class="fas fa-redo"></i>
                             </button>
                         </div>
                     </div>
