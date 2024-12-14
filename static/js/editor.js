@@ -58,11 +58,12 @@ function applyFont(fontName) {
         
         // Mapear nome da fonte para classe CSS
         const fontClassMap = {
+            'Open Sans': 'font-opensans',
+            'Roboto': 'font-roboto',
+            'Lato': 'font-lato',
+            'Source Sans Pro': 'font-sourcesans',
             'Arial': 'font-arial',
-            'Times New Roman': 'font-times',
-            'Georgia': 'font-georgia',
-            'Verdana': 'font-verdana',
-            'Tahoma': 'font-tahoma'
+            'Georgia': 'font-georgia'
         };
         
         span.className = fontClassMap[fontName] || 'font-arial';

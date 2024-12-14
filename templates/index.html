@@ -7,22 +7,21 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Arial&family=Calibri&family=Georgia&family=Tahoma&family=Times+New+Roman&family=Verdana&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Lato:wght@400;700&family=Source+Sans+Pro:wght@400;700&display=swap" rel="stylesheet">
     <link href="/static/css/styles.css" rel="stylesheet">
     <style>
-        /* Configuração do editor com web-safe fonts */
+        /* Sistema de fontes com Google Fonts e Web-safe fonts */
         #editor {
-            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            font-family: 'Open Sans', Arial, sans-serif;
         }
         
-        /* Sistema de fallback de fontes */
-        .font-arial { font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important; }
-        .font-times { font-family: "Times New Roman", Times, Georgia, serif !important; }
-        .font-georgia { font-family: Georgia, "Times New Roman", Times, serif !important; }
-        .font-verdana { font-family: Verdana, Geneva, Tahoma, sans-serif !important; }
-        .font-tahoma { font-family: Tahoma, Verdana, Geneva, sans-serif !important; }
+        /* Fontes disponíveis */
+        .font-opensans { font-family: 'Open Sans', Arial, sans-serif !important; }
+        .font-roboto { font-family: 'Roboto', Arial, sans-serif !important; }
+        .font-lato { font-family: 'Lato', 'Helvetica Neue', Arial, sans-serif !important; }
+        .font-sourcesans { font-family: 'Source Sans Pro', Arial, sans-serif !important; }
+        .font-arial { font-family: Arial, 'Helvetica Neue', sans-serif !important; }
+        .font-georgia { font-family: Georgia, 'Times New Roman', serif !important; }
         
         /* Estilo básico do editor */
         .editor-area {
@@ -254,11 +253,12 @@
                         </div>
                         <div class="btn-group me-2" role="group">
                             <select class="form-select form-select-sm" onchange="execCommand('fontName', this.value)" title="Fonte">
+                                <option value="Open Sans">Open Sans</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Lato">Lato</option>
+                                <option value="Source Sans Pro">Source Sans Pro</option>
                                 <option value="Arial">Arial</option>
-                                <option value="Times New Roman">Times New Roman</option>
                                 <option value="Georgia">Georgia</option>
-                                <option value="Verdana">Verdana</option>
-                                <option value="Tahoma">Tahoma</option>
                             </select>
                         </div>
                         <div class="btn-group me-2" role="group">
