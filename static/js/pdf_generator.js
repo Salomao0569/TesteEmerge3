@@ -1,141 +1,91 @@
+
 function gerarPDF() {
-    if (typeof window.jspdf === 'undefined') {
-        console.error('jsPDF não encontrado');
-        return;
-    }
-    
+    // Inicialização do jsPDF
+    window.jsPDF = window.jspdf.jsPDF;
+
     try {
-        const doc = new window.jspdf.jsPDF('p', 'mm', 'a4');
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-        compress: true
-    });
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.width;
+        const margin = 20;
+        const contentWidth = pageWidth - (2 * margin);
 
-    const pageWidth = doc.internal.pageSize.width;
-    const margin = 20;
-    const contentWidth = pageWidth - (2 * margin);
+        // Título
+        doc.setFontSize(16);
+        const titulo = "Laudo de Ecodopplercardiograma";
+        const tituloWidth = doc.getStringUnitWidth(titulo) * 16 / doc.internal.scaleFactor;
+        const tituloX = (pageWidth - tituloWidth) / 2;
+        doc.text(titulo, tituloX, margin);
 
-    doc.setFontSize(16);
-    const titulo = "Laudo de Ecodopplercardiograma";
-    
-    // Centralizar o título
-    const tituloWidth = doc.getStringUnitWidth(titulo) * 16 / doc.internal.scaleFactor;
-    const tituloX = (pageWidth - tituloWidth) / 2;
-    doc.text(titulo, tituloX, margin);
+        // Dados do Paciente
+        const dadosPaciente = [
+            ["Nome", document.getElementById('nome').value || 'N/D'],
+            ["Data Nascimento", document.getElementById('dataNascimento').value || 'N/D'],
+            ["Sexo", document.getElementById('sexo').value || 'N/D'],
+            ["Peso", (document.getElementById('peso').value ? document.getElementById('peso').value + " kg" : 'N/D')],
+            ["Altura", (document.getElementById('altura').value ? document.getElementById('altura').value + " cm" : 'N/D')]
+        ];
 
-    const dadosPaciente = [
-        ["Nome", document.getElementById('nome').value || 'N/D'],
-        ["Data Nascimento", document.getElementById('dataNascimento').value || 'N/D'],
-        ["Sexo", document.getElementById('sexo').value || 'N/D'],
-        ["Peso", (document.getElementById('peso').value ? document.getElementById('peso').value + " kg" : 'N/D')],
-        ["Altura", (document.getElementById('altura').value ? document.getElementById('altura').value + " cm" : 'N/D')]
-    ];
+        doc.autoTable({
+            startY: margin + 10,
+            head: [['Dados do Paciente', 'Valor']],
+            body: dadosPaciente,
+            theme: 'grid',
+            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+            styles: { fontSize: 10 },
+            margin: { left: margin }
+        });
 
-    doc.autoTable({
-        startY: margin + 10,
-        head: [['Dados do Paciente', 'Valor']],
-        body: dadosPaciente,
-        theme: 'grid',
-        styles: { fontSize: 10, cellPadding: 2 },
-        columnStyles: {
-            0: { cellWidth: contentWidth / 2 },
-            1: { cellWidth: contentWidth / 2 }
-        },
-        margin: { left: margin },
-        tableWidth: contentWidth
-    });
+        // Medidas e Cálculos
+        const medidasCalculos = [
+            ["Átrio Esquerdo", document.getElementById('atrio').value || 'N/D', 
+             "Volume Diastólico Final", document.getElementById('print_volume_diast_final').textContent || 'N/D'],
+            ["Aorta", document.getElementById('aorta').value || 'N/D', 
+             "Volume Sistólico", document.getElementById('print_volume_sistolico').textContent || 'N/D'],
+            ["Diâmetro Diastólico", document.getElementById('diam_diast_final').value || 'N/D', 
+             "Volume Ejetado", document.getElementById('print_volume_ejetado').textContent || 'N/D'],
+            ["Diâmetro Sistólico", document.getElementById('diam_sist_final').value || 'N/D', 
+             "Fração de Ejeção", document.getElementById('print_fracao_ejecao').textContent || 'N/D']
+        ];
 
-    const medidasCalculos = [
-        ["Átrio Esquerdo", document.getElementById('atrio').value + " mm" || 'N/D', 
-         "Volume Diastólico Final", document.getElementById('print_volume_diast_final').textContent || 'N/D'],
-        ["Aorta", document.getElementById('aorta').value + " mm" || 'N/D', 
-         "Volume Sistólico", document.getElementById('print_volume_sistolico').textContent || 'N/D'],
-        ["Diâmetro Diastólico", document.getElementById('diam_diast_final').value + " mm" || 'N/D', 
-         "Volume Ejetado", document.getElementById('print_volume_ejetado').textContent || 'N/D'],
-        ["Diâmetro Sistólico", document.getElementById('diam_sist_final').value + " mm" || 'N/D', 
-         "Fração de Ejeção", document.getElementById('print_fracao_ejecao').textContent || 'N/D'],
-        ["Espessura do Septo", document.getElementById('esp_diast_septo').value + " mm" || 'N/D', 
-         "Percentual Enc. Cavidade", document.getElementById('print_percent_encurt').textContent || 'N/D'],
-        ["Espessura da Parede", document.getElementById('esp_diast_ppve').value + " mm" || 'N/D', 
-         "Espessura Relativa", document.getElementById('print_esp_relativa').textContent || 'N/D'],
-        ["Ventrículo Direito", document.getElementById('vd').value + " mm" || 'N/D',
-         "Massa do VE", document.getElementById('print_massa_ve').textContent || 'N/D'],
-        ["", "", "Índice de Massa do VE", document.getElementById('print_indice_massa').textContent || 'N/D']
-    ];
+        doc.autoTable({
+            startY: doc.autoTable.previous.finalY + 10,
+            head: [['Medida', 'Valor', 'Cálculo', 'Resultado']],
+            body: medidasCalculos,
+            theme: 'grid',
+            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+            styles: { fontSize: 10 },
+            margin: { left: margin }
+        });
 
-    doc.autoTable({
-        startY: doc.autoTable.previous.finalY + 10,
-        head: [['Medida', 'Valor', 'Cálculo', 'Resultado']],
-        body: medidasCalculos,
-        theme: 'grid',
-        styles: { fontSize: 10, cellPadding: 2, overflow: 'linebreak' },
-        columnStyles: {
-            0: { cellWidth: contentWidth / 4 },
-            1: { cellWidth: contentWidth / 4 },
-            2: { cellWidth: contentWidth / 4 },
-            3: { cellWidth: contentWidth / 4 }
-        },
-        margin: { left: margin },
-        tableWidth: contentWidth
-    });
-
-    doc.setFontSize(12);
-    const laudoContent = document.getElementById('editor').innerText;
-    const textLines = doc.splitTextToSize(laudoContent, contentWidth);
-    let cursorY = doc.autoTable.previous.finalY + 15;
-
-    if (cursorY + (textLines.length * 5) > doc.internal.pageSize.height - margin) {
-        doc.addPage();
-        cursorY = margin;
-    }
-
-    doc.setFontSize(11);
-    textLines.forEach(line => {
-        if (cursorY > doc.internal.pageSize.height - margin) {
-            doc.addPage();
-            cursorY = margin;
-        }
-        doc.text(line, margin, cursorY);
-        cursorY += 5;
-    });
-
-    // Adicionar assinatura do médico
-    const doctorSelect = document.getElementById('selectedDoctor');
-    if (doctorSelect.value) {
-        const selectedOption = doctorSelect.selectedOptions[0];
-        const doctorName = selectedOption.text;
-        const doctorCRM = selectedOption.dataset.crm;
-        const doctorRQE = selectedOption.dataset.rqe;
-
+        // Conteúdo do Laudo
         doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        
-        // Adicionar linha em branco antes da assinatura
-        cursorY += 20;
-        
-        // Centralizar assinatura do médico
-        const doctorNameWidth = doc.getStringUnitWidth(doctorName) * 12 / doc.internal.scaleFactor;
-        const doctorNameX = (pageWidth - doctorNameWidth) / 2;
-        doc.text(doctorName, doctorNameX, cursorY);
-        
-        // Adicionar CRM e RQE
-        const crmRqeText = `CRM: ${doctorCRM}${doctorRQE ? `/ RQE: ${doctorRQE}` : ''}`;
-        const crmRqeWidth = doc.getStringUnitWidth(crmRqeText) * 12 / doc.internal.scaleFactor;
-        const crmRqeX = (pageWidth - crmRqeWidth) / 2;
-        
-        cursorY += 10;
-        doc.text(crmRqeText, crmRqeX, cursorY);
-    }
+        const laudoContent = document.getElementById('editor').innerText;
+        const splitText = doc.splitTextToSize(laudoContent, contentWidth);
+        doc.text(splitText, margin, doc.autoTable.previous.finalY + 15);
 
-    const totalPages = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.text(`Página ${i} de ${totalPages}`, pageWidth - margin, doc.internal.pageSize.height - 10, { align: 'right' });
-    }
+        // Assinatura do Médico
+        const doctorSelect = document.getElementById('selectedDoctor');
+        if (doctorSelect.value) {
+            const selectedOption = doctorSelect.selectedOptions[0];
+            const doctorName = selectedOption.text;
+            const doctorCRM = selectedOption.dataset.crm;
+            const doctorRQE = selectedOption.dataset.rqe;
 
-    const nomePaciente = document.getElementById('nome').value;
-    const nomeArquivo = nomePaciente ? `Laudo_${nomePaciente.trim().replace(/[^a-zA-Z0-9]/g, '_')}.pdf` : "laudo_ecocardiograma.pdf";
-    doc.save(nomeArquivo);
+            let assinaturaY = doc.internal.pageSize.height - 40;
+            doc.setFont('helvetica', 'bold');
+            doc.text(doctorName, pageWidth/2, assinaturaY, { align: 'center' });
+            doc.text(`CRM: ${doctorCRM}${doctorRQE ? ` / RQE: ${doctorRQE}` : ''}`, pageWidth/2, assinaturaY + 10, { align: 'center' });
+        }
+
+        // Salvar PDF
+        const nomePaciente = document.getElementById('nome').value;
+        const nomeArquivo = nomePaciente ? 
+            `Laudo_${nomePaciente.trim().replace(/[^a-zA-Z0-9]/g, '_')}.pdf` : 
+            'laudo_ecocardiograma.pdf';
+        
+        doc.save(nomeArquivo);
+    } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+        alert('Erro ao gerar o PDF. Por favor, tente novamente.');
+    }
 }
