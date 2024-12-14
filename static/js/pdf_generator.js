@@ -3,26 +3,33 @@ function gerarPDF() {
     window.jsPDF = window.jspdf.jsPDF;
 
     try {
-        const doc = new jsPDF();
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4',
+            compress: true
+        });
+        
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
-        const margin = 15;
+        const margin = 20;
         const contentWidth = pageWidth - (2 * margin);
         let currentY = margin;
 
-        // Título
+        // Cabeçalho
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
         const titulo = "Laudo de Ecodopplercardiograma";
         const tituloWidth = doc.getStringUnitWidth(titulo) * 16 / doc.internal.scaleFactor;
         const tituloX = (pageWidth - tituloWidth) / 2;
-        doc.text(titulo, tituloX, margin);
+        doc.text(titulo, tituloX, currentY);
 
-        // Data do exame
+        // Data do exame alinhada à direita
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         const dataAtual = new Date().toLocaleDateString('pt-BR');
-        doc.text(`Data do exame: ${dataAtual}`, margin, margin + 10);
+        doc.text(`Data: ${dataAtual}`, pageWidth - margin, currentY, { align: 'right' });
+        currentY += 15;
 
         // Dados do Paciente
         const dadosPaciente = [
@@ -103,15 +110,34 @@ function gerarPDF() {
         
         currentY = doc.autoTable.previous.finalY + 15;
 
-        // Conteúdo do Laudo
+        // Início do laudo em nova página
+        doc.addPage();
+        currentY = margin;
+
+        // Título do laudo
         doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('LAUDO:', margin, currentY);
+        currentY += 10;
+
+        // Conteúdo do Laudo
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(11);
         const laudoContent = document.getElementById('editor').innerText;
         const splitText = doc.splitTextToSize(laudoContent, contentWidth);
-        doc.text(splitText, margin, currentY);
         
-        currentY = doc.getTextDimensions(splitText).h + currentY + 20;
+        // Verifica se precisa de nova página
+        if (currentY + doc.getTextDimensions(splitText).h > pageHeight - margin) {
+            doc.addPage();
+            currentY = margin;
+        }
+        
+        doc.text(splitText, margin, currentY, {
+            maxWidth: contentWidth,
+            lineHeightFactor: 1.5
+        });
+        
+        currentY = doc.getTextDimensions(splitText).h + currentY + 30;
 
         // Assinatura do Médico
         const doctorSelect = document.getElementById('selectedDoctor');
