@@ -35,64 +35,35 @@ async function insertTemplate(templateId) {
     }
 }
 
-// Cache para armazenar templates já carregados
-const templateCache = new Map();
-
-async function getTemplate(templateId) {
-    if (templateCache.has(templateId)) {
-        return templateCache.get(templateId);
-    }
-    
-    const response = await fetch(`/api/templates/${templateId}`);
-    if (!response.ok) throw new Error('Erro ao buscar template');
-    
-    const template = await response.json();
-    templateCache.set(templateId, template);
-    return template;
-}
-
 async function insertPhrase(templateId) {
     if (!templateId) return;
     
     try {
-        const template = await getTemplate(templateId);
+        const response = await fetch(`/api/templates/${templateId}`);
+        if (!response.ok) throw new Error('Erro ao buscar frase');
+        
+        const template = await response.json();
         const editor = document.getElementById('editor');
         
         if (editor) {
             const selection = window.getSelection();
             if (selection.rangeCount) {
                 const range = selection.getRangeAt(0);
-                
-                // Criar um elemento temporário para o conteúdo HTML
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = template.content;
-                
-                // Adicionar quebra de linha se necessário
-                if (range.startContainer.nodeType === Node.TEXT_NODE && 
-                    range.startContainer.textContent.trim() !== '') {
-                    const br = document.createElement('br');
-                    tempDiv.insertBefore(br, tempDiv.firstChild);
-                }
-                
-                // Limpar qualquer seleção existente e inserir o conteúdo
-                range.deleteContents();
                 const fragment = document.createDocumentFragment();
-                while (tempDiv.firstChild) {
-                    fragment.appendChild(tempDiv.firstChild);
+                const div = document.createElement('div');
+                div.innerHTML = template.content;
+                
+                while (div.firstChild) {
+                    fragment.appendChild(div.firstChild);
                 }
+                
+                range.deleteContents();
                 range.insertNode(fragment);
                 
-                // Mover o cursor para o final do texto inserido
+                // Move o cursor para o final do texto inserido
                 range.collapse(false);
                 selection.removeAllRanges();
                 selection.addRange(range);
-                
-                // Salvar o conteúdo e manter o foco
-                saveEditorContent();
-                editor.focus();
-                
-                // Limpar a seleção do dropdown
-                document.getElementById('phraseSelect').value = '';
             }
         }
     } catch (error) {
