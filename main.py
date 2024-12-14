@@ -23,8 +23,14 @@ def index():
 
 @app.route('/doctors')
 def doctors():
-    doctors = Doctor.query.all()
-    return render_template('doctors.html', doctors=doctors)
+    try:
+        app.logger.info("Acessando rota /doctors")
+        doctors = Doctor.query.all()
+        app.logger.info(f"Médicos encontrados: {len(doctors)}")
+        return render_template('doctors.html', doctors=doctors)
+    except Exception as e:
+        app.logger.error(f"Erro ao acessar /doctors: {str(e)}")
+        return str(e), 500
 
 @app.route('/api/doctors', methods=['GET'])
 def get_doctors():
