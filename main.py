@@ -169,11 +169,24 @@ def get_doctors():
 @app.route('/api/doctors', methods=['POST'])
 def create_doctor():
     try:
+        if not request.is_json:
+            return jsonify({'error': 'Dados devem ser enviados em formato JSON'}), 400
+
         data = request.json
+        if not data.get('full_name'):
+            return jsonify({'error': 'Nome do médico é obrigatório'}), 400
+        if not data.get('crm'):
+            return jsonify({'error': 'CRM é obrigatório'}), 400
+
+        # Verifica se já existe médico com o mesmo CRM
+        existing_doctor = Doctor.query.filter_by(crm=data['crm']).first()
+        if existing_doctor:
+            return jsonify({'error': 'Já existe um médico cadastrado com este CRM'}), 400
+
         doctor = Doctor(
             full_name=data['full_name'],
             crm=data['crm'],
-            rqe=data['rqe']
+            rqe=data.get('rqe', '')
         )
         db.session.add(doctor)
         db.session.commit()
@@ -181,7 +194,7 @@ def create_doctor():
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Erro ao criar médico: {str(e)}")
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': 'Erro ao cadastrar médico. Tente novamente.'}), 400
 
 @app.route('/api/doctors/<int:id>', methods=['DELETE'])
 def delete_doctor(id):

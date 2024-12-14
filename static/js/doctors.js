@@ -1,9 +1,16 @@
+
 // Função para carregar médicos
 async function loadDoctors() {
-    const response = await fetch('/api/doctors');
-    const doctors = await response.json();
-    updateDoctorsTable(doctors);
-    updateDoctorsSelect(doctors);
+    try {
+        const response = await fetch('/api/doctors');
+        if (!response.ok) throw new Error('Erro ao carregar médicos');
+        const doctors = await response.json();
+        updateDoctorsTable(doctors);
+        updateDoctorsSelect(doctors);
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao carregar médicos: ' + error.message);
+    }
 }
 
 // Função para atualizar a tabela de médicos
@@ -26,6 +33,8 @@ function updateDoctorsTable(doctors) {
 // Função para atualizar o select de médicos
 function updateDoctorsSelect(doctors) {
     const select = document.querySelector('#selectedDoctor');
+    if (!select) return;
+    
     select.innerHTML = `
         <option value="">Selecione...</option>
         ${doctors.map(doctor => `
@@ -40,10 +49,24 @@ function updateDoctorsSelect(doctors) {
 async function createDoctor(event) {
     event.preventDefault();
     
+    const name = document.getElementById('doctorName').value.trim();
+    const crm = document.getElementById('doctorCRM').value.trim();
+    const rqe = document.getElementById('doctorRQE').value.trim();
+
+    // Validação
+    if (!name) {
+        alert('Nome do médico é obrigatório');
+        return;
+    }
+    if (!crm) {
+        alert('CRM é obrigatório');
+        return;
+    }
+
     const doctorData = {
-        full_name: document.getElementById('doctorName').value,
-        crm: document.getElementById('doctorCRM').value,
-        rqe: document.getElementById('doctorRQE').value
+        full_name: name,
+        crm: crm,
+        rqe: rqe
     };
 
     try {
@@ -55,15 +78,18 @@ async function createDoctor(event) {
             body: JSON.stringify(doctorData)
         });
 
-        if (!response.ok) throw new Error('Erro ao cadastrar médico');
-
-        // Limpar formulário
-        document.getElementById('doctorForm').reset();
+        const data = await response.json();
         
-        // Recarregar lista de médicos
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao cadastrar médico');
+        }
+
+        document.getElementById('doctorForm').reset();
         await loadDoctors();
+        alert('Médico cadastrado com sucesso!');
     } catch (error) {
-        alert('Erro ao cadastrar médico: ' + error.message);
+        console.error('Erro:', error);
+        alert(error.message);
     }
 }
 
@@ -76,16 +102,24 @@ async function deleteDoctor(id) {
             method: 'DELETE'
         });
 
-        if (!response.ok) throw new Error('Erro ao excluir médico');
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Erro ao excluir médico');
+        }
 
         await loadDoctors();
+        alert('Médico excluído com sucesso!');
     } catch (error) {
-        alert('Erro ao excluir médico: ' + error.message);
+        console.error('Erro:', error);
+        alert(error.message);
     }
 }
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('doctorForm').addEventListener('submit', createDoctor);
+    const form = document.getElementById('doctorForm');
+    if (form) {
+        form.addEventListener('submit', createDoctor);
+    }
     loadDoctors();
 });
