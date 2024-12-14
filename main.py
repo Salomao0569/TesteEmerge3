@@ -8,9 +8,10 @@ app = Flask(__name__)
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
-if 'postgresql' in database_url:
-    database_url += '?sslmode=require'
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'connect_args': {'sslmode': 'require'} if 'postgresql' in database_url else {}
+}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configure logging
