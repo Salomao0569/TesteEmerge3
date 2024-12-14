@@ -36,11 +36,6 @@ function gerarDOC() {
         }
     };
 
-    if (!selectedDoctor.value) {
-        alert('Por favor, selecione um médico antes de gerar o documento');
-        return;
-    }
-
     fetch('/gerar_doc', {
         method: 'POST',
         headers: {

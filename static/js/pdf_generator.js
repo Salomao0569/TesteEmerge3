@@ -1,10 +1,5 @@
 
 function gerarPDF() {
-    const selectedDoctor = document.getElementById('selectedDoctor');
-    if (!selectedDoctor.value) {
-        alert('Por favor, selecione um médico antes de gerar o PDF');
-        return;
-    }
     window.jsPDF = window.jspdf.jsPDF;
 
     try {
