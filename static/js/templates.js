@@ -89,16 +89,8 @@ async function createTemplate(event) {
     const category = document.getElementById('templateCategory').value;
     const content = document.getElementById('templateContent').value.trim();
     
-    if (!name) {
-        alert('O nome da frase é obrigatório');
-        return;
-    }
-    if (!category) {
-        alert('A categoria é obrigatória');
-        return;
-    }
-    if (!content) {
-        alert('O conteúdo da frase é obrigatório');
+    if (!name || !category || !content) {
+        console.log('Campos obrigatórios faltando');
         return;
     }
     
@@ -128,10 +120,8 @@ async function createTemplate(event) {
         // Recarregar lista de templates
         await loadTemplates();
         
-        alert('Frase cadastrada com sucesso!');
-    } catch (error) {
+        } catch (error) {
         console.error('Erro ao cadastrar frase:', error);
-        alert('Erro ao cadastrar frase: ' + error.message);
     }
 }
 
@@ -142,9 +132,7 @@ async function deleteTemplate(id) {
         return;
     }
 
-    if (!confirm('Tem certeza que deseja excluir esta frase?')) {
-        return;
-    }
+    
 
     try {
         console.log('Deletando template:', id);
@@ -161,13 +149,9 @@ async function deleteTemplate(id) {
         }
 
         console.log('Frase deletada com sucesso');
-        alert('Frase excluída com sucesso!');
-        
-        // Recarregar lista após sucesso
         await loadTemplates();
     } catch (error) {
         console.error('Erro ao excluir frase:', error);
-        alert('Erro ao excluir frase: ' + error.message);
     }
 }
 
