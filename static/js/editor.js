@@ -29,6 +29,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const templateId = select.value;
         if (!templateId) return;
         
+        const button = select.nextElementSibling;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Inserindo...';
+        
         fetch(`/api/templates/${templateId}`)
             .then(response => response.json())
             .then(template => {
@@ -39,8 +43,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 range.insertNode(fragment);
                 range.collapse(false);
                 localStorage.setItem('editorContent', editor.innerHTML);
+                button.disabled = false;
+                button.innerHTML = 'Inserir';
+                select.value = '';
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                button.disabled = false;
+                button.innerHTML = 'Inserir';
             });
     }
+
+    // Adicionar atalhos de teclado
+    document.addEventListener('keydown', function(e) {
+        // Alt + I para foco no editor
+        if (e.altKey && e.key === 'i') {
+            editor.focus();
+        }
+    });
 
     // Função para inserir modelo de laudo selecionado
     window.insertSelectedTemplate = function() {
