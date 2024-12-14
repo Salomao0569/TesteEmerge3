@@ -1,6 +1,5 @@
 
 function gerarPDF() {
-    // Inicialização do jsPDF
     window.jsPDF = window.jspdf.jsPDF;
 
     try {
@@ -11,10 +10,17 @@ function gerarPDF() {
 
         // Título
         doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
         const titulo = "Laudo de Ecodopplercardiograma";
         const tituloWidth = doc.getStringUnitWidth(titulo) * 16 / doc.internal.scaleFactor;
         const tituloX = (pageWidth - tituloWidth) / 2;
         doc.text(titulo, tituloX, margin);
+
+        // Data do exame
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        doc.text(`Data do exame: ${dataAtual}`, margin, margin + 10);
 
         // Dados do Paciente
         const dadosPaciente = [
@@ -44,7 +50,13 @@ function gerarPDF() {
             ["Diâmetro Diastólico", document.getElementById('diam_diast_final').value || 'N/D', 
              "Volume Ejetado", document.getElementById('print_volume_ejetado').textContent || 'N/D'],
             ["Diâmetro Sistólico", document.getElementById('diam_sist_final').value || 'N/D', 
-             "Fração de Ejeção", document.getElementById('print_fracao_ejecao').textContent || 'N/D']
+             "Fração de Ejeção", document.getElementById('print_fracao_ejecao').textContent || 'N/D'],
+            ["Espessura do Septo", document.getElementById('esp_diast_septo').value || 'N/D',
+             "Percentual Enc. Cavidade", document.getElementById('print_percent_encurt').textContent || 'N/D'],
+            ["Espessura PPVE", document.getElementById('esp_diast_ppve').value || 'N/D',
+             "Espessura Relativa", document.getElementById('print_esp_relativa').textContent || 'N/D'],
+            ["Ventrículo Direito", document.getElementById('vd').value || 'N/D',
+             "Massa do VE", document.getElementById('print_massa_ve').textContent || 'N/D']
         ];
 
         doc.autoTable({
