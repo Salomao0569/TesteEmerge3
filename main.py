@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from models import db, Doctor, Template
+from assets import init_assets
 import logging
 import os
 
@@ -10,8 +11,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Initialize database
+# Initialize database and assets
 db.init_app(app)
+assets = init_assets(app)
 
 with app.app_context():
     db.create_all()

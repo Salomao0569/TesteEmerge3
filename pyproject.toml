@@ -12,4 +12,7 @@ dependencies = [
     "flask-cors>=5.0.0",
     "flask-wtf>=1.2.2",
     "flask-assets>=2.1.0",
+    "webassets>=2.0",
+    "cssmin>=0.2.0",
+    "jsmin>=3.0.1",
 ]
