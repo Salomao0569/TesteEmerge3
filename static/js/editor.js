@@ -49,21 +49,36 @@ async function insertPhrase(templateId) {
             const selection = window.getSelection();
             if (selection.rangeCount) {
                 const range = selection.getRangeAt(0);
-                const fragment = document.createDocumentFragment();
+                
+                // Adicionar quebra de linha se necessário
+                if (range.startContainer.nodeType === Node.TEXT_NODE && 
+                    range.startContainer.textContent.trim() !== '') {
+                    const br = document.createElement('br');
+                    range.insertNode(br);
+                    range.collapse(false);
+                }
+                
+                // Inserir o conteúdo
                 const div = document.createElement('div');
                 div.innerHTML = template.content;
+                const fragment = document.createDocumentFragment();
                 
                 while (div.firstChild) {
                     fragment.appendChild(div.firstChild);
                 }
                 
-                range.deleteContents();
                 range.insertNode(fragment);
                 
                 // Move o cursor para o final do texto inserido
                 range.collapse(false);
                 selection.removeAllRanges();
                 selection.addRange(range);
+                
+                // Limpar a seleção do dropdown
+                document.getElementById('phraseSelect').value = '';
+                
+                // Salvar o conteúdo
+                saveEditorContent();
             }
         }
     } catch (error) {
