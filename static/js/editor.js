@@ -9,50 +9,64 @@ function execCommand(command, value = null) {
             return;
         }
 
-        console.log(`Iniciando execução do comando: ${command} com valor: ${value}`);
-        
-        // Focar no editor
-        editor.focus();
+        console.log(`Executando comando: ${command} com valor: ${value}`);
 
         if (command === 'fontName') {
-            document.execCommand('styleWithCSS', false, true);
-            
-            const selection = window.getSelection();
-            const range = selection.getRangeAt(0);
-            
-            if (range) {
-                if (!range.collapsed) {
-                    // Se há texto selecionado
-                    const span = document.createElement('span');
-                    span.style.fontFamily = value;
-                    
-                    // Envolver o conteúdo selecionado com o span
-                    range.surroundContents(span);
-                } else {
-                    // Se não há seleção, criar um novo span no cursor
-                    const span = document.createElement('span');
-                    span.style.fontFamily = value;
-                    range.insertNode(span);
-                    
-                    // Mover o cursor para dentro do span
-                    range.selectNodeContents(span);
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                }
-            }
-            
-            document.execCommand('styleWithCSS', false, false);
+            applyFontToSelection(value);
         } else {
-            // Para outros comandos, usar execCommand padrão
             document.execCommand(command, false, value);
         }
 
-        // Salvar conteúdo após modificação
         saveEditorContent();
-        
-        console.log(`Comando ${command} aplicado com sucesso com valor: ${value}`);
     } catch (error) {
         console.error('Erro ao executar comando:', error);
+        console.error(error.stack);
+    }
+}
+
+function applyFontToSelection(fontFamily) {
+    try {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+
+        const range = selection.getRangeAt(0);
+        const selectedText = range.toString();
+
+        if (!selectedText) {
+            console.log('Nenhum texto selecionado');
+            return;
+        }
+
+        console.log(`Aplicando fonte ${fontFamily} ao texto: ${selectedText}`);
+
+        // Criar um novo elemento span com a fonte desejada
+        const span = document.createElement('span');
+        span.style.fontFamily = fontFamily;
+
+        // Se já existe um span pai com estilo de fonte, remova-o
+        const parentSpan = range.startContainer.parentElement;
+        if (parentSpan && parentSpan.tagName === 'SPAN' && parentSpan.style.fontFamily) {
+            const newTextNode = document.createTextNode(parentSpan.textContent);
+            parentSpan.parentNode.replaceChild(newTextNode, parentSpan);
+            // Recriar range após a remoção do span
+            range.setStart(newTextNode, 0);
+            range.setEnd(newTextNode, newTextNode.length);
+        }
+
+        // Aplicar o novo span
+        const fragment = range.extractContents();
+        span.appendChild(fragment);
+        range.insertNode(span);
+
+        // Atualizar a seleção
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.selectNodeContents(span);
+        selection.addRange(newRange);
+
+        console.log('Fonte aplicada com sucesso');
+    } catch (error) {
+        console.error('Erro ao aplicar fonte:', error);
         console.error(error.stack);
     }
 }
