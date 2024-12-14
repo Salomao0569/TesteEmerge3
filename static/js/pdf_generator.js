@@ -5,8 +5,10 @@ function gerarPDF() {
     try {
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.width;
-        const margin = 20;
+        const pageHeight = doc.internal.pageSize.height;
+        const margin = 15;
         const contentWidth = pageWidth - (2 * margin);
+        let currentY = margin;
 
         // Título
         doc.setFontSize(16);
@@ -32,14 +34,29 @@ function gerarPDF() {
         ];
 
         doc.autoTable({
-            startY: margin + 10,
+            startY: currentY + 15,
             head: [['Dados do Paciente', 'Valor']],
             body: dadosPaciente,
-            theme: 'grid',
-            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-            styles: { fontSize: 10 },
-            margin: { left: margin }
+            theme: 'striped',
+            headStyles: { 
+                fillColor: [41, 128, 185], 
+                textColor: 255,
+                fontSize: 11,
+                halign: 'center'
+            },
+            styles: { 
+                fontSize: 10,
+                cellPadding: 3,
+                lineColor: [80, 80, 80],
+                lineWidth: 0.1
+            },
+            margin: { left: margin, right: margin },
+            columnStyles: {
+                0: { fontStyle: 'bold' }
+            }
         });
+        
+        currentY = doc.autoTable.previous.finalY;
 
         // Medidas e Cálculos
         const medidasCalculos = [
@@ -60,20 +77,41 @@ function gerarPDF() {
         ];
 
         doc.autoTable({
-            startY: doc.autoTable.previous.finalY + 10,
+            startY: currentY + 10,
             head: [['Medida', 'Valor', 'Cálculo', 'Resultado']],
             body: medidasCalculos,
-            theme: 'grid',
-            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-            styles: { fontSize: 10 },
-            margin: { left: margin }
+            theme: 'striped',
+            headStyles: { 
+                fillColor: [41, 128, 185], 
+                textColor: 255,
+                fontSize: 11,
+                halign: 'center'
+            },
+            styles: { 
+                fontSize: 10,
+                cellPadding: 3,
+                lineColor: [80, 80, 80],
+                lineWidth: 0.1,
+                halign: 'center'
+            },
+            margin: { left: margin, right: margin },
+            columnStyles: {
+                0: { halign: 'left', fontStyle: 'bold' },
+                2: { halign: 'left', fontStyle: 'bold' }
+            }
         });
+        
+        currentY = doc.autoTable.previous.finalY + 15;
 
         // Conteúdo do Laudo
         doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
         const laudoContent = document.getElementById('editor').innerText;
         const splitText = doc.splitTextToSize(laudoContent, contentWidth);
-        doc.text(splitText, margin, doc.autoTable.previous.finalY + 15);
+        doc.text(splitText, margin, currentY);
+        
+        currentY = doc.getTextDimensions(splitText).h + currentY + 20;
 
         // Assinatura do Médico
         const doctorSelect = document.getElementById('selectedDoctor');
