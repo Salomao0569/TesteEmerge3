@@ -1,5 +1,13 @@
 
 function gerarExcel() {
+    const selectedDoctor = document.getElementById('selectedDoctor');
+    const selectedOption = selectedDoctor.options[selectedDoctor.selectedIndex];
+    
+    if (!selectedDoctor.value) {
+        alert('Por favor, selecione um médico antes de gerar o Excel');
+        return;
+    }
+
     const data = {
         paciente: {
             nome: document.getElementById('nome').value || 'N/D',
@@ -26,6 +34,11 @@ function gerarExcel() {
             percentEncurt: document.getElementById('print_percent_encurt').textContent,
             espRelativa: document.getElementById('print_esp_relativa').textContent,
             massaVE: document.getElementById('print_massa_ve').textContent
+        },
+        medico: {
+            nome: selectedOption.text,
+            crm: selectedOption.dataset.crm,
+            rqe: selectedOption.dataset.rqe || ''
         },
         laudo: document.getElementById('editor').innerText
     };
