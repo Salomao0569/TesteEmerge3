@@ -1,3 +1,4 @@
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
@@ -32,7 +33,6 @@ class Template(db.Model):
         return f'<Template {self.name}>'
 
     def to_dict(self):
-        """Convert template to dictionary preserving HTML formatting"""
         doctor_data = None
         if self.doctor:
             doctor_data = {
@@ -40,6 +40,17 @@ class Template(db.Model):
                 'full_name': self.doctor.full_name,
                 'crm': self.doctor.crm,
                 'rqe': self.doctor.rqe
+            }
+        return {
+            'id': self.id,
+            'name': self.name,
+            'content': self.content,
+            'category': self.category,
+            'doctor': doctor_data
+        }
+
+    def set_content(self, html_content):
+        self.content = html_content
 
 class Laudo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -71,16 +82,3 @@ class Laudo(db.Model):
             'doctor': self.doctor.to_dict() if self.doctor else None,
             'created_at': self.created_at.isoformat()
         }
-
-            }
-        return {
-            'id': self.id,
-            'name': self.name,
-            'content': self.content,  # Content is stored as raw HTML
-            'category': self.category,
-            'doctor': doctor_data
-        }
-
-    def set_content(self, html_content):
-        """Set content ensuring HTML is preserved"""
-        self.content = html_content
