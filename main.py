@@ -21,7 +21,8 @@ def index():
     try:
         app.logger.info("Acessando rota principal")
         doctors = Doctor.query.all()
-        return render_template('index.html', doctors=doctors)
+        templates = Template.query.all()
+        return render_template('index.html', doctors=doctors, templates=templates)
     except Exception as e:
         app.logger.error(f"Erro ao acessar rota principal: {str(e)}")
         return str(e), 500
@@ -48,6 +49,14 @@ def templates():
         app.logger.error(f"Erro ao acessar /templates: {str(e)}")
         return str(e), 500
 
+@app.route('/api/templates/<int:id>', methods=['GET'])
+def get_template(id):
+    try:
+        template = Template.query.get_or_404(id)
+        return jsonify(template.to_dict())
+    except Exception as e:
+        app.logger.error(f"Erro ao buscar template {id}: {str(e)}")
+        return jsonify({'error': str(e)}), 404
 @app.route('/api/templates', methods=['GET'])
 def get_templates():
     try:

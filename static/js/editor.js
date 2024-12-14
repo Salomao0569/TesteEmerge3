@@ -14,50 +14,55 @@ function changeFontSize(direction) {
     execCommand('fontSize', currentFontSize);
 }
 
-function insertTemplate(templateId) {
+async function insertTemplate(templateId) {
+    if (!templateId) return;
+    
     const editor = document.getElementById('editor');
-    let template = '';
-
-    switch(templateId) {
-        case 'normal':
-            template = `<p>Exame realizado com ritmo cardíaco regular. Evidenciando:</p>
-<p>Cavidades cardíacas com dimensões normais.<br>
-Raiz da aorta com diâmetro preservado.<br>
-Espessura miocárdica do ventrículo esquerdo conservada.</p>
-<p>Desempenho sistólico do ventrículo esquerdo conservado. Não foram observadas alterações segmentares da contratilidade ventricular.</p>
-<p>Função diastólica do ventrículo esquerdo conservada ao doppler mitral espectral.</p>
-<p>Ventrículo direito com desempenho sistólico preservado - análise subjetiva.</p>
-<p>Valva mitral com abertura e mobilidade conservadas. Colordoppler registrou refluxo discreto.</p>
-<p>Valva tricúspide com abertura conservada. Colordoppler registrou refluxo discreto.</p>
-<p>Valva aórtica com espessamento em seus folhetos. Abertura e mobilidade conservadas.</p>
-<p>Valva pulmonar com abertura e mobilidade conservadas.</p>
-<p>Demais fluxos transvalvares com velocidades normais ao colordoppler.</p>
-<p>Pericárdio ecograficamente normal.</p>
-<p><strong>OPINIÃO:</strong> Ecocardiograma dentro dos limites da normalidade.</p>`;
-            break;
-        case 'hipertrofia':
-            template = `<p>Exame realizado com ritmo cardíaco regular. Evidenciando:</p>
-<p>Átrio esquerdo com dimensões aumentadas.<br>
-Raiz da aorta com diâmetro preservado.<br>
-Espessura miocárdica do ventrículo esquerdo aumentada, caracterizando hipertrofia concêntrica.</p>
-<p>Desempenho sistólico do ventrículo esquerdo preservado. Não foram observadas alterações segmentares da contratilidade ventricular.</p>
-<p>Função diastólica do ventrículo esquerdo alterada - padrão de alteração do relaxamento.</p>
-<p>Ventrículo direito com dimensões e desempenho sistólico preservados.</p>
-<p><strong>OPINIÃO:</strong> Hipertrofia ventricular esquerda com função sistólica preservada.</p>`;
-            break;
-        case 'dilatacao':
-            template = `<p>Exame realizado com ritmo cardíaco regular. Evidenciando:</p>
-<p>Átrio esquerdo com dimensões aumentadas.<br>
-Ventrículo esquerdo com dimensões aumentadas.<br>
-Espessura miocárdica do ventrículo esquerdo normal.</p>
-<p>Desempenho sistólico do ventrículo esquerdo reduzido. Hipocinesia difusa das paredes.</p>
-<p>Função diastólica do ventrículo esquerdo alterada - padrão restritivo.</p>
-<p>Ventrículo direito com dimensões aumentadas e desempenho sistólico reduzido.</p>
-<p><strong>OPINIÃO:</strong> Cardiomiopatia dilatada com disfunção sistólica biventricular.</p>`;
-            break;
+    try {
+        const response = await fetch(`/api/templates/${templateId}`);
+        if (!response.ok) throw new Error('Erro ao buscar template');
+        
+        const template = await response.json();
+        editor.innerHTML = template.content;
+    } catch (error) {
+        console.error('Erro ao inserir template:', error);
+        alert('Erro ao carregar o modelo de laudo');
     }
+}
 
-    editor.innerHTML = template;
+async function insertPhrase(templateId) {
+    if (!templateId) return;
+    
+    try {
+        const response = await fetch(`/api/templates/${templateId}`);
+        if (!response.ok) throw new Error('Erro ao buscar frase');
+        
+        const template = await response.json();
+        
+        // Insere o conteúdo na posição atual do cursor
+        const selection = window.getSelection();
+        if (selection.rangeCount) {
+            const range = selection.getRangeAt(0);
+            const fragment = document.createDocumentFragment();
+            const div = document.createElement('div');
+            div.innerHTML = template.content;
+            
+            while (div.firstChild) {
+                fragment.appendChild(div.firstChild);
+            }
+            
+            range.deleteContents();
+            range.insertNode(fragment);
+            
+            // Move o cursor para o final do texto inserido
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    } catch (error) {
+        console.error('Erro ao inserir frase:', error);
+        alert('Erro ao carregar a frase padrão');
+    }
 }
 
 function saveEditorContent() {

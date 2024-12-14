@@ -157,12 +157,30 @@
             </div>
             <div class="card-body">
                 <div class="editor-templates mb-3">
-                    <label for="templateSelect" class="form-label me-2">Modelo de Laudo:</label>
-                    <select id="templateSelect" class="form-select form-select-sm d-inline-block w-auto" onchange="insertTemplate(this.value)">
-                        <option value="normal">Normal</option>
-                        <option value="hipertrofia">Hipertrofia VE</option>
-                        <option value="dilatacao">Dilatação VE</option>
-                    </select>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="templateSelect" class="form-label me-2">Modelo de Laudo:</label>
+                            <select id="templateSelect" class="form-select form-select-sm d-inline-block w-auto" onchange="insertTemplate(this.value)">
+                                <option value="">Selecione um modelo...</option>
+                                {% for template in templates %}
+                                {% if template.category == 'laudo' %}
+                                <option value="{{ template.id }}">{{ template.name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phraseSelect" class="form-label me-2">Frases Padrão:</label>
+                            <select id="phraseSelect" class="form-select form-select-sm d-inline-block w-auto" onchange="insertPhrase(this.value)">
+                                <option value="">Selecione uma frase...</option>
+                                {% for template in templates %}
+                                {% if template.category != 'laudo' %}
+                                <option value="{{ template.id }}">{{ template.name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 <div class="editor-toolbar">
                     <div class="btn-toolbar" role="toolbar">
