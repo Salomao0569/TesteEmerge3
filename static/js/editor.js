@@ -12,7 +12,7 @@ function execCommand(command, value = null) {
         console.log(`Executando comando: ${command}, valor: ${value}`);
 
         if (command === 'fontName') {
-            applyFontToSelection(value);
+            changeFont(value);
         } else {
             document.execCommand(command, false, value);
         }
@@ -24,28 +24,32 @@ function execCommand(command, value = null) {
     }
 }
 
-function applyFontToSelection(fontFamily) {
+function changeFont(font) {
     try {
-        const editor = document.getElementById('editor');
-        if (!editor) return;
-
-        // Focar no editor
-        editor.focus();
-
-        // Habilitar styleWithCSS para melhor controle de estilos
         document.execCommand('styleWithCSS', false, true);
-
-        // Aplicar a fonte
-        document.execCommand('fontName', false, fontFamily);
-
-        // Desabilitar styleWithCSS após a execução
-        document.execCommand('styleWithCSS', false, false);
-
-        console.log(`Fonte ${fontFamily} aplicada com sucesso`);
         
-        // Salvar o conteúdo
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            
+            // Remove classes de fonte antigas do elemento pai
+            const parentElement = range.commonAncestorContainer.parentElement;
+            if (parentElement) {
+                const fontClasses = ['arial', 'times', 'calibri', 'georgia', 'verdana', 'tahoma'];
+                fontClasses.forEach(fontClass => {
+                    parentElement.classList.remove(`font-family-${fontClass}`);
+                });
+            }
+            
+            // Aplica a nova fonte
+            const span = document.createElement('span');
+            span.className = `font-family-${font.toLowerCase()}`;
+            range.surroundContents(span);
+            
+            console.log(`Fonte ${font} aplicada com sucesso`);
+        }
+        
         saveEditorContent();
-        
     } catch (error) {
         console.error('Erro ao aplicar fonte:', error);
         console.error(error.stack);
