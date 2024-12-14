@@ -291,6 +291,75 @@ def gerar_doc():
         app.logger.error(f"Erro ao gerar DOC: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/gerar_excel', methods=['POST'])
+def gerar_excel():
+    try:
+        from openpyxl import Workbook
+        from io import BytesIO
+        
+        data = request.json
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Laudo Ecocardiograma"
+        
+        # Dados do Paciente
+        ws['A1'] = "Dados do Paciente"
+        ws['A2'] = "Nome"
+        ws['B2'] = data['paciente']['nome']
+        ws['A3'] = "Data Nascimento"
+        ws['B3'] = data['paciente']['dataNascimento']
+        ws['A4'] = "Sexo"
+        ws['B4'] = data['paciente']['sexo']
+        ws['A5'] = "Peso"
+        ws['B5'] = f"{data['paciente']['peso']} kg"
+        ws['A6'] = "Altura"
+        ws['B6'] = f"{data['paciente']['altura']} cm"
+        
+        # Medidas e Cálculos
+        ws['A8'] = "Medidas e Cálculos"
+        ws['A9'] = "Medida"
+        ws['B9'] = "Valor"
+        ws['C9'] = "Cálculo"
+        ws['D9'] = "Resultado"
+        
+        row = 10
+        medidas_calculos = [
+            ('Átrio Esquerdo', data['medidas']['atrio'], 'Volume Diastólico Final', data['calculos']['volumeDiastFinal']),
+            ('Aorta', data['medidas']['aorta'], 'Volume Sistólico Final', data['calculos']['volumeSistFinal']),
+            ('Diâmetro Diastólico', data['medidas']['diamDiastFinal'], 'Volume Ejetado', data['calculos']['volumeEjetado']),
+            ('Diâmetro Sistólico', data['medidas']['diamSistFinal'], 'Fração de Ejeção', data['calculos']['fracaoEjecao']),
+            ('Espessura do Septo', data['medidas']['espDiastSepto'], 'Percentual Enc. Cavidade', data['calculos']['percentEncurt']),
+            ('Espessura PPVE', data['medidas']['espDiastPPVE'], 'Espessura Relativa', data['calculos']['espRelativa']),
+            ('Ventrículo Direito', data['medidas']['vd'], 'Massa do VE', data['calculos']['massaVE'])
+        ]
+        
+        for medida in medidas_calculos:
+            ws[f'A{row}'] = medida[0]
+            ws[f'B{row}'] = medida[1]
+            ws[f'C{row}'] = medida[2]
+            ws[f'D{row}'] = medida[3]
+            row += 1
+            
+        # Laudo
+        ws[f'A{row+2}'] = "Laudo"
+        ws[f'A{row+3}'] = data['laudo']
+        
+        # Salvar arquivo
+        excel_file = BytesIO()
+        wb.save(excel_file)
+        excel_file.seek(0)
+        
+        return send_file(
+            excel_file,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f"Laudo_{data['paciente']['nome'].replace(' ', '_')}.xlsx"
+        )
+        
+    except Exception as e:
+        app.logger.error(f"Erro ao gerar Excel: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
