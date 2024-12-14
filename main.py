@@ -21,6 +21,11 @@ def index():
     doctors = Doctor.query.all()
     return render_template('index.html', doctors=doctors)
 
+@app.route('/doctors')
+def doctors():
+    doctors = Doctor.query.all()
+    return render_template('doctors.html', doctors=doctors)
+
 @app.route('/api/doctors', methods=['GET'])
 def get_doctors():
     doctors = Doctor.query.all()
