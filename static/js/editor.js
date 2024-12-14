@@ -11,24 +11,12 @@ function execCommand(command, value = null) {
         }
 
         editor.focus();
-        document.execCommand('styleWithCSS', false, true);
-        
         if (command === 'fontName') {
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-
-            const range = selection.getRangeAt(0);
-            const span = document.createElement('span');
-            span.style.fontFamily = value;
-            
-            const content = range.extractContents();
-            span.appendChild(content);
-            range.insertNode(span);
+            document.execCommand('styleWithCSS', false, true);
+            document.execCommand('fontName', false, value);
         } else {
             document.execCommand(command, false, value);
         }
-        
-        document.execCommand('styleWithCSS', false, false);
         saveEditorContent();
         console.log(`Comando executado: ${command}, valor: ${value}`);
     } catch (error) {
