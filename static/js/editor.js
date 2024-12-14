@@ -16,28 +16,10 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('editorContent', editor.innerHTML);
     }
 
-    // Função para mudar tamanho
-    window.changeFontSize = function(direction) {
-        const sizes = [1, 2, 3, 4, 5, 6, 7];
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
-        const span = document.createElement('span');
-        
+    // Função para definir tamanho da fonte
+    window.setFontSize = function(size) {
         editor.focus();
-        
-        let currentSize = 3; // tamanho padrão
-        if (selection.anchorNode.parentElement.style.fontSize) {
-            currentSize = parseInt(selection.anchorNode.parentElement.style.fontSize);
-        }
-        
-        if (direction === 'increase' && currentSize < 7) {
-            currentSize++;
-        } else if (direction === 'decrease' && currentSize > 1) {
-            currentSize--;
-        }
-        
-        console.log('Alterando tamanho da fonte para:', currentSize);
-        document.execCommand('fontSize', false, currentSize);
+        document.execCommand('fontSize', false, size);
         localStorage.setItem('editorContent', editor.innerHTML);
     }
 
