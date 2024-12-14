@@ -57,20 +57,32 @@ function applyFontToSelection(fontFamily) {
             return;
         }
 
-        // Criar span com a classe apropriada
-        const span = document.createElement('span');
-        span.className = fontClass;
+        // Criar div com a classe apropriada
+        const div = document.createElement('div');
+        div.className = fontClass;
+
+        // Se já existe um elemento pai com estilo de fonte, remover a classe
+        const currentBlock = range.commonAncestorContainer.parentElement;
+        if (currentBlock) {
+            Object.values(fontClassMap).forEach(className => {
+                currentBlock.classList.remove(className);
+            });
+        }
 
         // Aplicar a fonte ao conteúdo selecionado
         const fragment = range.extractContents();
-        span.appendChild(fragment);
-        range.insertNode(span);
+        div.appendChild(fragment);
+        range.insertNode(div);
 
         // Limpar seleção redundante
         selection.removeAllRanges();
         selection.addRange(range);
 
         console.log(`Fonte ${fontFamily} aplicada com sucesso usando classe ${fontClass}`);
+        
+        // Forçar atualização do editor
+        editor.normalize();
+        
     } catch (error) {
         console.error('Erro ao aplicar fonte:', error);
         console.error(error.stack);
