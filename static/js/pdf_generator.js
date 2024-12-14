@@ -39,19 +39,18 @@ function gerarPDF() {
             ["Data do Exame", dataFormatada]
         ];
 
-        doc.autoTable({
-            startY: currentY,
-            head: [['Dados do Paciente', 'Valor']],
-            body: dadosPaciente,
-            theme: 'striped',
-            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-            styles: { fontSize: 10 },
-            margin: { left: margin, right: margin }
-        });
-
-        currentY = doc.autoTable.previous.finalY + 15;
+        // Apenas título da primeira tabela
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DADOS DO PACIENTE', margin, currentY);
+        
+        currentY += 15;
 
         // Medidas e Cálculos
+        doc.text('MEDIDAS E CÁLCULOS', margin, currentY);
+        
+        currentY += 15;
+        
         const medidasCalculos = [
             ["Átrio Esquerdo", document.getElementById('atrio').value || 'N/D', 
              "Volume Diastólico Final", document.getElementById('print_volume_diast_final').textContent || 'N/D'],
@@ -68,16 +67,6 @@ function gerarPDF() {
             ["Ventrículo Direito", document.getElementById('vd').value || 'N/D',
              "Massa do VE", document.getElementById('print_massa_ve').textContent || 'N/D']
         ];
-
-        doc.autoTable({
-            startY: currentY,
-            head: [['Medida', 'Valor', 'Cálculo', 'Resultado']],
-            body: medidasCalculos,
-            theme: 'striped',
-            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-            styles: { fontSize: 10 },
-            margin: { left: margin, right: margin }
-        });
 
         // Nova página para o laudo
         doc.addPage();
