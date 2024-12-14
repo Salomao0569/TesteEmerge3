@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, send_file
+from datetime import datetime
 from docx import Document
 from docx.shared import Pt, Inches
 from io import BytesIO
@@ -208,6 +209,30 @@ def delete_doctor(id):
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Erro ao deletar médico: {str(e)}")
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/laudos', methods=['POST'])
+def criar_laudo():
+    try:
+        data = request.json
+        laudo = Laudo(
+            data_exame=datetime.strptime(data['dataExame'], '%Y-%m-%d'),
+            paciente_nome=data['paciente']['nome'],
+            paciente_data_nascimento=datetime.strptime(data['paciente']['dataNascimento'], '%d/%m/%Y').date() if data['paciente']['dataNascimento'] else None,
+            paciente_sexo=data['paciente']['sexo'],
+            peso=float(data['paciente']['peso']),
+            altura=float(data['paciente']['altura']),
+            medidas=data['medidas'],
+            calculos=data['calculos'],
+            conteudo=data['laudo'],
+            doctor_id=data['medico']['id']
+        )
+        db.session.add(laudo)
+        db.session.commit()
+        return jsonify(laudo.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Erro ao criar laudo: {str(e)}")
         return jsonify({'error': str(e)}), 400
 
 @app.route('/gerar_doc', methods=['POST'])
