@@ -7,19 +7,77 @@ async function loadTemplates() {
 
 // Função para atualizar a tabela de templates
 function updateTemplatesTable(templates) {
-    const tbody = document.querySelector('#templatesTable tbody');
-    tbody.innerHTML = templates.map(template => `
-        <tr>
-            <td>${template.name}</td>
-            <td>${template.category}</td>
-            <td>${template.content.substring(0, 100)}...</td>
-            <td>
-                <button class="btn btn-sm btn-danger" onclick="deleteTemplate(${template.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    // Atualizar laudos
+    const laudosTable = document.querySelector('#laudos table tbody');
+    if (laudosTable) {
+        laudosTable.innerHTML = templates
+            .filter(template => template.category === 'laudo')
+            .map(template => `
+                <tr>
+                    <td>${template.name}</td>
+                    <td>${template.content.substring(0, 100)}...</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteTemplate(${template.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    // Atualizar frases normais
+    const normalTable = document.querySelector('#normalFrases table tbody');
+    if (normalTable) {
+        normalTable.innerHTML = templates
+            .filter(template => template.category === 'normal')
+            .map(template => `
+                <tr>
+                    <td>${template.name}</td>
+                    <td>${template.content.substring(0, 100)}...</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteTemplate(${template.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    // Atualizar frases alteradas
+    const alteradoTable = document.querySelector('#alteradoFrases table tbody');
+    if (alteradoTable) {
+        alteradoTable.innerHTML = templates
+            .filter(template => template.category === 'alterado')
+            .map(template => `
+                <tr>
+                    <td>${template.name}</td>
+                    <td>${template.content.substring(0, 100)}...</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteTemplate(${template.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    // Atualizar frases de conclusão
+    const conclusaoTable = document.querySelector('#conclusaoFrases table tbody');
+    if (conclusaoTable) {
+        conclusaoTable.innerHTML = templates
+            .filter(template => template.category === 'conclusao')
+            .map(template => `
+                <tr>
+                    <td>${template.name}</td>
+                    <td>${template.content.substring(0, 100)}...</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteTemplate(${template.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+    }
 }
 
 // Função para cadastrar um novo template
