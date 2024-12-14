@@ -23,6 +23,23 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('editorContent', editor.innerHTML);
     }
 
+    // Função otimizada para inserir frase
+    window.insertPhrase = function(templateId) {
+        if (!templateId) return;
+        
+        fetch(`/api/templates/${templateId}`)
+            .then(response => response.json())
+            .then(template => {
+                editor.focus();
+                const selection = window.getSelection();
+                const range = selection.getRangeAt(0);
+                const fragment = document.createTextNode(template.content + '\n');
+                range.insertNode(fragment);
+                range.collapse(false);
+                localStorage.setItem('editorContent', editor.innerHTML);
+            });
+    }
+
     // Carregar conteúdo salvo
     const savedContent = localStorage.getItem('editorContent');
     if (savedContent) {
