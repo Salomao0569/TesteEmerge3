@@ -10,36 +10,38 @@ function execCommand(command, value = null) {
         }
 
         console.log(`Iniciando execução do comando: ${command} com valor: ${value}`);
-
+        
         // Focar no editor
         editor.focus();
 
         if (command === 'fontName') {
-            console.log('Aplicando mudança de fonte:', value);
-            // Criar span com a fonte específica
-            const span = document.createElement('span');
-            span.style.fontFamily = value;
+            document.execCommand('styleWithCSS', false, true);
             
             const selection = window.getSelection();
-            if (selection.rangeCount) {
-                const range = selection.getRangeAt(0);
+            const range = selection.getRangeAt(0);
+            
+            if (range) {
                 if (!range.collapsed) {
-                    // Se há texto selecionado, envolver com o span
-                    const content = range.extractContents();
-                    span.appendChild(content);
-                    range.insertNode(span);
+                    // Se há texto selecionado
+                    const span = document.createElement('span');
+                    span.style.fontFamily = value;
+                    
+                    // Envolver o conteúdo selecionado com o span
+                    range.surroundContents(span);
                 } else {
-                    // Se não há seleção, aplicar ao parágrafo atual
-                    const paragraph = range.startContainer.parentElement;
-                    if (paragraph) {
-                        paragraph.style.fontFamily = value;
-                    }
+                    // Se não há seleção, criar um novo span no cursor
+                    const span = document.createElement('span');
+                    span.style.fontFamily = value;
+                    range.insertNode(span);
+                    
+                    // Mover o cursor para dentro do span
+                    range.selectNodeContents(span);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
                 }
-            } else {
-                // Se não há seleção, aplicar ao editor todo
-                editor.style.fontFamily = value;
             }
-            console.log('Fonte aplicada com sucesso');
+            
+            document.execCommand('styleWithCSS', false, false);
         } else {
             // Para outros comandos, usar execCommand padrão
             document.execCommand(command, false, value);
@@ -47,8 +49,8 @@ function execCommand(command, value = null) {
 
         // Salvar conteúdo após modificação
         saveEditorContent();
-
-        console.log(`Comando ${command} aplicado com sucesso`);
+        
+        console.log(`Comando ${command} aplicado com sucesso com valor: ${value}`);
     } catch (error) {
         console.error('Erro ao executar comando:', error);
         console.error(error.stack);

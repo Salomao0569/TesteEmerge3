@@ -14,10 +14,26 @@
     <style>
         .editor-area {
             font-family: Arial, sans-serif;
+            min-height: 300px;
+            padding: 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
         }
-        .editor-area[style*="font-family"] {
-            font-family: inherit;
+        .editor-area:focus {
+            outline: none;
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
         }
+        .editor-area span[style*="font-family"] {
+            font-family: inherit !important;
+        }
+        /* Estilos específicos para cada fonte */
+        .font-arial { font-family: Arial, sans-serif !important; }
+        .font-times { font-family: "Times New Roman", Times, serif !important; }
+        .font-calibri { font-family: Calibri, sans-serif !important; }
+        .font-georgia { font-family: Georgia, serif !important; }
+        .font-verdana { font-family: Verdana, sans-serif !important; }
+        .font-tahoma { font-family: Tahoma, sans-serif !important; }
     </style>
 </head>
 <body class="bg-light">
