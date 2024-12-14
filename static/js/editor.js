@@ -40,6 +40,23 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
+    // Função para inserir modelo de laudo
+    window.insertTemplate = function(templateId) {
+        if (!templateId) return;
+        
+        fetch(`/api/templates/${templateId}`)
+            .then(response => response.json())
+            .then(template => {
+                const editor = document.getElementById('editor');
+                if (editor) {
+                    editor.innerHTML = template.content;
+                    editor.focus();
+                    localStorage.setItem('editorContent', editor.innerHTML);
+                }
+            })
+            .catch(error => console.error('Erro ao carregar modelo:', error));
+    }
+
     // Carregar conteúdo salvo
     const savedContent = localStorage.getItem('editorContent');
     if (savedContent) {
