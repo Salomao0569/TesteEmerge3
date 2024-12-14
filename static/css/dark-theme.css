@@ -1,0 +1,31 @@
+
+[data-theme="dark"] {
+    --bg-primary: #212529;
+    --text-primary: #f8f9fa;
+    --border-color: #495057;
+    --input-bg: #343a40;
+}
+
+[data-theme="dark"] body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .card {
+    background-color: #2c3034;
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .form-control {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .table {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .table-bordered {
+    border-color: var(--border-color);
+}
