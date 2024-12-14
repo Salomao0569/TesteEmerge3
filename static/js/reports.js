@@ -8,17 +8,71 @@ async function loadReports() {
 // Função para atualizar a lista de modelos
 function updateReportsList(templates) {
     const tbody = document.querySelector('#reportsList');
-    tbody.innerHTML = templates.map(template => `
-        <tr>
-            <td>${template.name}</td>
-            <td>${template.content.substring(0, 100)}...</td>
-            <td>
-                <button class="btn btn-sm btn-danger" onclick="deleteReport(${template.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = templates.map(template => {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = template.content;
+        const textPreview = tempDiv.textContent.substring(0, 100) + '...';
+        
+        return `
+            <tr>
+                <td>${template.name}</td>
+                <td>
+                    <div class="text-preview">${textPreview}</div>
+                    <button class="btn btn-sm btn-secondary mt-1" onclick="viewFullContent(${template.id})">
+                        <i class="fas fa-eye"></i> Ver Completo
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="deleteReport(${template.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Função para visualizar o conteúdo completo formatado
+async function viewFullContent(templateId) {
+    try {
+        const response = await fetch(`/api/templates/${templateId}`);
+        const template = await response.json();
+        
+        // Criar modal para exibir o conteúdo
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'viewContentModal';
+        modal.setAttribute('tabindex', '-1');
+        
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">${template.name}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="formatted-content">${template.content}</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const modalInstance = new bootstrap.Modal(modal);
+        modalInstance.show();
+        
+        // Remover modal do DOM após fechado
+        modal.addEventListener('hidden.bs.modal', function () {
+            document.body.removeChild(modal);
+        });
+    } catch (error) {
+        console.error('Erro ao carregar conteúdo:', error);
+        alert('Erro ao carregar o conteúdo do template');
+    }
 }
 
 // Função para cadastrar um novo modelo

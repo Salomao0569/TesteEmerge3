@@ -8,6 +8,48 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="/static/css/styles.css" rel="stylesheet">
+    <style>
+        .editor-area {
+            min-height: 400px;
+            padding: 1rem;
+            background-color: white;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+        
+        .editor-area:focus {
+            outline: none;
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .formatted-content {
+            padding: 1rem;
+            background-color: white;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+        
+        .text-preview {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* Preservar formatação no editor e visualização */
+        .editor-area *, .formatted-content * {
+            font-family: inherit;
+        }
+        
+        .editor-area p, .formatted-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .editor-area ul, .editor-area ol,
+        .formatted-content ul, .formatted-content ol {
+            padding-left: 2rem;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <!-- Navbar -->
