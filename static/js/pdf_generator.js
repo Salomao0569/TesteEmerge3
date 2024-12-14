@@ -133,13 +133,27 @@ function gerarPDF() {
         const laudoContent = document.getElementById('editor').innerText;
         const splitText = doc.splitTextToSize(laudoContent, contentWidth);
         
+        // Calcular altura do texto
+        const textHeight = doc.getTextDimensions(splitText).h;
+        
+        // Verificar se precisa de nova página
+        if (currentY + textHeight > pageHeight - 60) {
+            doc.addPage();
+            currentY = margin;
+        }
+        
         doc.text(splitText, margin, currentY, {
             maxWidth: contentWidth,
             lineHeightFactor: 1.5
         });
         
-        const textHeight = doc.getTextDimensions(splitText).h;
         currentY += textHeight + 30;
+
+        // Verificar se a assinatura precisa de nova página
+        if (currentY > pageHeight - 40) {
+            doc.addPage();
+            currentY = margin + 20;
+        }
 
         // Assinatura do Médico
         const doctorSelect = document.getElementById('selectedDoctor');
