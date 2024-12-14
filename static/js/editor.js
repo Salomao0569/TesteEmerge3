@@ -17,13 +17,18 @@ function changeFontSize(direction) {
 async function insertTemplate(templateId) {
     if (!templateId) return;
     
-    const editor = document.getElementById('editor');
     try {
         const response = await fetch(`/api/templates/${templateId}`);
         if (!response.ok) throw new Error('Erro ao buscar template');
         
         const template = await response.json();
-        editor.innerHTML = template.content;
+        const editor = document.getElementById('editor');
+        
+        if (editor) {
+            editor.innerHTML = template.content;
+            // Salvar o conteúdo após inserir o template
+            saveEditorContent();
+        }
     } catch (error) {
         console.error('Erro ao inserir template:', error);
         alert('Erro ao carregar o modelo de laudo');
@@ -38,26 +43,38 @@ async function insertPhrase(templateId) {
         if (!response.ok) throw new Error('Erro ao buscar frase');
         
         const template = await response.json();
+        const editor = document.getElementById('editor');
         
-        // Insere o conteúdo na posição atual do cursor
-        const selection = window.getSelection();
-        if (selection.rangeCount) {
-            const range = selection.getRangeAt(0);
-            const fragment = document.createDocumentFragment();
-            const div = document.createElement('div');
-            div.innerHTML = template.content;
-            
-            while (div.firstChild) {
-                fragment.appendChild(div.firstChild);
+        if (editor) {
+            const selection = window.getSelection();
+            if (selection.rangeCount) {
+                const range = selection.getRangeAt(0);
+                
+                // Criar um elemento temporário para o conteúdo HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = template.content;
+                
+                // Limpar qualquer seleção existente
+                range.deleteContents();
+                
+                // Inserir o conteúdo no editor
+                const fragment = document.createDocumentFragment();
+                while (tempDiv.firstChild) {
+                    fragment.appendChild(tempDiv.firstChild);
+                }
+                range.insertNode(fragment);
+                
+                // Mover o cursor para o final do texto inserido
+                range.collapse(false);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                
+                // Salvar o conteúdo após inserir a frase
+                saveEditorContent();
+                
+                // Garantir que o editor mantenha o foco
+                editor.focus();
             }
-            
-            range.deleteContents();
-            range.insertNode(fragment);
-            
-            // Move o cursor para o final do texto inserido
-            range.collapse(false);
-            selection.removeAllRanges();
-            selection.addRange(range);
         }
     } catch (error) {
         console.error('Erro ao inserir frase:', error);
@@ -66,20 +83,28 @@ async function insertPhrase(templateId) {
 }
 
 function saveEditorContent() {
-    localStorage.setItem('editorContent', document.getElementById('editor').innerHTML);
+    const editor = document.getElementById('editor');
+    if (editor) {
+        localStorage.setItem('editorContent', editor.innerHTML);
+    }
 }
 
 function loadEditorContent() {
+    const editor = document.getElementById('editor');
     const savedContent = localStorage.getItem('editorContent');
-    if (savedContent) {
-        document.getElementById('editor').innerHTML = savedContent;
+    if (editor && savedContent) {
+        editor.innerHTML = savedContent;
     }
 }
 
 // Salvar conteúdo automaticamente a cada 30 segundos
 setInterval(saveEditorContent, 30000);
 
-// Carregar conteúdo ao iniciar
+// Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
     loadEditorContent();
+    const editor = document.getElementById('editor');
+    if (editor) {
+        editor.addEventListener('input', saveEditorContent);
+    }
 });
