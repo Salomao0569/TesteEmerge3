@@ -133,6 +133,45 @@
                 <h5 class="mb-0">Laudo</h5>
             </div>
             <div class="card-body">
+                <div class="editor-templates mb-3">
+                    <label for="templateSelect" class="form-label me-2">Modelo de Laudo:</label>
+                    <select id="templateSelect" class="form-select form-select-sm d-inline-block w-auto" onchange="insertTemplate(this.value)">
+                        <option value="normal">Normal</option>
+                        <option value="hipertrofia">Hipertrofia VE</option>
+                        <option value="dilatacao">Dilatação VE</option>
+                    </select>
+                </div>
+                <div class="editor-toolbar">
+                    <div class="btn-toolbar" role="toolbar">
+                        <div class="btn-group me-2" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('bold')" title="Negrito">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('italic')" title="Itálico">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('underline')" title="Sublinhado">
+                                <i class="fas fa-underline"></i>
+                            </button>
+                        </div>
+                        <div class="btn-group me-2" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeFontSize('decrease')" title="Diminuir fonte">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeFontSize('increase')" title="Aumentar fonte">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="btn-group me-2" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('insertUnorderedList')" title="Lista">
+                                <i class="fas fa-list-ul"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('insertOrderedList')" title="Lista numerada">
+                                <i class="fas fa-list-ol"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <div contenteditable="true" id="editor" class="form-control editor-area">
                     <p>Exame realizado com ritmo cardíaco regular. Evidenciando:</p>
                     <p>Cavidades cardíacas com dimensões normais.<br>Raiz da aorta com diâmetro preservado.<br>Espessura miocárdica do ventrículo esquerdo conservada.</p>
@@ -166,5 +205,6 @@
     <script src="/static/js/calculations.js"></script>
     <script src="/static/js/pdf_generator.js"></script>
     <script src="/static/js/form_utils.js"></script>
+    <script src="/static/js/editor.js"></script>
 </body>
 </html>
