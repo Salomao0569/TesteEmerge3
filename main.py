@@ -115,7 +115,8 @@ def create_template():
         template = Template(
             name=data['name'],
             category=data['category'],
-            content=data['content']
+            content=data['content'],
+            doctor_id=data.get('doctor_id')
         )
         
         db.session.add(template)

@@ -112,10 +112,27 @@ async function createReport(event) {
             throw new Error('O conteúdo do laudo não pode estar vazio');
         }
 
+        const doctorId = document.getElementById('doctorId').value;
+        if (!doctorId) {
+            throw new Error('Por favor, selecione o médico responsável');
+        }
+
+        // Adicionar assinatura do médico ao final do conteúdo
+        const doctorSelect = document.getElementById('doctorId');
+        const doctorInfo = doctorSelect.options[doctorSelect.selectedIndex].text;
+        const assinatura = `
+            <br><br>
+            <div style="text-align: center; margin-top: 30px;">
+                <p>_______________________________________________</p>
+                <p>${doctorInfo}</p>
+            </div>
+        `;
+
         const reportData = {
             name: reportName,
             category: 'laudo',
-            content: htmlContent // Enviando o HTML completo
+            content: htmlContent + assinatura,
+            doctor_id: parseInt(doctorId)
         };
 
         console.log('Enviando dados do laudo:', reportData);

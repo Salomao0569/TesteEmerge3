@@ -25,17 +25,28 @@ class Template(db.Model):
     name = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'))
+    doctor = db.relationship('Doctor', backref='templates')
     
     def __repr__(self):
         return f'<Template {self.name}>'
 
     def to_dict(self):
         """Convert template to dictionary preserving HTML formatting"""
+        doctor_data = None
+        if self.doctor:
+            doctor_data = {
+                'id': self.doctor.id,
+                'full_name': self.doctor.full_name,
+                'crm': self.doctor.crm,
+                'rqe': self.doctor.rqe
+            }
         return {
             'id': self.id,
             'name': self.name,
             'content': self.content,  # Content is stored as raw HTML
-            'category': self.category
+            'category': self.category,
+            'doctor': doctor_data
         }
 
     def set_content(self, html_content):
