@@ -3,65 +3,55 @@ let lastSavedContent = '';
 
 function execCommand(command, value = null) {
     try {
-        // Garantir que temos uma seleção válida
         const editor = document.getElementById('editor');
         if (!editor) {
             console.error('Editor não encontrado');
             return;
         }
 
+        console.log(`Iniciando execução do comando: ${command} com valor: ${value}`);
+
         // Focar no editor
         editor.focus();
 
-        // Salvar a seleção atual
-        const selection = window.getSelection();
-        const hasSelection = selection.rangeCount > 0;
-        
-        // Se não há seleção, selecionar todo o conteúdo
-        if (!hasSelection) {
-            const range = document.createRange();
-            range.selectNodeContents(editor);
-            selection.removeAllRanges();
-            selection.addRange(range);
-        }
-
-        // Preservar a seleção atual
-        const range = selection.getRangeAt(0);
-        const savedSelection = {
-            startContainer: range.startContainer,
-            startOffset: range.startOffset,
-            endContainer: range.endContainer,
-            endOffset: range.endOffset
-        };
-
-        // Log antes de aplicar o comando
-        console.log(`Aplicando comando: ${command}, valor: ${value}`);
-
-        // Aplicar o comando
-        document.execCommand(command, false, value);
-
-        // Restaurar a seleção
-        try {
-            const newRange = document.createRange();
-            newRange.setStart(savedSelection.startContainer, savedSelection.startOffset);
-            newRange.setEnd(savedSelection.endContainer, savedSelection.endOffset);
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-        } catch (e) {
-            console.log('Não foi possível restaurar a seleção:', e);
-        }
-
-        // Se não havia seleção inicial, limpar a seleção
-        if (!hasSelection) {
-            selection.removeAllRanges();
+        if (command === 'fontName') {
+            console.log('Aplicando mudança de fonte:', value);
+            // Criar span com a fonte específica
+            const span = document.createElement('span');
+            span.style.fontFamily = value;
+            
+            const selection = window.getSelection();
+            if (selection.rangeCount) {
+                const range = selection.getRangeAt(0);
+                if (!range.collapsed) {
+                    // Se há texto selecionado, envolver com o span
+                    const content = range.extractContents();
+                    span.appendChild(content);
+                    range.insertNode(span);
+                } else {
+                    // Se não há seleção, aplicar ao parágrafo atual
+                    const paragraph = range.startContainer.parentElement;
+                    if (paragraph) {
+                        paragraph.style.fontFamily = value;
+                    }
+                }
+            } else {
+                // Se não há seleção, aplicar ao editor todo
+                editor.style.fontFamily = value;
+            }
+            console.log('Fonte aplicada com sucesso');
+        } else {
+            // Para outros comandos, usar execCommand padrão
+            document.execCommand(command, false, value);
         }
 
         // Salvar conteúdo após modificação
         saveEditorContent();
 
-        console.log(`Comando aplicado com sucesso: ${command}, valor: ${value}`);
+        console.log(`Comando ${command} aplicado com sucesso`);
     } catch (error) {
         console.error('Erro ao executar comando:', error);
+        console.error(error.stack);
     }
 }
 
