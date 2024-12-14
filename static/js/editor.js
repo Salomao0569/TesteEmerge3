@@ -10,14 +10,22 @@ function execCommand(command, value = null) {
             return;
         }
 
+        // Focar no editor
+        editor.focus();
+
         // Salvar a seleção atual
         const selection = window.getSelection();
-        if (!selection.rangeCount) {
-            editor.focus();
-            return;
+        const hasSelection = selection.rangeCount > 0;
+        
+        // Se não há seleção, selecionar todo o conteúdo
+        if (!hasSelection) {
+            const range = document.createRange();
+            range.selectNodeContents(editor);
+            selection.removeAllRanges();
+            selection.addRange(range);
         }
 
-        // Preservar a seleção
+        // Preservar a seleção atual
         const range = selection.getRangeAt(0);
         const savedSelection = {
             startContainer: range.startContainer,
@@ -26,12 +34,15 @@ function execCommand(command, value = null) {
             endOffset: range.endOffset
         };
 
+        // Log antes de aplicar o comando
+        console.log(`Aplicando comando: ${command}, valor: ${value}`);
+
         // Aplicar o comando
         document.execCommand(command, false, value);
 
         // Restaurar a seleção
-        const newRange = document.createRange();
         try {
+            const newRange = document.createRange();
             newRange.setStart(savedSelection.startContainer, savedSelection.startOffset);
             newRange.setEnd(savedSelection.endContainer, savedSelection.endOffset);
             selection.removeAllRanges();
@@ -40,13 +51,15 @@ function execCommand(command, value = null) {
             console.log('Não foi possível restaurar a seleção:', e);
         }
 
-        // Restaurar o foco no editor
-        editor.focus();
+        // Se não havia seleção inicial, limpar a seleção
+        if (!hasSelection) {
+            selection.removeAllRanges();
+        }
 
         // Salvar conteúdo após modificação
         saveEditorContent();
 
-        console.log(`Comando aplicado: ${command}, valor: ${value}`);
+        console.log(`Comando aplicado com sucesso: ${command}, valor: ${value}`);
     } catch (error) {
         console.error('Erro ao executar comando:', error);
     }
