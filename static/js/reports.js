@@ -25,25 +25,28 @@ function updateReportsList(templates) {
 async function createReport(event) {
     event.preventDefault();
     
-    const reportName = document.getElementById('reportName').value;
-    if (!reportName) {
-        alert('Por favor, insira um nome para o modelo de laudo');
-        return;
-    }
-    
-    const reportContent = document.getElementById('reportContent');
-    if (!reportContent.innerHTML.trim()) {
-        alert('Por favor, insira o conteúdo do laudo');
-        return;
-    }
-
-    const reportData = {
-        name: reportName,
-        category: 'laudo',
-        content: reportContent.innerHTML
-    };
-
     try {
+        const reportName = document.getElementById('reportName').value;
+        if (!reportName) {
+            throw new Error('Por favor, insira um nome para o modelo de laudo');
+        }
+        
+        const reportContent = document.getElementById('reportContent');
+        if (!reportContent || !reportContent.innerHTML.trim()) {
+            throw new Error('Por favor, insira o conteúdo do laudo');
+        }
+
+        console.log('Enviando dados do laudo:', {
+            name: reportName,
+            content: reportContent.innerHTML
+        });
+
+        const reportData = {
+            name: reportName,
+            category: 'laudo',
+            content: reportContent.innerHTML
+        };
+
         const response = await fetch('/api/templates', {
             method: 'POST',
             headers: {
@@ -52,9 +55,10 @@ async function createReport(event) {
             body: JSON.stringify(reportData)
         });
 
+        const responseData = await response.json();
+        
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Erro ao cadastrar modelo de laudo');
+            throw new Error(responseData.error || 'Erro ao cadastrar modelo de laudo');
         }
 
         // Limpar formulário
@@ -66,9 +70,33 @@ async function createReport(event) {
         
         alert('Modelo de laudo cadastrado com sucesso!');
     } catch (error) {
+        console.error('Erro ao criar laudo:', error);
         alert('Erro ao cadastrar modelo de laudo: ' + error.message);
     }
 }
+
+// Garantir que o editor está inicializado
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('reportForm');
+    const editor = document.getElementById('reportContent');
+    
+    if (form) {
+        console.log('Form encontrado, adicionando event listener');
+        form.addEventListener('submit', createReport);
+    } else {
+        console.error('Form não encontrado');
+    }
+    
+    if (editor) {
+        console.log('Editor encontrado');
+        // Inicializar editor se necessário
+        editor.focus();
+    } else {
+        console.error('Editor não encontrado');
+    }
+    
+    loadReports();
+});
 
 // Função para deletar um modelo
 async function deleteReport(id) {

@@ -80,7 +80,16 @@ def get_templates():
 @app.route('/api/templates', methods=['POST'])
 def create_template():
     try:
+        app.logger.info("Recebendo requisição POST para criar template")
         data = request.json
+        app.logger.info(f"Dados recebidos: {data}")
+        
+        if not all(key in data for key in ['name', 'category', 'content']):
+            missing_fields = [key for key in ['name', 'category', 'content'] if key not in data]
+            error_msg = f"Campos obrigatórios faltando: {', '.join(missing_fields)}"
+            app.logger.error(error_msg)
+            return jsonify({'error': error_msg}), 400
+        
         template = Template(
             name=data['name'],
             category=data['category'],
@@ -88,6 +97,7 @@ def create_template():
         )
         db.session.add(template)
         db.session.commit()
+        app.logger.info(f"Template criado com sucesso: {template.name}")
         return jsonify(template.to_dict()), 201
     except Exception as e:
         db.session.rollback()
