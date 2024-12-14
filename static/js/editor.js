@@ -40,6 +40,38 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
+    // Configurar drag and drop para frases
+    const phraseSelect = document.getElementById('phraseSelect');
+    phraseSelect.addEventListener('mousedown', function(e) {
+        if (this.value) {
+            e.preventDefault();
+            fetch(`/api/templates/${this.value}`)
+                .then(response => response.json())
+                .then(template => {
+                    const dragText = template.content;
+                    editor.focus();
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', function onMouseUp(e) {
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                        const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+                        if (range && range.commonAncestorContainer.contains(editor)) {
+                            range.insertNode(document.createTextNode(dragText + '\n'));
+                            localStorage.setItem('editorContent', editor.innerHTML);
+                        }
+                    });
+                });
+        }
+    });
+
+    function onMouseMove(e) {
+        const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+        if (range && range.commonAncestorContainer.contains(editor)) {
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+        }
+    }
+
     // Carregar conteúdo salvo
     const savedContent = localStorage.getItem('editorContent');
     if (savedContent) {
