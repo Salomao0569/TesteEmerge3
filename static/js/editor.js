@@ -254,10 +254,10 @@ function setupKeyboardShortcuts(editor) {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
-    loadEditorContent();
-    
     const editor = document.getElementById('editor');
     if (editor) {
+        loadEditorContent();
+        
         // Configurar atalhos de teclado
         setupKeyboardShortcuts(editor);
         
@@ -269,5 +269,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Garantir que o conteúdo seja salvo antes de sair da página
         window.addEventListener('beforeunload', saveEditorContent);
+        
+        console.log('Editor inicializado com sucesso');
+    } else {
+        console.log('Elemento editor não encontrado na página');
     }
 });
