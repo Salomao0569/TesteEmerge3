@@ -12,8 +12,14 @@ import os
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
+# PostgreSQL configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://biocardio:biocardio86@34.46.61.123:5432/biocardio'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_size': 5,
+    'pool_recycle': 1800,
+    'pool_timeout': 30
+}
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -21,15 +27,33 @@ logging.basicConfig(level=logging.INFO)
 # Initialize database
 db.init_app(app)
 
-# Drop and recreate tables
+# Create tables
 with app.app_context():
     try:
-        app.logger.info("Recriando tabelas no SQLite...")
-        db.drop_all()
+        app.logger.info("Creating tables in PostgreSQL...")
         db.create_all()
-        app.logger.info("Tabelas recriadas com sucesso!")
+        
+        # Add sample data if needed
+        if not Doctor.query.first():
+            sample_doctor = Doctor(
+                full_name='Dr. Sample',
+                crm='12345',
+                rqe='67890'
+            )
+            db.session.add(sample_doctor)
+            
+            sample_template = Template(
+                name='Template Padrão',
+                content='Exame realizado com ritmo cardíaco regular...',
+                category='laudo',
+                doctor=sample_doctor
+            )
+            db.session.add(sample_template)
+            db.session.commit()
+            
+        app.logger.info("Database initialized successfully!")
     except Exception as e:
-        app.logger.error(f"Erro ao recriar tabelas: {str(e)}")
+        app.logger.error(f"Database initialization error: {str(e)}")
 
 assets = init_assets(app)
 
