@@ -19,9 +19,10 @@ from flask_compress import Compress
 Compress(app)
 
 # Configuração do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+load_dotenv()
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://biocardio:biocardio86@34.46.61.123:5432/biocardio')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key')
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 
 # Inicialização do banco de dados
 db.init_app(app)
