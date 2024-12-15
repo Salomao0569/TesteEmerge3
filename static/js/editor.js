@@ -81,6 +81,44 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('editorContent', editor.innerHTML);
     }
 
+    // Busca de frases
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.className = 'form-control form-control-sm mb-2';
+    searchInput.placeholder = 'Buscar frases...';
+    document.querySelector('.editor-templates').insertBefore(searchInput, document.getElementById('phraseSelect'));
+
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const options = document.getElementById('phraseSelect').options;
+        
+        for (let option of options) {
+            const text = option.text.toLowerCase();
+            option.style.display = text.includes(searchTerm) ? '' : 'none';
+        }
+    });
+
+    // Preview do PDF
+    const previewButton = document.createElement('button');
+    previewButton.className = 'btn btn-sm btn-outline-secondary ms-2';
+    previewButton.innerHTML = '<i class="fas fa-eye"></i> Preview';
+    previewButton.onclick = function() {
+        const content = editor.innerHTML;
+        const previewWindow = window.open('', '_blank');
+        previewWindow.document.write(`
+            <html>
+                <head>
+                    <title>Preview do Laudo</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                </head>
+                <body class="p-4">
+                    <div class="container">${content}</div>
+                </body>
+            </html>
+        `);
+    };
+    document.querySelector('.editor-toolbar').appendChild(previewButton);
+
     // Função para inserir frase selecionada
     window.insertSelectedPhrase = function() {
         const select = document.getElementById('phraseSelect');

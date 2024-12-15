@@ -219,6 +219,28 @@
     max-width: 1200px;
 }
 
+.calculation-feedback {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    animation: fadeInOut 1s ease;
+    z-index: 1000;
+}
+
+.search-highlight {
+    background-color: yellow;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(20px); }
+    50% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+}
+
 /* Indicador de salvamento */
 .save-indicator {
     position: fixed;

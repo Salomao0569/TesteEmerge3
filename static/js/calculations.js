@@ -14,7 +14,13 @@ function calcularMassaVE() {
 }
 
 function calcularResultados() {
-    console.log("Iniciando cálculos...");
+    // Feedback visual
+    const feedback = document.createElement('div');
+    feedback.className = 'calculation-feedback';
+    feedback.textContent = 'Calculando...';
+    document.body.appendChild(feedback);
+    
+    setTimeout(() => feedback.remove(), 1000);
     const peso = parseFloat(document.getElementById('peso').value) || 0;
     const altura = parseFloat(document.getElementById('altura').value) || 0;
     const diamDiastFinal = parseFloat(document.getElementById('diam_diast_final').value) || 0;
