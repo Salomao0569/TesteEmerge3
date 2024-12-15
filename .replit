@@ -1,12 +1,12 @@
 
 run = "python main.py"
-modules = ["python-3.11:v3.11", "postgresql-16:v16", "postgresql-16"]
+modules = ["postgresql-16", "postgresql-16", "python-3.11"]
 
 [nix]
 channel = "stable-24_05"
 
 [deployment]
-run = "python main.py"
+run = ["sh", "-c", "python main.py"]
 deploymentTarget = "cloudrun"
 
 [env]
@@ -17,4 +17,31 @@ DATABASE_URL = "postgresql://biocardio:biocardio86@34.46.61.123:5432/biocardio"
 
 [[ports]]
 localPort = 3000
-externalPort = 80
+externalPort = 3000
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Flask Server"
+
+[[workflows.workflow]]
+name = "Flask Server"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
+waitForPort = 3000

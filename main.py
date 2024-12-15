@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_file
+from flask_wtf.csrf import CSRFProtect
 from flask_caching import Cache
-
-cache = Cache(config={'CACHE_TYPE': 'simple'})
+from flask_compress import Compress
 from models import db, Doctor, Template
 import os
 import io
@@ -11,11 +11,14 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
-app = Flask(__name__)
-cache.init_app(app)
+# Inicialização das extensões
+cache = Cache(config={'CACHE_TYPE': 'simple'})
+csrf = CSRFProtect()
 
-# Compressão de resposta
-from flask_compress import Compress
+app = Flask(__name__)
+# Inicialização das extensões
+cache.init_app(app)
+csrf.init_app(app)
 Compress(app)
 
 # Configuração do banco de dados
@@ -28,7 +31,8 @@ app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 db.init_app(app)
 with app.app_context():
     db.create_all()
-    db.session.execute('ANALYZE')  # Otimiza as estatísticas do PostgreSQL
+    from sqlalchemy import text
+    db.session.execute(text('ANALYZE'))  # Otimiza as estatísticas do PostgreSQL
 
 @app.route('/')
 def index():

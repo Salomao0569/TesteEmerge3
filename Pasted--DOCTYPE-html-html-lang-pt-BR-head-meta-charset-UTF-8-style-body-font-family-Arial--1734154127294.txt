@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+body {font-family: Arial, sans-serif; font-size: 12px; margin: 20px;}
+h1 {text-align: center; font-size: 16px; margin: 15px 0;}
+table {width: 100%; border-collapse: collapse; margin: 10px 0;}
+td, th {border: 1px solid #ddd; padding: 4px; font-size: 12px;}
+input {width: 100%; border: none; padding: 4px; font-size: 12px;}
+td[id] {background-color: #f4f4f4;}
+button {padding: 8px 16px; border: none; border-radius: 4px; color: white; margin-right: 8px; cursor: pointer;}
+.btn-generate {background-color: #28a745;}
+.btn-print {background-color: #007bff;}
+.section-title {font-weight: bold; margin: 8px 0;}
+.laudo-content {
+    min-height: 500px;
+    border: 1px solid #ddd;
+    margin-top: 20px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 20px;
+    background-color: white;
+    color: black;
+    white-space: pre-line;
+}
+[contenteditable="true"] {outline: none;}
+.editor-toolbar {
+    background-color: #f3f2f1;
+    border: 1px solid #e1dfdd;
+    padding: 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+.editor-toolbar button {
+    background-color: #ffffff;
+    border: 1px solid #333;
+    border-radius: 3px;
+    padding: 6px 10px;
+    color: #333;
+    cursor: pointer;
+    min-width: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.editor-toolbar button:hover {
+    background-color: #e1dfdd;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.editor-toolbar select {
+    height: 32px;
+    border: 1px solid #333;
+    border-radius: 3px;
+    padding: 0 8px;
+    margin-right: 8px;
+    background-color: white;
+    color: #333;
+    cursor: pointer;
+}
+.formato-grupo {
+    display: flex;
+    gap: 2px;
+    padding: 0 5px;
+    border-right: 1px solid #ccc;
+}
+@media print {
+    .no-print {display: none !important;}
+    body {margin: 0;}
+    @page {size: A4; margin: 1.5cm;}
+}
+</style>
+</head>
+<body>
+<!-- ... (código anterior do formulário permanece igual) ... -->
+
+<div class="editor-toolbar">
+    <div class="formato-grupo">
+        <select onchange="changeFont(this.value)" style="width: 150px;">
+            <option value="">Fonte</option>
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Calibri">Calibri</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Helvetica">Helvetica</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Tahoma">Tahoma</option>
+            <option value="Trebuchet MS">Trebuchet MS</option>
+            <option value="Segoe UI">Segoe UI</option>
+            <option value="Open Sans">Open Sans</option>
+        </select>
+        <select onchange="changeFontSize(this.value)" style="width: 80px;">
+            <option value="">Tamanho</option>
+            <option value="1">10</option>
+            <option value="2">12</option>
+            <option value="3">14</option>
+            <option value="4">16</option>
+            <option value="5">18</option>
+            <option value="6">20</option>
+            <option value="7">24</option>
+        </select>
+    </div>
+    
+    <div class="formato-grupo">
+        <button onclick="formatText('bold')" title="Negrito">N</button>
+        <button onclick="formatText('italic')" title="Itálico">I</button>
+        <button onclick="formatText('underline')" title="Sublinhado">S</button>
+    </div>
+    
+    <div class="formato-grupo">
+        <button onclick="formatText('justifyLeft')" title="Alinhar à esquerda">←</button>
+        <button onclick="formatText('justifyCenter')" title="Centralizar">↔</button>
+        <button onclick="formatText('justifyRight')" title="Alinhar à direita">→</button>
+        <button onclick="formatText('justifyFull')" title="Justificar">↔↔</button>
+    </div>
+    
+    <div class="formato-grupo">
+        <button onclick="formatText('insertOrderedList')" title="Lista numerada">1.</button>
+        <button onclick="formatText('insertUnorderedList')" title="Lista com marcadores">•</button>
+        <button onclick="formatText('indent')" title="Aumentar recuo">→|</button>
+        <button onclick="formatText('outdent')" title="Diminuir recuo">|←</button>
+    </div>
+    
+    <div class="formato-grupo">
+        <button onclick="formatText('subscript')" title="Subscrito">x₂</button>
+        <button onclick="formatText('superscript')" title="Sobrescrito">x²</button>
+        <button onclick="formatText('strikeThrough')" title="Tachado">abc</button>
+    </div>
+    
+    <button onclick="clearFormatting()" title="Limpar formatação">Limpar</button>
+</div>
+
+<div class="laudo-content" contenteditable="true">
+Exame realizado com ritmo cardiaco regular. Evidenciando:
+
+Cavidades cardíacas com dimensões normais.
+Raiz da aorta com diâmetro preservado.
+Espessura miocárdica do ventrículo esquerdo conservada.
+
+Desempenho sistólico do ventrículo esquerdo conservado. Não foram observadas alterações segmentares da contratilidade ventricular.
+
+Função diastólica do ventrículo esquerdo conservada ao doppler mitral espectral.
+Ventrículo direito com desempenho sistólico preservado - análise subjetiva.
+Valva mitral com abertura e mobilidade conservadas. Colordoppler registrou refluxo discreto
+
+Valva tricúspide com abertura conservada. Colordoppler registrou refluxo discreto (velocidade 2,0 m/s, gradiente VD/AD aproximado de 16 mmHg).
+Obs: Valor estimado da pressão sistólica na artéria pulmonar de 21 mmHg (derivada do gradiente VD/AD).
+
+Valva aórtica com espessamento em seus folhetos. Abertura e mobilidade conservadas
+Valva pulmonar com abertura e mobilidade conservadas.
+
+Demais fluxos transvalvares com velocidades normais ao colordoppler.
+Pericárdio ecograficamente normal.
+
+OPINIÃO: Ecocardiograma dentro dos limites da normalidade.
+
+Obs:... A correta interpretação do resultado do exame depende de outros dados do paciente que só o médico solicitante possui.
+</div>
+
+<script>
+// ... (funções JavaScript anteriores permanecem iguais) ...
+
+function formatText(command) {
+    document.execCommand(command, false, null);
+}
+
+function changeFont(fontName) {
+    if (fontName) {
+        document.execCommand('fontName', false, fontName);
+    }
+}
+
+function changeFontSize(size) {
+    if (size) {
+        document.execCommand('fontSize', false, size);
+    }
+}
+
+function clearFormatting() {
+    document.execCommand('removeFormat', false, null);
+}
+</script>
+</body>
+</html>
