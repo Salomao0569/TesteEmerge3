@@ -212,7 +212,38 @@
 }
 
 .table-responsive {
-    margin: 0;
+    margin-bottom: 1rem;
+}
+
+.calculation-cell {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.calculation-cell:hover {
+    background-color: #f8f9fa;
+}
+
+.calculation-cell::after {
+    content: attr(data-formula);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+.calculation-cell:hover::after {
+    opacity: 1;
 }
 
 .container {
@@ -293,4 +324,15 @@
     color: #e0e0e0;
     border-color: #505050;
 }
+
+.backup-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #28a745;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    z-index: 1000;
+    animation: fadeInOut 2s ease;
 }

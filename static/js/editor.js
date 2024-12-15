@@ -41,10 +41,65 @@ document.addEventListener('DOMContentLoaded', function() {
         wordCountDisplay.textContent = `Palavras: ${wordCount} | Caracteres: ${charCount}`;
     }
 
-    editor.addEventListener('input', updateWordCount);
+    editor.addEventListener('input', e => {
+        updateWordCount();
+        // Salvar histórico de alterações
+        const history = JSON.parse(localStorage.getItem('editorHistory') || '[]');
+        history.push({
+            content: editor.innerHTML,
+            timestamp: new Date().toISOString()
+        });
+        // Manter apenas últimas 50 alterações
+        if (history.length > 50) history.shift();
+        localStorage.setItem('editorHistory', JSON.stringify(history));
+    });
     updateWordCount();
 
-    // Atalhos de teclado adicionais
+    // Painel de histórico
+    const historyButton = document.createElement('button');
+    historyButton.className = 'btn btn-sm btn-outline-secondary ms-2';
+    historyButton.innerHTML = '<i class="fas fa-history"></i>';
+    historyButton.title = 'Histórico de alterações';
+    document.querySelector('.editor-toolbar').appendChild(historyButton);
+
+    historyButton.onclick = () => {
+        const history = JSON.parse(localStorage.getItem('editorHistory') || '[]');
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5>Histórico de Alterações</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                        ${history.reverse().map((item, i) => `
+                            <div class="border-bottom p-2">
+                                <small class="text-muted">${new Date(item.timestamp).toLocaleString()}</small>
+                                <button class="btn btn-sm btn-outline-primary float-end" onclick="restoreVersion(${i})">
+                                    Restaurar
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        new bootstrap.Modal(modal).show();
+        modal.addEventListener('hidden.bs.modal', () => modal.remove());
+    };
+
+    window.restoreVersion = (index) => {
+        const history = JSON.parse(localStorage.getItem('editorHistory') || '[]');
+        if (history[index]) {
+            editor.innerHTML = history[index].content;
+            localStorage.setItem('editorContent', history[index].content);
+        }
+    };
+
+    // Atalhos de teclado personalizados
     editor.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.key === 's') {
             e.preventDefault();
