@@ -90,17 +90,37 @@ function gerarPDF() {
         doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
 
-        Array.from(paragraphs).forEach(p => {
-            const text = p.innerText.trim();
-            if (text) {
-                // Verifica estilo
-                const style = window.getComputedStyle(p);
-                const isBold = style.fontWeight === 'bold' || p.querySelector('strong');
-                const isItalic = style.fontStyle === 'italic' || p.querySelector('em');
-                
-                // Aplica estilo
-                if (isBold) doc.setFont('helvetica', 'bold');
-                if (isItalic) doc.setFont('helvetica', 'italic');
+        const editorContent = editor.innerHTML;
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = editorContent;
+        
+        const processText = (element) => {
+            Array.from(element.childNodes).forEach(node => {
+                if (node.nodeType === 3) { // Text node
+                    const text = node.textContent.trim();
+                    if (text) {
+                        const lines = doc.splitTextToSize(text, contentWidth);
+                        lines.forEach(line => {
+                            doc.text(line, margin, currentY);
+                            currentY += 7;
+                        });
+                    }
+                } else if (node.nodeType === 1) { // Element node
+                    const style = window.getComputedStyle(node);
+                    const isBold = style.fontWeight === 'bold' || node.tagName === 'STRONG';
+                    const isItalic = style.fontStyle === 'italic' || node.tagName === 'EM';
+                    
+                    if (isBold) doc.setFont('helvetica', 'bold');
+                    if (isItalic) doc.setFont('helvetica', 'italic');
+                    
+                    processText(node);
+                    
+                    doc.setFont('helvetica', 'normal');
+                }
+            });
+        };
+        
+        processText(tempDiv);
                 
                 // Quebra o texto em linhas
                 const lines = doc.splitTextToSize(text, contentWidth);

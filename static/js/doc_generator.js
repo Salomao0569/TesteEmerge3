@@ -46,8 +46,6 @@ function gerarDOC() {
                 }
             }))
         },
-            espacamento: window.getComputedStyle(document.getElementById('editor')).lineHeight
-        },
         medico: {
             id: document.getElementById('selectedDoctor').value,
             nome: document.getElementById('selectedDoctor').selectedOptions[0]?.text || '',
