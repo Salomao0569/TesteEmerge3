@@ -1,3 +1,15 @@
+
+#templateContent {
+    resize: vertical;
+    line-height: 1.5;
+    padding: 15px;
+    font-family: Arial, sans-serif;
+}
+
+#templateContent:focus {
+    box-shadow: 0 0 5px rgba(0,123,255,.5);
+}
+
 /* Print styles */
 @media print {
     body {
