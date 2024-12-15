@@ -13,7 +13,7 @@ app = Flask(__name__)
 # Configuração do banco de dados
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://biocardio:biocardio86@biocardio.ch2suoae2l0p.sa-east-1.rds.amazonaws.com:5432/biocardio"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your-secret-key'
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key')
 
 # Inicialização do banco de dados
 db.init_app(app)
@@ -117,4 +117,4 @@ if __name__ == '__main__':
         except Exception as e:
             print(f"Erro ao criar tabelas: {e}")
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
