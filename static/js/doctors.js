@@ -16,8 +16,15 @@ async function loadDoctors() {
         
         const doctors = await response.json();
         if (Array.isArray(doctors)) {
-            updateDoctorsTable(doctors);
-            if (typeof updateDoctorsSelect === 'function') {
+            // Atualizar tabela se estivermos na página de médicos
+            const doctorsTable = document.querySelector('#doctorsTable');
+            if (doctorsTable) {
+                updateDoctorsTable(doctors);
+            }
+            
+            // Atualizar select de médicos em todas as páginas
+            const doctorSelect = document.querySelector('#selectedDoctor');
+            if (doctorSelect) {
                 updateDoctorsSelect(doctors);
             }
         } else {
@@ -25,25 +32,32 @@ async function loadDoctors() {
         }
     } catch (error) {
         console.error('Erro ao carregar médicos:', error);
-        const tbody = document.querySelector('#doctorsTable tbody');
-        if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Erro ao carregar médicos: ${error.message}</td></tr>`;
+        const doctorsTable = document.querySelector('#doctorsTable');
+        if (doctorsTable) {
+            const tbody = doctorsTable.querySelector('tbody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Erro ao carregar médicos: ${error.message}</td></tr>`;
+            }
         }
     }
 }
 
 // Função para atualizar a tabela de médicos
 function updateDoctorsTable(doctors) {
-    const tbody = document.querySelector('#doctorsTable tbody');
+    const doctorsTable = document.querySelector('#doctorsTable');
+    if (!doctorsTable) {
+        return; // Estamos em uma página sem tabela de médicos
+    }
+    
+    let tbody = doctorsTable.querySelector('tbody');
     if (!tbody) {
-        console.warn('Elemento tbody não encontrado');
-        return;
+        tbody = document.createElement('tbody');
+        doctorsTable.appendChild(tbody);
     }
     
     try {
-        const rows = doctors.map(doctor => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
+        tbody.innerHTML = doctors.map(doctor => `
+            <tr>
                 <td>${doctor.full_name}</td>
                 <td>${doctor.crm}</td>
                 <td>${doctor.rqe || '-'}</td>
@@ -52,14 +66,11 @@ function updateDoctorsTable(doctors) {
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
-            `;
-            return tr;
-        });
-        
-        tbody.innerHTML = '';
-        rows.forEach(row => tbody.appendChild(row));
+            </tr>
+        `).join('');
     } catch (error) {
         console.error('Erro ao atualizar tabela:', error);
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Erro ao atualizar tabela: ${error.message}</td></tr>`;
     }
 }
 

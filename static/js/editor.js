@@ -18,11 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('editorContent', editor.innerHTML);
     }
 
-    window.setFontSize = function(size) {
-        editor.focus();
-        document.execCommand('fontSize', false, size);
-        localStorage.setItem('editorContent', editor.innerHTML);
-    }
+    
 
     window.addMedicalSignature = function() {
         const doctorSelect = document.getElementById('selectedDoctor');

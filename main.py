@@ -1,17 +1,14 @@
 import os
+import secrets
 from flask import Flask, render_template, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from flask_caching import Cache
 from flask_compress import Compress
-from models import db, Doctor, Template
-import io
-# from docx import Document
-# from docx.shared import Pt, Inches
-# from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-import secrets
+
+from models import db, Doctor, Template
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -92,15 +89,43 @@ def delete_doctor(doctor_id):
 
 @app.route('/templates')
 def templates():
-    return render_template('templates.html')
+    doctors = Doctor.query.all()
+    templates = Template.query.all()
+    return render_template('templates.html', doctors=doctors, templates=templates)
 
-#Example route for generating a DOCX report.  This needs to be adapted to your actual application
-@app.route('/gerar_doc', methods=['POST'])
-def gerar_doc():
-    return jsonify({"error": "Função temporariamente desativada"}), 503
+@app.route('/reports')
+def reports():
+    doctors = Doctor.query.all()
+    templates = Template.query.all()
+    return render_template('reports.html', doctors=doctors, templates=templates)
 
+@app.route('/api/templates', methods=['POST'])
+def create_template():
+    try:
+        data = request.get_json()
+        new_template = Template(
+            name=data['name'],
+            content=data['content'],
+            category=data.get('category', 'laudo'),
+            doctor_id=data.get('doctor_id')
+        )
+        db.session.add(new_template)
+        db.session.commit()
+        return jsonify(new_template.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
 
-
+@app.route('/api/templates/<int:template_id>', methods=['DELETE'])
+def delete_template(template_id):
+    try:
+        template = Template.query.get_or_404(template_id)
+        db.session.delete(template)
+        db.session.commit()
+        return '', 204
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
 
 if __name__ == '__main__':
     try:
