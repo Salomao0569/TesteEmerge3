@@ -10,7 +10,7 @@ import logging
 import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://biocardio:biocardio86@34.46.61.123:5432/biocardio'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PREFERRED_URL_SCHEME'] = 'https'
 
@@ -21,7 +21,6 @@ logging.basicConfig(level=logging.INFO)
 assets = init_assets(app)
 
 # Initialize database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
 db.init_app(app)
 
 with app.app_context():
