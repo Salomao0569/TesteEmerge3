@@ -7,11 +7,11 @@ channel = "stable-24_05"
 
 [deployment]
 run = "python main.py"
-deploymentTarget = "vm"
+deploymentTarget = "cloudrun"
 
 [env]
 PYTHON_VERSION = "3.11"
 
 [[ports]]
-localPort = 5000
+localPort = 80
 externalPort = 80
