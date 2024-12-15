@@ -1,14 +1,13 @@
 
-from flask import Flask, render_template, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
-from models import db, Doctor
+from flask import Flask, render_template, request, jsonify
+from models import db, Doctor, Template
 import os
 from dotenv import load_dotenv
 
 app = Flask(__name__)
 
 # Configuração do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://biocardio:biocardio86@34.46.61.123:5432/biocardio"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your-secret-key'
 
@@ -17,8 +16,13 @@ db.init_app(app)
 
 @app.route('/')
 def index():
-    doctors = Doctor.query.all()
-    return render_template('index.html', doctors=doctors)
+    try:
+        doctors = Doctor.query.all()
+        templates = Template.query.all()
+        return render_template('index.html', doctors=doctors, templates=templates)
+    except Exception as e:
+        print(f"Erro ao acessar o banco: {e}")
+        return "Erro ao conectar ao banco de dados", 500
 
 @app.route('/doctors')
 def doctors():
