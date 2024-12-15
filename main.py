@@ -1,4 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_file
+from flask_caching import Cache
+
+cache = Cache(config={'CACHE_TYPE': 'simple'})
 from models import db, Doctor, Template
 import os
 import io
@@ -9,6 +12,11 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
 app = Flask(__name__)
+cache.init_app(app)
+
+# Compressão de resposta
+from flask_compress import Compress
+Compress(app)
 
 # Configuração do banco de dados
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
@@ -19,6 +27,7 @@ app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key')
 db.init_app(app)
 with app.app_context():
     db.create_all()
+    db.session.execute('ANALYZE')  # Otimiza as estatísticas do PostgreSQL
 
 @app.route('/')
 def index():
