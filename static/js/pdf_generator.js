@@ -1,4 +1,3 @@
-
 function gerarPDF() {
     window.jsPDF = window.jspdf.jsPDF;
 
@@ -84,9 +83,6 @@ function gerarPDF() {
         currentY = margin;
 
         // Conteúdo do Laudo
-        const editor = document.getElementById('editor');
-        const paragraphs = editor.getElementsByTagName('p');
-        
         doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
 
