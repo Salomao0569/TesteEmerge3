@@ -1,8 +1,12 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 from models import db, Doctor, Template
 import os
+import io
+from docx import Document
+from docx.shared import Pt, Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from htmldocx import HtmlToDocx # Added import for HTML to DOCX conversion
 
 app = Flask(__name__)
 
@@ -39,24 +43,53 @@ def templates():
 def gerar_doc():
     try:
         data = request.get_json()
-        parser = HtmlToDocx()
-        doc = parser.parse_html_string(data['laudo'])
+        doc = Document()
         
-        # Configurar estilos do documento
-        for paragraph in doc.paragraphs:
-            paragraph.paragraph_format.line_spacing = 1.5
+        # Configurar margens
+        sections = doc.sections
+        for section in sections:
+            section.top_margin = Inches(1)
+            section.bottom_margin = Inches(1)
+            section.left_margin = Inches(1)
+            section.right_margin = Inches(1)
+        
+        # Converter HTML para texto formatado
+        soup = BeautifulSoup(data['laudo'], 'html.parser')
+        for p in soup.find_all(['p', 'div']):
+            paragraph = doc.add_paragraph()
+            paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.ONE_POINT_FIVE
             paragraph.paragraph_format.space_after = Pt(12)
             
-        # Salvar temporariamente
-        temp_path = "temp_report.docx"
-        doc.save(temp_path)
+            # Processar o texto e formatação
+            text = p.get_text()
+            run = paragraph.add_run(text)
+            run.font.name = 'Arial'
+            run.font.size = Pt(12)
+            
+            # Aplicar formatação
+            if p.find('strong') or p.find('b'):
+                run.bold = True
+            if p.find('em') or p.find('i'):
+                run.italic = True
+            if p.find('u'):
+                run.underline = True
+            
+            # Alinhamento
+            if 'text-align' in p.get('style', ''):
+                if 'center' in p['style']:
+                    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                elif 'right' in p['style']:
+                    paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+                elif 'justify' in p['style']:
+                    paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         
-        with open(temp_path, 'rb') as f:
-            doc_data = f.read()
-        os.remove(temp_path)
+        # Salvar em memória
+        doc_stream = io.BytesIO()
+        doc.save(doc_stream)
+        doc_stream.seek(0)
         
         return send_file(
-            io.BytesIO(doc_data),
+            doc_stream,
             mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             as_attachment=True,
             download_name=f"Laudo_{data['paciente']['nome']}.docx"
