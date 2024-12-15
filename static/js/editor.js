@@ -66,30 +66,48 @@ document.addEventListener('DOMContentLoaded', function() {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = editorElement.innerHTML;
 
-        // Função para processar estilos de texto
+        // Função para processar estilos de texto de forma segura
         function processTextStyles(element) {
-            if (element.nodeType === Node.ELEMENT_NODE) {
-                // Preservar alinhamento
-                if (element.style.textAlign) {
-                    element.setAttribute('data-text-align', element.style.textAlign);
+            if (!element || element.nodeType !== Node.ELEMENT_NODE) {
+                return;
+            }
+
+            try {
+                // Preservar alinhamento original
+                const computedStyle = window.getComputedStyle(element);
+                const textAlign = computedStyle.textAlign;
+                if (textAlign && textAlign !== 'start') {
+                    element.style.textAlign = textAlign;
                 }
 
-                // Converter estilos inline em elementos HTML apropriados
-                if (element.style.fontWeight === 'bold' || element.style.fontWeight >= 600) {
+                // Processar estilos de texto
+                const fontWeight = computedStyle.fontWeight;
+                const fontStyle = computedStyle.fontStyle;
+                const textDecoration = computedStyle.textDecoration;
+
+                // Criar um novo elemento wrapper para manter a hierarquia
+                const wrapper = document.createElement('span');
+                wrapper.innerHTML = element.innerHTML;
+
+                // Aplicar formatação com base nos estilos computados
+                if (parseInt(fontWeight) >= 600) {
                     const strong = document.createElement('strong');
-                    strong.innerHTML = element.innerHTML;
-                    element.innerHTML = strong.outerHTML;
+                    strong.innerHTML = wrapper.innerHTML;
+                    wrapper.innerHTML = strong.outerHTML;
                 }
-                if (element.style.fontStyle === 'italic') {
+                if (fontStyle === 'italic') {
                     const em = document.createElement('em');
-                    em.innerHTML = element.innerHTML;
-                    element.innerHTML = em.outerHTML;
+                    em.innerHTML = wrapper.innerHTML;
+                    wrapper.innerHTML = em.outerHTML;
                 }
-                if (element.style.textDecoration === 'underline') {
+                if (textDecoration.includes('underline')) {
                     const u = document.createElement('u');
-                    u.innerHTML = element.innerHTML;
-                    element.innerHTML = u.outerHTML;
+                    u.innerHTML = wrapper.innerHTML;
+                    wrapper.innerHTML = u.outerHTML;
                 }
+
+                // Atualizar o conteúdo do elemento original
+                element.innerHTML = wrapper.innerHTML;
 
                 // Aplicar estilos consistentes
                 element.style.fontFamily = 'Arial, sans-serif';
@@ -97,44 +115,97 @@ document.addEventListener('DOMContentLoaded', function() {
                 element.style.lineHeight = '1.5';
 
                 // Processar filhos recursivamente
-                Array.from(element.children).forEach(child => processTextStyles(child));
+                const children = Array.from(element.children);
+                children.forEach(child => processTextStyles(child));
+            } catch (error) {
+                console.error('Erro ao processar estilos:', error);
             }
         }
 
-        // Processar parágrafos
-        const paragraphs = tempDiv.getElementsByTagName('p');
-        Array.from(paragraphs).forEach(p => {
-            // Garantir que cada parágrafo tenha margem adequada
-            p.style.marginBottom = '1em';
-            p.style.marginTop = '0';
-            
-            // Processar estilos de texto dentro do parágrafo
-            processTextStyles(p);
-            
-            // Restaurar alinhamento
-            const align = p.getAttribute('data-text-align');
-            if (align) {
-                p.style.textAlign = align;
-            } else if (!p.style.textAlign) {
-                p.style.textAlign = 'left';
-            }
-        });
+        try {
+            // Processar parágrafos com tratamento de erro
+            const paragraphs = tempDiv.getElementsByTagName('p');
+            if (paragraphs && paragraphs.length > 0) {
+                Array.from(paragraphs).forEach(p => {
+                    if (!p) return;
+                    
+                    try {
+                        // Garantir que cada parágrafo tenha margem adequada
+                        p.style.marginBottom = '1em';
+                        p.style.marginTop = '0';
+                        
+                        // Processar estilos de texto dentro do parágrafo
+                        processTextStyles(p);
+                        
+                        // Aplicar alinhamento com base no estilo computado
+                        const computedStyle = window.getComputedStyle(p);
+                        if (computedStyle.textAlign !== 'start' && computedStyle.textAlign !== 'left') {
+                            p.style.textAlign = computedStyle.textAlign;
+                        } else {
+                            p.style.textAlign = 'left';
+                        }
 
-        // Processar listas
-        ['ul', 'ol'].forEach(listType => {
-            const lists = tempDiv.getElementsByTagName(listType);
-            Array.from(lists).forEach(list => {
-                list.style.marginLeft = '2em';
-                list.style.marginBottom = '1em';
-                list.style.paddingLeft = '1em';
-                
-                const items = list.getElementsByTagName('li');
-                Array.from(items).forEach(item => {
-                    item.style.marginBottom = '0.5em';
-                    processTextStyles(item);
+                        // Garantir que o parágrafo mantenha sua formatação
+                        p.setAttribute('data-original-format', 'true');
+                    } catch (error) {
+                        console.error('Erro ao processar parágrafo:', error);
+                    }
+                });
+            }
+
+            // Processar listas com verificações de segurança
+            ['ul', 'ol'].forEach(listType => {
+                const lists = tempDiv.getElementsByTagName(listType);
+                if (!lists || lists.length === 0) return;
+
+                Array.from(lists).forEach(list => {
+                    if (!list) return;
+                    
+                    try {
+                        // Aplicar estilos de lista
+                        list.style.marginLeft = '2em';
+                        list.style.marginBottom = '1em';
+                        list.style.paddingLeft = '1em';
+                        
+                        // Processar itens da lista
+                        const items = list.getElementsByTagName('li');
+                        if (items && items.length > 0) {
+                            Array.from(items).forEach(item => {
+                                if (!item) return;
+                                
+                                try {
+                                    item.style.marginBottom = '0.5em';
+                                    processTextStyles(item);
+                                    
+                                    // Garantir que itens de lista mantenham sua formatação
+                                    item.setAttribute('data-original-format', 'true');
+                                } catch (error) {
+                                    console.error('Erro ao processar item de lista:', error);
+                                }
+                            });
+                        }
+
+                        // Garantir que a lista mantenha sua formatação
+                        list.setAttribute('data-original-format', 'true');
+                    } catch (error) {
+                        console.error('Erro ao processar lista:', error);
+                    }
                 });
             });
-        });
+
+            // Garantir que elementos formatados mantenham seus estilos
+            ['strong', 'b', 'em', 'i', 'u'].forEach(tag => {
+                const elements = tempDiv.getElementsByTagName(tag);
+                Array.from(elements).forEach(el => {
+                    if (el) {
+                        el.setAttribute('data-original-format', 'true');
+                    }
+                });
+            });
+
+        } catch (error) {
+            console.error('Erro ao processar conteúdo:', error);
+        }
 
         return tempDiv.innerHTML;
     }
@@ -149,17 +220,64 @@ document.addEventListener('DOMContentLoaded', function() {
             const range = selection.getRangeAt(0);
             let currentBlock = range.commonAncestorContainer;
             
+            // Encontrar o elemento pai mais próximo que seja um parágrafo ou div
             while (currentBlock && currentBlock.nodeType !== Node.ELEMENT_NODE) {
                 currentBlock = currentBlock.parentNode;
             }
             
+            // Se encontrou um bloco válido e não é o próprio editor
             if (currentBlock && currentBlock !== editor) {
-                currentBlock.style.textAlign = command.replace('justify', '').toLowerCase();
+                const align = command.replace('justify', '').toLowerCase();
+                currentBlock.style.textAlign = align;
+                
+                // Garantir que a formatação seja mantida
+                currentBlock.setAttribute('data-text-align', align);
+                currentBlock.setAttribute('data-original-format', 'true');
             }
         } else {
+            // Para outros comandos (negrito, itálico, sublinhado)
             document.execCommand(command, false, value);
+            
+            // Processar o elemento recém formatado
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            const container = range.commonAncestorContainer;
+            
+            // Encontrar o elemento pai mais próximo com a formatação
+            let formattedElement = container;
+            while (formattedElement && formattedElement.nodeType !== Node.ELEMENT_NODE) {
+                formattedElement = formattedElement.parentNode;
+            }
+            
+            if (formattedElement && formattedElement !== editor) {
+                // Adicionar atributos para identificar a formatação
+                formattedElement.setAttribute('data-original-format', 'true');
+                const style = window.getComputedStyle(formattedElement);
+                
+                // Preservar estilos computados
+                if (style.fontWeight >= 600) {
+                    formattedElement.setAttribute('data-font-weight', 'bold');
+                }
+                if (style.fontStyle === 'italic') {
+                    formattedElement.setAttribute('data-font-style', 'italic');
+                }
+                if (style.textDecoration.includes('underline')) {
+                    formattedElement.setAttribute('data-text-decoration', 'underline');
+                }
+            }
         }
         saveContent();
+        
+        // Atualizar visualização para garantir consistência
+        const processedContent = processEditorContent(editor);
+        if (processedContent !== editor.innerHTML) {
+            editor.innerHTML = processedContent;
+            // Restaurar seleção
+            if (selection && range) {
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        }
     }
 
     window.addMedicalSignature = function() {
@@ -220,5 +338,49 @@ document.addEventListener('DOMContentLoaded', function() {
     // Expor função para outros módulos
     window.getProcessedEditorContent = () => {
         return processEditorContent(editor);
+    };
+
+    // Função para preparar conteúdo para geração de documentos
+    window.prepareContentForDocument = () => {
+        const processedContent = processEditorContent(editor);
+        const docDiv = document.createElement('div');
+        docDiv.innerHTML = processedContent;
+
+        // Função para garantir que todos os elementos tenham estilos explícitos
+        function ensureExplicitStyles(element) {
+            if (element.nodeType === Node.ELEMENT_NODE) {
+                // Garantir que todos os parágrafos tenham alinhamento explícito
+                if (element.tagName === 'P') {
+                    if (!element.style.textAlign) {
+                        element.style.textAlign = 'left';
+                    }
+                    if (!element.style.marginBottom) {
+                        element.style.marginBottom = '1em';
+                    }
+                }
+
+                // Converter elementos de estilo em tags HTML apropriadas
+                if (window.getComputedStyle(element).fontWeight >= 600) {
+                    element.innerHTML = `<strong>${element.innerHTML}</strong>`;
+                }
+                if (window.getComputedStyle(element).fontStyle === 'italic') {
+                    element.innerHTML = `<em>${element.innerHTML}</em>`;
+                }
+                if (window.getComputedStyle(element).textDecoration.includes('underline')) {
+                    element.innerHTML = `<u>${element.innerHTML}</u>`;
+                }
+
+                // Garantir fonte e tamanho consistentes
+                element.style.fontFamily = 'Arial, sans-serif';
+                element.style.fontSize = element.style.fontSize || '12pt';
+                element.style.lineHeight = '1.5';
+
+                // Processar elementos filhos recursivamente
+                Array.from(element.children).forEach(child => ensureExplicitStyles(child));
+            }
+        }
+
+        ensureExplicitStyles(docDiv);
+        return docDiv.innerHTML;
     };
 });
