@@ -7,12 +7,11 @@ from dotenv import load_dotenv
 def get_db_connection():
     try:
         connection = psycopg2.connect(
-            host="34.46.61.123",
+            host="biocardio.ch2suoae2l0p.sa-east-1.rds.amazonaws.com",
             database="biocardio",
             user="biocardio",
-            password="biocardio86", 
-            port="5432",
-            sslmode='require'
+            password="biocardio86",
+            port="5432"
         )
         return connection
     except psycopg2.Error as e:
