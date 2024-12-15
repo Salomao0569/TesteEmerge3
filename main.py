@@ -22,17 +22,17 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Initialize database and create tables
+# Initialize database
+db.init_app(app)
+
+# Create tables
 with app.app_context():
     try:
-        app.logger.info("Tentando conectar ao PostgreSQL...")
+        app.logger.info("Criando tabelas no SQLite...")
         db.create_all()
-        app.logger.info("Conexão com PostgreSQL estabelecida com sucesso!")
+        app.logger.info("Tabelas criadas com sucesso!")
     except Exception as e:
-        app.logger.error(f"Erro ao conectar com PostgreSQL: {str(e)}")
-
-# Initialize database and assets
-db.init_app(app)
+        app.logger.error(f"Erro ao criar tabelas: {str(e)}")
 assets = init_assets(app)
 
 with app.app_context():
