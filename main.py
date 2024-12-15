@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, jsonify, send_file
 from datetime import datetime
 from docx import Document
@@ -206,6 +205,50 @@ def delete_doctor(id):
         db.session.rollback()
         app.logger.error(f"Erro ao deletar médico: {str(e)}")
         return jsonify({'error': str(e)}), 400
+
+@app.route('/gerar_doc', methods=['POST'])
+def gerar_doc():
+    from docx import Document
+    from docx.shared import Pt, Inches
+    try:
+        data = request.json
+        doc = Document()
+        
+        # Add title
+        doc.add_heading('Laudo de Ecodopplercardiograma', 0)
+        
+        # Add patient info
+        doc.add_paragraph(f"Nome: {data['paciente']['nome']}")
+        doc.add_paragraph(f"Data do Exame: {data['paciente']['dataExame']}")
+        doc.add_paragraph(f"Data de Nascimento: {data['paciente']['dataNascimento']}")
+        doc.add_paragraph(f"Sexo: {data['paciente']['sexo']}")
+        doc.add_paragraph(f"Peso: {data['paciente']['peso']} kg")
+        doc.add_paragraph(f"Altura: {data['paciente']['altura']} cm")
+        
+        # Add content
+        doc.add_paragraph(data['laudo'])
+        
+        # Add doctor signature
+        if data['medico']['nome']:
+            doc.add_paragraph(f"\n\n{data['medico']['nome']}")
+            doc.add_paragraph(f"CRM: {data['medico']['crm']}")
+            if data['medico']['rqe']:
+                doc.add_paragraph(f"RQE: {data['medico']['rqe']}")
+        
+        # Save to memory
+        doc_io = BytesIO()
+        doc.save(doc_io)
+        doc_io.seek(0)
+        
+        return send_file(
+            doc_io,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            as_attachment=True,
+            download_name=f"Laudo_{data['paciente']['nome'].replace(' ', '_')}.docx"
+        )
+    except Exception as e:
+        app.logger.error(f"Erro ao gerar DOC: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
