@@ -6,9 +6,32 @@ document.addEventListener('DOMContentLoaded', function() {
     editor.parentNode.insertBefore(wordCountDisplay, editor.nextSibling);
 
     // Auto-save a cada 30 segundos
+    // Auto-save com feedback visual
     setInterval(() => {
         localStorage.setItem('editorContent', editor.innerHTML);
+        const saveIndicator = document.createElement('div');
+        saveIndicator.className = 'save-indicator';
+        saveIndicator.textContent = 'Salvo automaticamente';
+        document.body.appendChild(saveIndicator);
+        setTimeout(() => saveIndicator.remove(), 2000);
     }, 30000);
+
+    // Controle de tema escuro
+    const themeToggle = document.createElement('button');
+    themeToggle.className = 'btn btn-sm btn-outline-secondary ms-2';
+    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+    themeToggle.title = 'Alternar tema escuro';
+    document.querySelector('.editor-toolbar').appendChild(themeToggle);
+
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-theme');
+        localStorage.setItem('darkTheme', document.body.classList.contains('dark-theme'));
+    });
+
+    // Restaurar preferência de tema
+    if (localStorage.getItem('darkTheme') === 'true') {
+        document.body.classList.add('dark-theme');
+    }
 
     // Contagem de palavras/caracteres
     function updateWordCount() {

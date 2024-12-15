@@ -218,3 +218,57 @@
 .container {
     max-width: 1200px;
 }
+
+/* Indicador de salvamento */
+.save-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    animation: fadeInOut 2s ease;
+    z-index: 1000;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(20px); }
+    20% { opacity: 1; transform: translateY(0); }
+    80% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+}
+
+/* Tema escuro */
+.dark-theme {
+    background-color: #1a1a1a !important;
+    color: #e0e0e0 !important;
+}
+
+.dark-theme .editor-area {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #404040;
+}
+
+.dark-theme .card {
+    background-color: #2d2d2d;
+    border-color: #404040;
+}
+
+.dark-theme .card-header {
+    background-color: #404040;
+    border-bottom-color: #505050;
+}
+
+.dark-theme .form-control {
+    background-color: #333;
+    border-color: #404040;
+    color: #e0e0e0;
+}
+
+.dark-theme .btn-outline-secondary {
+    color: #e0e0e0;
+    border-color: #505050;
+}
+}
