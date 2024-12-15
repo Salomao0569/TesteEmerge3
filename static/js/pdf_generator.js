@@ -94,36 +94,17 @@ function gerarPDF() {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = editorContent;
         
-        const processText = (element) => {
-            Array.from(element.childNodes).forEach(node => {
-                if (node.nodeType === 3) { // Text node
-                    const text = node.textContent.trim();
-                    if (text) {
-                        const lines = doc.splitTextToSize(text, contentWidth);
-                        lines.forEach(line => {
-                            doc.text(line, margin, currentY);
-                            currentY += 7;
-                        });
-                    }
-                } else if (node.nodeType === 1) { // Element node
-                    const style = window.getComputedStyle(node);
-                    const isBold = style.fontWeight === 'bold' || node.tagName === 'STRONG';
-                    const isItalic = style.fontStyle === 'italic' || node.tagName === 'EM';
-                    
-                    if (isBold) doc.setFont('helvetica', 'bold');
-                    if (isItalic) doc.setFont('helvetica', 'italic');
-                    
-                    processText(node);
-                    
-                    doc.setFont('helvetica', 'normal');
-                }
-            });
-        };
+        const editorContent = editor.innerText;
+        const lines = doc.splitTextToSize(editorContent, contentWidth);
         
-        processText(tempDiv);
-                
-                // Quebra o texto em linhas
-                const lines = doc.splitTextToSize(text, contentWidth);
+        lines.forEach(line => {
+            if (currentY > pageHeight - margin) {
+                doc.addPage();
+                currentY = margin;
+            }
+            doc.text(line, margin, currentY);
+            currentY += 7;
+        });
                 
                 // Adiciona nova página se necessário
                 if (currentY + (lines.length * 7) > pageHeight - margin) {
