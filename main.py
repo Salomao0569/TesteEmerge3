@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request, jsonify, send_file
 from datetime import datetime
 from docx import Document
@@ -11,11 +12,6 @@ import os
 
 app = Flask(__name__)
 
-# Configuração PostgreSQL
-database_url = os.environ.get('DATABASE_URL')
-if not database_url:
-    raise Exception("DATABASE_URL não encontrada nas variáveis de ambiente")
-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -25,18 +21,17 @@ logging.basicConfig(level=logging.INFO)
 # Initialize database
 db.init_app(app)
 
-# Create tables
+# Drop and recreate tables
 with app.app_context():
     try:
-        app.logger.info("Criando tabelas no SQLite...")
+        app.logger.info("Recriando tabelas no SQLite...")
+        db.drop_all()
         db.create_all()
-        app.logger.info("Tabelas criadas com sucesso!")
+        app.logger.info("Tabelas recriadas com sucesso!")
     except Exception as e:
-        app.logger.error(f"Erro ao criar tabelas: {str(e)}")
-assets = init_assets(app)
+        app.logger.error(f"Erro ao recriar tabelas: {str(e)}")
 
-with app.app_context():
-    db.create_all()
+assets = init_assets(app)
 
 @app.route('/')
 def index():
@@ -92,6 +87,7 @@ def get_template(id):
     except Exception as e:
         app.logger.error(f"Erro ao buscar template {id}: {str(e)}")
         return jsonify({'error': str(e)}), 404
+
 @app.route('/api/templates', methods=['GET'])
 def get_templates():
     try:
@@ -127,20 +123,6 @@ def create_template():
             error_msg = f"Categoria inválida. Use uma das seguintes: {', '.join(valid_categories)}"
             app.logger.error(error_msg)
             return jsonify({'error': error_msg}), 400
-        
-        # Validar dados
-        if not data['name'].strip():
-            error_msg = "Nome não pode estar vazio"
-            app.logger.error(error_msg)
-            return jsonify({'error': error_msg}), 400
-            
-        if not data['content'].strip():
-            error_msg = "Conteúdo não pode estar vazio"
-            app.logger.error(error_msg)
-            return jsonify({'error': error_msg}), 400
-            
-        app.logger.info(f"Criando template: {data['name']}")
-        app.logger.info(f"Conteúdo: {data['content'][:100]}...")
         
         template = Template(
             name=data['name'],
@@ -200,11 +182,6 @@ def create_doctor():
         if not data.get('crm'):
             return jsonify({'error': 'CRM é obrigatório'}), 400
 
-        # Verifica se já existe médico com o mesmo CRM
-        existing_doctor = Doctor.query.filter_by(crm=data['crm']).first()
-        if existing_doctor:
-            return jsonify({'error': 'Já existe um médico cadastrado com este CRM'}), 400
-
         doctor = Doctor(
             full_name=data['full_name'],
             crm=data['crm'],
@@ -229,109 +206,6 @@ def delete_doctor(id):
         db.session.rollback()
         app.logger.error(f"Erro ao deletar médico: {str(e)}")
         return jsonify({'error': str(e)}), 400
-
-@app.route('/api/laudos', methods=['POST'])
-def criar_laudo():
-    try:
-        data = request.json
-        laudo = Laudo(
-            data_exame=datetime.strptime(data['dataExame'], '%Y-%m-%d'),
-            paciente_nome=data['paciente']['nome'],
-            paciente_data_nascimento=datetime.strptime(data['paciente']['dataNascimento'], '%d/%m/%Y').date() if data['paciente']['dataNascimento'] else None,
-            paciente_sexo=data['paciente']['sexo'],
-            peso=float(data['paciente']['peso']),
-            altura=float(data['paciente']['altura']),
-            medidas=data['medidas'],
-            calculos=data['calculos'],
-            conteudo=data['laudo'],
-            doctor_id=data['medico']['id']
-        )
-        db.session.add(laudo)
-        db.session.commit()
-        return jsonify(laudo.to_dict()), 201
-    except Exception as e:
-        db.session.rollback()
-        app.logger.error(f"Erro ao criar laudo: {str(e)}")
-        return jsonify({'error': str(e)}), 400
-
-@app.route('/gerar_doc', methods=['POST'])
-def gerar_doc():
-    try:
-        data = request.json
-        doc = Document()
-        
-        # Título
-        doc.add_heading('Laudo de Ecodopplercardiograma', 0)
-        
-        # Dados do Paciente
-        doc.add_heading('Dados do Paciente', level=1)
-        table = doc.add_table(rows=1, cols=2)
-        table.style = 'Table Grid'
-        for row in [
-            ('Nome', data['paciente']['nome']),
-            ('Data Nascimento', data['paciente']['dataNascimento']),
-            ('Sexo', data['paciente']['sexo']),
-            ('Peso', f"{data['paciente']['peso']} kg"),
-            ('Altura', f"{data['paciente']['altura']} cm"),
-            ('Data do Exame', data['paciente']['dataExame'])
-        ]:
-            cells = table.add_row().cells
-            cells[0].text = row[0]
-            cells[1].text = str(row[1])
-
-        # Medidas e Cálculos
-        doc.add_heading('Medidas e Cálculos', level=1)
-        table = doc.add_table(rows=1, cols=4)
-        table.style = 'Table Grid'
-        header_cells = table.rows[0].cells
-        header_cells[0].text = 'Medida'
-        header_cells[1].text = 'Valor'
-        header_cells[2].text = 'Cálculo'
-        header_cells[3].text = 'Resultado'
-        
-        medidas_calculos = [
-            ('Átrio Esquerdo', data['medidas']['atrio'], 'Volume Diastólico Final', data['calculos']['volumeDiastFinal']),
-            ('Aorta', data['medidas']['aorta'], 'Volume Sistólico Final', data['calculos']['volumeSistFinal']),
-            ('Diâmetro Diastólico', data['medidas']['diamDiastFinal'], 'Volume Ejetado', data['calculos']['volumeEjetado']),
-            ('Diâmetro Sistólico', data['medidas']['diamSistFinal'], 'Fração de Ejeção', data['calculos']['fracaoEjecao']),
-            ('Espessura do Septo', data['medidas']['espDiastSepto'], 'Percentual Enc. Cavidade', data['calculos']['percentEncurt']),
-            ('Espessura PPVE', data['medidas']['espDiastPPVE'], 'Espessura Relativa', data['calculos']['espRelativa']),
-            ('Ventrículo Direito', data['medidas']['vd'], 'Massa do VE', data['calculos']['massaVE'])
-        ]
-        
-        for row_data in medidas_calculos:
-            cells = table.add_row().cells
-            for i, value in enumerate(row_data):
-                cells[i].text = str(value)
-
-        # Laudo
-        doc.add_heading('Laudo', level=1)
-        h = html2text.HTML2Text()
-        h.body_width = 0
-        laudo_texto = h.handle(data['laudo'])
-        doc.add_paragraph(laudo_texto)
-        
-        # Assinatura do Médico
-        doc.add_paragraph('\n\n')
-        doc.add_paragraph('_' * 40, style='Heading 1')
-        doc.add_paragraph(data['medico']['nome'])
-        doc.add_paragraph(f"CRM: {data['medico']['crm']}" + (f" / RQE: {data['medico']['rqe']}" if data['medico']['rqe'] else ""))
-        
-        # Salvar documento
-        doc_io = BytesIO()
-        doc.save(doc_io)
-        doc_io.seek(0)
-        
-        return send_file(
-            doc_io,
-            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            as_attachment=True,
-            download_name=f"Laudo_{data['paciente']['nome'].replace(' ', '_')}.docx"
-        )
-        
-    except Exception as e:
-        app.logger.error(f"Erro ao gerar DOC: {str(e)}")
-        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
