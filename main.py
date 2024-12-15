@@ -114,9 +114,17 @@ def create_template():
         data = request.json
         app.logger.info(f"Dados recebidos: {data}")
         
+        # Validar campos obrigatórios
         if not all(key in data for key in ['name', 'category', 'content']):
             missing_fields = [key for key in ['name', 'category', 'content'] if key not in data]
             error_msg = f"Campos obrigatórios faltando: {', '.join(missing_fields)}"
+            app.logger.error(error_msg)
+            return jsonify({'error': error_msg}), 400
+            
+        # Validar categoria
+        valid_categories = ['laudo', 'normal', 'alterado', 'conclusao']
+        if data['category'] not in valid_categories:
+            error_msg = f"Categoria inválida. Use uma das seguintes: {', '.join(valid_categories)}"
             app.logger.error(error_msg)
             return jsonify({'error': error_msg}), 400
         
