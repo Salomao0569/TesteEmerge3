@@ -1,9 +1,11 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     const editor = document.getElementById('editor');
+    if (!editor) return;
+    
     const wordCountDisplay = document.createElement('div');
     wordCountDisplay.className = 'text-muted small mt-2';
-    editor.parentNode.insertBefore(wordCountDisplay, editor.nextSibling);
+    editor.parentElement.appendChild(wordCountDisplay);
 
     // Auto-save a cada 30 segundos
     // Auto-save com feedback visual
