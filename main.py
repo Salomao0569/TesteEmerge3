@@ -27,7 +27,10 @@ db.init_app(app)
 assets = init_assets(app)
 
 with app.app_context():
-    db.drop_all()
+    db.session.execute('DROP TABLE IF EXISTS template CASCADE')
+    db.session.execute('DROP TABLE IF EXISTS doctor CASCADE')
+    db.session.execute('DROP TABLE IF EXISTS laudo CASCADE')
+    db.session.commit()
     db.create_all()
     app.logger.info("Database tables recreated successfully")
 
