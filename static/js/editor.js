@@ -73,50 +73,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                // Preservar alinhamento original
+                // Preservar alinhamento original com !important para garantir
                 const computedStyle = window.getComputedStyle(element);
                 const textAlign = computedStyle.textAlign;
                 if (textAlign && textAlign !== 'start') {
-                    element.style.textAlign = textAlign;
+                    element.style.setProperty('text-align', textAlign, 'important');
                 }
 
-                // Processar estilos de texto
+                // Processar estilos de texto com prioridade
                 const fontWeight = computedStyle.fontWeight;
                 const fontStyle = computedStyle.fontStyle;
                 const textDecoration = computedStyle.textDecoration;
 
-                // Criar um novo elemento wrapper para manter a hierarquia
-                const wrapper = document.createElement('span');
-                wrapper.innerHTML = element.innerHTML;
+                // Limpar o conteúdo existente
+                let content = element.innerHTML;
 
                 // Aplicar formatação com base nos estilos computados
-                if (parseInt(fontWeight) >= 600) {
-                    const strong = document.createElement('strong');
-                    strong.innerHTML = wrapper.innerHTML;
-                    wrapper.innerHTML = strong.outerHTML;
+                if (parseInt(fontWeight) >= 600 && !content.includes('<strong>')) {
+                    content = `<strong>${content}</strong>`;
                 }
-                if (fontStyle === 'italic') {
-                    const em = document.createElement('em');
-                    em.innerHTML = wrapper.innerHTML;
-                    wrapper.innerHTML = em.outerHTML;
+                if (fontStyle === 'italic' && !content.includes('<em>')) {
+                    content = `<em>${content}</em>`;
                 }
-                if (textDecoration.includes('underline')) {
-                    const u = document.createElement('u');
-                    u.innerHTML = wrapper.innerHTML;
-                    wrapper.innerHTML = u.outerHTML;
+                if (textDecoration.includes('underline') && !content.includes('<u>')) {
+                    content = `<u>${content}</u>`;
                 }
 
-                // Atualizar o conteúdo do elemento original
-                element.innerHTML = wrapper.innerHTML;
+                // Atualizar o conteúdo do elemento
+                element.innerHTML = content;
 
-                // Aplicar estilos consistentes
-                element.style.fontFamily = 'Arial, sans-serif';
-                element.style.fontSize = element.style.fontSize || '12pt';
-                element.style.lineHeight = '1.5';
+                // Aplicar estilos consistentes com !important
+                element.style.setProperty('font-family', 'Arial, sans-serif', 'important');
+                element.style.setProperty('font-size', '12pt', 'important');
+                element.style.setProperty('line-height', '1.5', 'important');
+
+                // Garantir margens consistentes para parágrafos
+                if (element.tagName.toLowerCase() === 'p') {
+                    element.style.setProperty('margin', '0 0 1em 0', 'important');
+                }
 
                 // Processar filhos recursivamente
-                const children = Array.from(element.children);
-                children.forEach(child => processTextStyles(child));
+                Array.from(element.children).forEach(child => processTextStyles(child));
             } catch (error) {
                 console.error('Erro ao processar estilos:', error);
             }
@@ -304,19 +301,32 @@ document.addEventListener('DOMContentLoaded', function() {
             existingSignature.remove();
         }
 
-        // Criar a assinatura com formatação consistente
+        // Criar a assinatura com formatação consistente e espaçamento preciso
         const signatureHtml = `
-            <div class="medical-signature" style="text-align: right; margin-top: 2em; border-top: 1px solid #ccc; padding-top: 1em;">
-                <p style="margin-bottom: 0.5em; font-family: Arial, sans-serif;"><strong>Dr(a). ${doctorName}</strong></p>
-                <p style="margin-bottom: 0.5em; font-family: Arial, sans-serif;">CRM: ${crm}</p>
-                ${rqe ? `<p style="margin-bottom: 0.5em; font-family: Arial, sans-serif;">RQE: ${rqe}</p>` : ''}
-                <p style="margin-bottom: 0.5em; font-size: 0.9em; font-family: Arial, sans-serif;">${currentDate}</p>
+            <div class="medical-signature" style="text-align: right !important; margin-top: 2cm !important; padding-top: 0.25cm !important; border-top: 1px solid #ccc !important; page-break-inside: avoid !important;">
+                <p style="margin: 0 0 0.3cm 0 !important; font-family: Arial, sans-serif !important; font-size: 12pt !important;"><strong>Dr(a). ${doctorName}</strong></p>
+                <p style="margin: 0 0 0.3cm 0 !important; font-family: Arial, sans-serif !important; font-size: 12pt !important;">CRM: ${crm}</p>
+                ${rqe ? `<p style="margin: 0 0 0.3cm 0 !important; font-family: Arial, sans-serif !important; font-size: 12pt !important;">RQE: ${rqe}</p>` : ''}
+                <p style="margin: 0 !important; font-family: Arial, sans-serif !important; font-size: 11pt !important;">${currentDate}</p>
             </div>
         `;
 
-        // Adicionar quebra de linha e assinatura ao final do editor
-        editor.innerHTML = editor.innerHTML + '<p><br></p>' + signatureHtml;
+        // Limpar e processar o conteúdo do editor
+        let editorContent = editor.innerHTML;
+        
+        // Remover quebras de linha extras e espaços em branco
+        editorContent = editorContent.replace(/\s*<p>\s*<br>\s*<\/p>\s*$/, '');
+        editorContent = editorContent.replace(/\s*<p>\s*&nbsp;\s*<\/p>\s*$/, '');
+        
+        // Adicionar exatamente uma quebra de linha antes da assinatura
+        const finalContent = editorContent.trim() + '<p><br></p>' + signatureHtml;
+        
+        // Atualizar o editor mantendo a formatação
+        editor.innerHTML = finalContent;
+        
+        // Salvar conteúdo e processar formatação
         saveContent();
+        processEditorContent(editor);
     }
 
     // Restaurar conteúdo salvo se existir
@@ -349,34 +359,48 @@ document.addEventListener('DOMContentLoaded', function() {
         // Função para garantir que todos os elementos tenham estilos explícitos
         function ensureExplicitStyles(element) {
             if (element.nodeType === Node.ELEMENT_NODE) {
-                // Garantir que todos os parágrafos tenham alinhamento explícito
+                // Preservar estilos originais com !important
+                const computedStyle = window.getComputedStyle(element);
+
+                // Garantir que parágrafos tenham formatação consistente
                 if (element.tagName === 'P') {
-                    if (!element.style.textAlign) {
-                        element.style.textAlign = 'left';
-                    }
-                    if (!element.style.marginBottom) {
-                        element.style.marginBottom = '1em';
-                    }
+                    element.style.setProperty('margin', '0 0 1em 0', 'important');
+                    element.style.setProperty('padding', '0', 'important');
+                    element.style.setProperty('text-align', computedStyle.textAlign || 'left', 'important');
                 }
 
-                // Converter elementos de estilo em tags HTML apropriadas
-                if (window.getComputedStyle(element).fontWeight >= 600) {
-                    element.innerHTML = `<strong>${element.innerHTML}</strong>`;
-                }
-                if (window.getComputedStyle(element).fontStyle === 'italic') {
-                    element.innerHTML = `<em>${element.innerHTML}</em>`;
-                }
-                if (window.getComputedStyle(element).textDecoration.includes('underline')) {
-                    element.innerHTML = `<u>${element.innerHTML}</u>`;
+                // Garantir que a assinatura mantenha seu espaçamento
+                if (element.classList.contains('medical-signature')) {
+                    element.style.setProperty('margin-top', '2cm', 'important');
+                    element.style.setProperty('padding-top', '0.25cm', 'important');
+                    element.style.setProperty('border-top', '1px solid #ccc', 'important');
+                    element.style.setProperty('page-break-inside', 'avoid', 'important');
                 }
 
-                // Garantir fonte e tamanho consistentes
-                element.style.fontFamily = 'Arial, sans-serif';
-                element.style.fontSize = element.style.fontSize || '12pt';
-                element.style.lineHeight = '1.5';
+                // Aplicar formatação de texto consistente
+                element.style.setProperty('font-family', 'Arial, sans-serif', 'important');
+                element.style.setProperty('font-size', '12pt', 'important');
+                element.style.setProperty('line-height', '1.5', 'important');
+
+                // Converter estilos em tags HTML apropriadas
+                let content = element.innerHTML;
+                if (parseInt(computedStyle.fontWeight) >= 600 && !content.includes('<strong>')) {
+                    content = `<strong>${content}</strong>`;
+                }
+                if (computedStyle.fontStyle === 'italic' && !content.includes('<em>')) {
+                    content = `<em>${content}</em>`;
+                }
+                if (computedStyle.textDecoration.includes('underline') && !content.includes('<u>')) {
+                    content = `<u>${content}</u>`;
+                }
+                element.innerHTML = content;
 
                 // Processar elementos filhos recursivamente
-                Array.from(element.children).forEach(child => ensureExplicitStyles(child));
+                Array.from(element.children).forEach(child => {
+                    if (!child.classList.contains('medical-signature')) {
+                        ensureExplicitStyles(child);
+                    }
+                });
             }
         }
 
