@@ -23,7 +23,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_timeout': 30,
     'pool_recycle': 1800,
     'connect_args': {
-        'sslmode': 'prefer'  # Alterado para 'prefer' para maior compatibilidade
+        'sslmode': 'disable'
     }
 }
 
