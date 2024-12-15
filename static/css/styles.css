@@ -64,6 +64,25 @@
     background-color: #f8f9fa;
 }
 
+/* Ensure consistent formatting between editor and print */
+#editor {
+    font-family: Arial, 'Helvetica Neue', sans-serif !important;
+    font-size: 12pt !important;
+    line-height: 1.6 !important;
+}
+
+#editor p {
+    margin-bottom: 1em !important;
+}
+
+#editor strong, #editor b {
+    font-weight: bold !important;
+}
+
+#editor em, #editor i {
+    font-style: italic !important;
+}
+
 .editor-toolbar button {
     margin-right: 0.25rem;
     padding: 0.25rem 0.5rem;
