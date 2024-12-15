@@ -16,5 +16,5 @@ FLASK_ENV = "development"
 DATABASE_URL = "postgresql://biocardio:biocardio86@34.46.61.123:5432/biocardio"
 
 [[ports]]
-localPort = 80
+localPort = 3000
 externalPort = 80
