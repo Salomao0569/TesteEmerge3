@@ -27,16 +27,17 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     }
 }
 
-# Log da tentativa de conexão
-app.logger.info("Tentando conectar ao PostgreSQL...")
-try:
-    db.create_all()
-    app.logger.info("Conexão com PostgreSQL estabelecida com sucesso!")
-except Exception as e:
-    app.logger.error(f"Erro ao conectar com PostgreSQL: {str(e)}")
-
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
+# Initialize database and create tables
+with app.app_context():
+    try:
+        app.logger.info("Tentando conectar ao PostgreSQL...")
+        db.create_all()
+        app.logger.info("Conexão com PostgreSQL estabelecida com sucesso!")
+    except Exception as e:
+        app.logger.error(f"Erro ao conectar com PostgreSQL: {str(e)}")
 
 # Initialize database and assets
 db.init_app(app)
