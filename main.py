@@ -225,6 +225,52 @@ def gerar_doc():
         doc.add_paragraph(f"Peso: {data['paciente']['peso']} kg")
         doc.add_paragraph(f"Altura: {data['paciente']['altura']} cm")
         
+        # Add measurements table
+        table = doc.add_table(rows=1, cols=2)
+        table.style = 'Table Grid'
+        header_cells = table.rows[0].cells
+        header_cells[0].text = 'Medida'
+        header_cells[1].text = 'Valor'
+        
+        medidas = [
+            ('Átrio Esquerdo', data['medidas']['atrio']),
+            ('Aorta', data['medidas']['aorta']),
+            ('Diâmetro Diastólico', data['medidas']['diamDiastFinal']),
+            ('Diâmetro Sistólico', data['medidas']['diamSistFinal']),
+            ('Espessura do Septo', data['medidas']['espDiastSepto']),
+            ('Espessura da Parede (PPVE)', data['medidas']['espDiastPPVE']),
+            ('Ventrículo Direito', data['medidas']['vd'])
+        ]
+        
+        for medida, valor in medidas:
+            row_cells = table.add_row().cells
+            row_cells[0].text = medida
+            row_cells[1].text = str(valor)
+
+        # Add calculations table
+        doc.add_paragraph()  # Add space
+        table = doc.add_table(rows=1, cols=2)
+        table.style = 'Table Grid'
+        header_cells = table.rows[0].cells
+        header_cells[0].text = 'Cálculo'
+        header_cells[1].text = 'Resultado'
+        
+        calculos = [
+            ('Volume Diastólico Final', data['calculos']['volumeDiastFinal']),
+            ('Volume Sistólico Final', data['calculos']['volumeSistFinal']),
+            ('Volume Ejetado', data['calculos']['volumeEjetado']),
+            ('Fração de Ejeção', data['calculos']['fracaoEjecao']),
+            ('Percentual Enc. Cavidade', data['calculos']['percentEncurt']),
+            ('Espessura Relativa da Parede', data['calculos']['espRelativa']),
+            ('Massa do VE', data['calculos']['massaVE'])
+        ]
+        
+        for calculo, resultado in calculos:
+            row_cells = table.add_row().cells
+            row_cells[0].text = calculo
+            row_cells[1].text = str(resultado)
+            
+        doc.add_paragraph()  # Add space
         # Add content
         doc.add_paragraph(data['laudo'])
         
