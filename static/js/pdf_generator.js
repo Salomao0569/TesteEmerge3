@@ -90,12 +90,9 @@ function gerarPDF() {
         doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
 
-        const editorContent = editor.innerHTML;
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = editorContent;
-        
-        const editorContent = editor.innerText;
-        const lines = doc.splitTextToSize(editorContent, contentWidth);
+        const editor = document.getElementById('editor');
+        const content = editor.innerText;
+        const lines = doc.splitTextToSize(content, contentWidth);
         
         lines.forEach(line => {
             if (currentY > pageHeight - margin) {
@@ -104,26 +101,6 @@ function gerarPDF() {
             }
             doc.text(line, margin, currentY);
             currentY += 7;
-        });
-                
-                // Adiciona nova página se necessário
-                if (currentY + (lines.length * 7) > pageHeight - margin) {
-                    doc.addPage();
-                    currentY = margin;
-                }
-                
-                // Escreve as linhas
-                lines.forEach(line => {
-                    doc.text(line, margin, currentY);
-                    currentY += 7;
-                });
-                
-                // Restaura estilo normal
-                doc.setFont('helvetica', 'normal');
-                
-                // Adiciona espaço entre parágrafos
-                currentY += 3;
-            }
         });
 
         // Assinatura do Médico
