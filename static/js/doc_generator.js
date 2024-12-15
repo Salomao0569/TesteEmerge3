@@ -28,12 +28,18 @@ function gerarDOC() {
             massaVE: document.getElementById('print_massa_ve').textContent
         },
         laudo: document.getElementById('editor').innerHTML,
+        formatacao: {
+            fonte: window.getComputedStyle(document.getElementById('editor')).fontFamily,
+            tamanho: window.getComputedStyle(document.getElementById('editor')).fontSize,
+            espacamento: window.getComputedStyle(document.getElementById('editor')).lineHeight
+        },
         medico: {
             id: document.getElementById('selectedDoctor').value,
             nome: document.getElementById('selectedDoctor').selectedOptions[0]?.text || '',
             crm: document.getElementById('selectedDoctor').selectedOptions[0]?.dataset.crm || '',
             rqe: document.getElementById('selectedDoctor').selectedOptions[0]?.dataset.rqe || ''
-        }
+        },
+        startPage: 2 // Inicia o laudo na segunda página
     };
 
     fetch('/gerar_doc', {
