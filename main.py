@@ -52,6 +52,54 @@ def gerar_doc():
             section.bottom_margin = Inches(1)
             section.left_margin = Inches(1)
             section.right_margin = Inches(1)
+
+        # Adicionar dados do paciente
+        doc.add_heading('Dados do Paciente', level=1)
+        table = doc.add_table(rows=1, cols=2)
+        table.style = 'Table Grid'
+        row = table.rows[0].cells
+        row[0].text = f"Nome: {data['paciente']['nome']}"
+        row[1].text = f"Data Nascimento: {data['paciente']['dataNascimento']}"
+        
+        # Adicionar medidas
+        doc.add_heading('Medidas', level=1)
+        medidas_table = doc.add_table(rows=8, cols=2)
+        medidas_table.style = 'Table Grid'
+        medidas = [
+            ('Átrio Esquerdo', data['medidas']['atrio']),
+            ('Aorta', data['medidas']['aorta']),
+            ('Diâmetro Diastólico Final', data['medidas']['diamDiastFinal']),
+            ('Diâmetro Sistólico Final', data['medidas']['diamSistFinal']),
+            ('Espessura do Septo', data['medidas']['espDiastSepto']),
+            ('Espessura da PPVE', data['medidas']['espDiastPPVE']),
+            ('Ventrículo Direito', data['medidas']['vd'])
+        ]
+        
+        for i, (label, value) in enumerate(medidas):
+            cells = medidas_table.rows[i].cells
+            cells[0].text = label
+            cells[1].text = str(value)
+            
+        # Adicionar cálculos
+        doc.add_heading('Cálculos', level=1)
+        calculos_table = doc.add_table(rows=7, cols=2)
+        calculos_table.style = 'Table Grid'
+        calculos = [
+            ('Volume Diastólico Final', data['calculos']['volumeDiastFinal']),
+            ('Volume Sistólico Final', data['calculos']['volumeSistFinal']),
+            ('Volume Ejetado', data['calculos']['volumeEjetado']),
+            ('Fração de Ejeção', data['calculos']['fracaoEjecao']),
+            ('Percentual de Encurtamento', data['calculos']['percentEncurt']),
+            ('Espessura Relativa', data['calculos']['espRelativa']),
+            ('Massa do VE', data['calculos']['massaVE'])
+        ]
+        
+        for i, (label, value) in enumerate(calculos):
+            cells = calculos_table.rows[i].cells
+            cells[0].text = label
+            cells[1].text = str(value)
+            
+        doc.add_paragraph('\n')  # Espaço antes do laudo
         
         # Converter HTML para texto formatado
         soup = BeautifulSoup(data['laudo'], 'html.parser')
