@@ -1,4 +1,24 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Adicionar atalhos de teclado
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key.toLowerCase()) {
+                case 'b':
+                    e.preventDefault();
+                    execCommand('bold');
+                    break;
+                case 'i':
+                    e.preventDefault();
+                    execCommand('italic');
+                    break;
+                case 'u':
+                    e.preventDefault();
+                    execCommand('underline');
+                    break;
+            }
+        }
+    });
+
     // Função para limpar formatação indesejada
     function cleanFormatting(element) {
         if (!element || element.nodeType !== Node.ELEMENT_NODE) {
@@ -61,9 +81,9 @@ document.addEventListener('DOMContentLoaded', function() {
             tempDiv.innerHTML = text;
             
             // Definir tags e atributos permitidos
-            const allowedTags = ['p', 'br', 'b', 'strong', 'i', 'em', 'u', 'ul', 'ol', 'li'];
+            const allowedTags = ['p', 'br', 'b', 'strong', 'i', 'em', 'u', 'ul', 'ol', 'li', 'div'];
             const allowedAttributes = ['style', 'class', 'data-processed'];
-            const allowedStyles = ['text-align'];
+            const allowedStyles = ['text-align', 'margin-left', 'padding-left'];
             
             function processNode(node) {
                 if (node.nodeType === Node.TEXT_NODE) {
