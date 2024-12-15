@@ -86,8 +86,40 @@ function gerarPDF() {
         // Conteúdo do Laudo
         doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
-        const laudoContent = document.getElementById('editor').innerText;
-        const lines = doc.splitTextToSize(laudoContent, contentWidth);
+        const editor = document.getElementById('editor');
+        const laudoContent = editor.innerHTML;
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = laudoContent;
+        
+        // Preservar estilos
+        doc.setFont('helvetica');
+        doc.setFontSize(11);
+        
+        const processNode = (node, y) => {
+            if (node.nodeType === 3) { // Texto
+                const lines = doc.splitTextToSize(node.textContent.trim(), contentWidth);
+                lines.forEach(line => {
+                    if (currentY > pageHeight - margin) {
+                        doc.addPage();
+                        currentY = margin;
+                    }
+                    doc.text(line, margin, currentY);
+                    currentY += 7;
+                });
+            } else if (node.nodeType === 1) { // Elemento
+                const style = window.getComputedStyle(node);
+                if (style.fontWeight === 'bold' || node.tagName === 'STRONG') {
+                    doc.setFont('helvetica', 'bold');
+                }
+                if (style.fontStyle === 'italic' || node.tagName === 'EM') {
+                    doc.setFont('helvetica', 'italic');
+                }
+                Array.from(node.childNodes).forEach(child => processNode(child));
+                doc.setFont('helvetica', 'normal');
+            }
+        };
+        
+        processNode(tempDiv);
         
         for (let i = 0; i < lines.length; i++) {
             if (currentY > pageHeight - margin) {

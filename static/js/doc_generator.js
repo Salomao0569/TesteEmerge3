@@ -31,6 +31,16 @@ function gerarDOC() {
         formatacao: {
             fonte: window.getComputedStyle(document.getElementById('editor')).fontFamily,
             tamanho: window.getComputedStyle(document.getElementById('editor')).fontSize,
+            espacamento: window.getComputedStyle(document.getElementById('editor')).lineHeight,
+            estilos: Array.from(document.getElementById('editor').getElementsByTagName('*')).map(el => ({
+                tag: el.tagName,
+                style: el.getAttribute('style'),
+                className: el.className
+            }))
+        },
+        formatacao: {
+            fonte: window.getComputedStyle(document.getElementById('editor')).fontFamily,
+            tamanho: window.getComputedStyle(document.getElementById('editor')).fontSize,
             espacamento: window.getComputedStyle(document.getElementById('editor')).lineHeight
         },
         medico: {
