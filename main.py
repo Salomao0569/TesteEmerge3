@@ -7,12 +7,14 @@ from dotenv import load_dotenv
 app = Flask(__name__)
 
 # Configuração do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://biocardio:biocardio86@34.46.61.123:5432/biocardio"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://biocardio:biocardio86@34.46.61.123:5432/biocardio?sslmode=require"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your-secret-key'
 
 # Inicialização do banco de dados
 db.init_app(app)
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def index():
