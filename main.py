@@ -34,7 +34,6 @@ with app.app_context():
         app.logger.info("Database tables created successfully")
     except Exception as e:
         app.logger.error(f"Error initializing database: {str(e)}")
-        # Fallback to SQLite if needed
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
         db.init_app(app)
         db.create_all()
