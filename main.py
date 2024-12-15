@@ -7,6 +7,7 @@ from flask_caching import Cache
 from flask_compress import Compress
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+from sqlalchemy import text
 
 from models import db, Doctor, Template
 
@@ -17,25 +18,40 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configuração das extensões
-app.config.update(
-    CACHE_TYPE='simple',
-    SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL'),
-    SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    SECRET_KEY=os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32)),
-    WTF_CSRF_SECRET_KEY=os.getenv('WTF_CSRF_SECRET_KEY', secrets.token_hex(32))
-)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32))
+app.config['WTF_CSRF_SECRET_KEY'] = os.getenv('WTF_CSRF_SECRET_KEY', secrets.token_hex(32))
+app.config['CACHE_TYPE'] = 'simple'
 
 # Inicialização das extensões
-cache = Cache(app)
-csrf = CSRFProtect(app)
-Compress(app)
+try:
+    print("Iniciando configuração do Flask...")
+    db.init_app(app)
+    csrf = CSRFProtect(app)
+    cache = Cache(app)
+    Compress(app)
+    print("Extensões inicializadas com sucesso!")
+except Exception as e:
+    print(f"Erro ao inicializar extensões: {str(e)}")
+    raise
 
 # Inicialização do banco de dados
-db.init_app(app)
 with app.app_context():
-    db.create_all()
-    from sqlalchemy import text
-    db.session.execute(text('ANALYZE'))  # Otimiza as estatísticas do PostgreSQL
+    try:
+        print("Verificando conexão com o banco de dados...")
+        # Tenta executar uma query simples para verificar a conexão
+        db.session.execute(text('SELECT 1'))
+        db.session.commit()
+        print("Conexão com o banco de dados estabelecida.")
+        
+        print("Criando tabelas se não existirem...")
+        db.create_all()
+        print("Banco de dados inicializado e conectado com sucesso!")
+    except Exception as e:
+        print(f"Erro ao inicializar o banco de dados: {str(e)}")
+        print(f"DATABASE_URL configurada: {app.config['SQLALCHEMY_DATABASE_URI']}")
+        raise
 
 @app.route('/')
 def index():
