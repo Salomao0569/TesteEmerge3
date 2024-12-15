@@ -16,4 +16,7 @@ dependencies = [
     "cssmin>=0.2.0",
     "jsmin>=3.0.1",
     "python-docx>=1.0.0",
+    "docx>=0.2.4",
+    "html2text>=2024.2.26",
+    "python-dotenv>=1.0.0",
 ]
