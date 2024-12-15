@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     const editor = document.getElementById('editor');
     if (!editor) return;
