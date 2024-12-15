@@ -1,8 +1,8 @@
-
 from flask import Flask, render_template, request, jsonify
 from models import db, Doctor, Template
 import os
 from dotenv import load_dotenv
+from htmldocx import HtmlToDocx # Added import for HTML to DOCX conversion
 
 app = Flask(__name__)
 
@@ -33,6 +33,22 @@ def doctors():
 @app.route('/templates')
 def templates():
     return render_template('templates.html')
+
+#Example route for generating a DOCX report.  This needs to be adapted to your actual application
+@app.route('/generate_report', methods=['POST'])
+def generate_report():
+    try:
+        data = request.get_json() # Assumes report data is sent as JSON
+        parser = HtmlToDocx()
+        doc = parser.parse_html(data['laudo']) #Use parse_html to create the docx object
+        #Further doc manipulation can be added here (saving, returning, etc.)
+        return jsonify({"message": "Report generated successfully"}), 200
+    except Exception as e:
+        print(f"Error generating report: {e}")
+        return jsonify({"error": "Report generation failed"}), 500
+
+
+
 
 if __name__ == '__main__':
     with app.app_context():

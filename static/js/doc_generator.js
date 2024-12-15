@@ -27,7 +27,7 @@ function gerarDOC() {
             espRelativa: document.getElementById('print_esp_relativa').textContent,
             massaVE: document.getElementById('print_massa_ve').textContent
         },
-        laudo: document.getElementById('editor').innerHTML,
+        laudo: document.getElementById('editor').innerHTML.replace(/\n/g, '<br>'),
         medico: {
             id: document.getElementById('selectedDoctor').value,
             nome: document.getElementById('selectedDoctor').selectedOptions[0]?.text || '',
