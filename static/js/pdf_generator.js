@@ -82,53 +82,55 @@ function gerarPDF() {
         // Nova página para o laudo
         doc.addPage();
         currentY = margin;
-        
+
         // Conteúdo do Laudo
+        const editor = document.getElementById('editor');
+        const paragraphs = editor.getElementsByTagName('p');
+        
         doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
-        const editor = document.getElementById('editor');
-        const laudoContent = editor.innerHTML;
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = laudoContent;
-        
-        // Preservar estilos
-        doc.setFont('helvetica');
-        doc.setFontSize(11);
-        
-        const processNode = (node, y) => {
-            if (node.nodeType === 3) { // Texto
-                const lines = doc.splitTextToSize(node.textContent.trim(), contentWidth);
+
+        Array.from(paragraphs).forEach(p => {
+            const text = p.innerText.trim();
+            if (text) {
+                // Verifica estilo
+                const style = window.getComputedStyle(p);
+                const isBold = style.fontWeight === 'bold' || p.querySelector('strong');
+                const isItalic = style.fontStyle === 'italic' || p.querySelector('em');
+                
+                // Aplica estilo
+                if (isBold) doc.setFont('helvetica', 'bold');
+                if (isItalic) doc.setFont('helvetica', 'italic');
+                
+                // Quebra o texto em linhas
+                const lines = doc.splitTextToSize(text, contentWidth);
+                
+                // Adiciona nova página se necessário
+                if (currentY + (lines.length * 7) > pageHeight - margin) {
+                    doc.addPage();
+                    currentY = margin;
+                }
+                
+                // Escreve as linhas
                 lines.forEach(line => {
-                    if (currentY > pageHeight - margin) {
-                        doc.addPage();
-                        currentY = margin;
-                    }
                     doc.text(line, margin, currentY);
                     currentY += 7;
                 });
-            } else if (node.nodeType === 1) { // Elemento
-                const style = window.getComputedStyle(node);
-                if (style.fontWeight === 'bold' || node.tagName === 'STRONG') {
-                    doc.setFont('helvetica', 'bold');
-                }
-                if (style.fontStyle === 'italic' || node.tagName === 'EM') {
-                    doc.setFont('helvetica', 'italic');
-                }
-                Array.from(node.childNodes).forEach(child => processNode(child));
+                
+                // Restaura estilo normal
                 doc.setFont('helvetica', 'normal');
+                
+                // Adiciona espaço entre parágrafos
+                currentY += 3;
             }
-        };
-        
-        processNode(tempDiv);
-
-        currentY += 10; // Espaço antes da assinatura
+        });
 
         // Assinatura do Médico
         const doctorSelect = document.getElementById('selectedDoctor');
         if (doctorSelect.value) {
             if (currentY > pageHeight - 40) {
                 doc.addPage();
-                currentY = margin + 20;
+                currentY = margin;
             }
             
             const selectedOption = doctorSelect.selectedOptions[0];
