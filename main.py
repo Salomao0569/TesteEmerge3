@@ -59,12 +59,20 @@ def gerar_doc():
             paragraph = doc.add_paragraph()
             paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.ONE_POINT_FIVE
             paragraph.paragraph_format.space_after = Pt(12)
+            paragraph.paragraph_format.keep_together = True
             
-            # Processar o texto e formatação
-            text = p.get_text()
-            run = paragraph.add_run(text)
-            run.font.name = 'Arial'
-            run.font.size = Pt(12)
+            # Processar o texto e formatação por partes
+            for element in p.children:
+                if element.name in ['strong', 'b']:
+                    run = paragraph.add_run(element.get_text())
+                    run.bold = True
+                elif element.name in ['em', 'i']:
+                    run = paragraph.add_run(element.get_text())
+                    run.italic = True
+                else:
+                    run = paragraph.add_run(str(element))
+                run.font.name = 'Arial'
+                run.font.size = Pt(12)
             
             # Aplicar formatação
             if p.find('strong') or p.find('b'):
