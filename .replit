@@ -1,6 +1,6 @@
 
 run = "python main.py"
-modules = ["python-3.11", "postgresql-16"]
+modules = ["python-3.11:v3.11", "postgresql-16:v16"]
 
 [nix]
 channel = "stable-24_05"
@@ -11,7 +11,9 @@ deploymentTarget = "cloudrun"
 
 [env]
 PYTHON_VERSION = "3.11"
+FLASK_APP = "main.py"
+FLASK_ENV = "development"
 
 [[ports]]
-localPort = 80
+localPort = 5000
 externalPort = 80
