@@ -27,7 +27,9 @@ db.init_app(app)
 assets = init_assets(app)
 
 with app.app_context():
+    db.drop_all()
     db.create_all()
+    app.logger.info("Database tables recreated successfully")
 
 @app.route('/')
 def index():
