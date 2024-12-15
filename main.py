@@ -1,5 +1,7 @@
 import os
+import io
 import secrets
+import logging
 from flask import Flask, render_template, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
@@ -8,8 +10,17 @@ from flask_compress import Compress
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from sqlalchemy import text
+from docx import Document
+from docx.shared import Pt, Cm, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 
 from models import db, Doctor, Template
+
+# Configuração do logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -108,6 +119,261 @@ def templates():
     doctors = Doctor.query.all()
     templates = Template.query.all()
     return render_template('templates.html', doctors=doctors, templates=templates)
+
+@app.route('/gerar_doc', methods=['POST'])
+def gerar_doc():
+    try:
+        logger.info("Iniciando função gerar_doc")
+        from docx import Document
+        from docx.shared import Pt, Cm, RGBColor
+        from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
+        from docx.oxml import OxmlElement
+        from docx.oxml.ns import qn
+        import html2text
+        from bs4 import BeautifulSoup
+        import io
+
+        logger.info("Iniciando geração do documento")
+        data = request.get_json()
+        doc = Document()
+
+        def set_cell_border(cell, **kwargs):
+            """Define as bordas de uma célula da tabela"""
+            tc = cell._tc
+            tcPr = tc.get_or_add_tcPr()
+            
+            for edge in ['top', 'left', 'bottom', 'right']:
+                edge_val = kwargs.get(edge, 'single')
+                if edge_val:
+                    tag = 'w:{}'.format(edge)
+                    element = OxmlElement(tag)
+                    element.set(qn('w:val'), edge_val)
+                    element.set(qn('w:sz'), '4')
+                    element.set(qn('w:space'), '0')
+                    element.set(qn('w:color'), '000000')
+                    tcPr.append(element)
+
+        # Configurar margens e orientação do documento
+        sections = doc.sections
+        for section in sections:
+            section.top_margin = Cm(2)
+            section.bottom_margin = Cm(2)
+            section.left_margin = Cm(2.5)
+            section.right_margin = Cm(2.5)
+            section.page_height = Cm(29.7)  # A4
+            section.page_width = Cm(21.0)   # A4
+
+        logger.info("Configurando título do documento")
+        # Título
+        title = doc.add_paragraph()
+        title_format = title.paragraph_format
+        title_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        title_format.space_before = Pt(0)
+        title_format.space_after = Pt(20)
+        title_run = title.add_run("Laudo de Ecodopplercardiograma")
+        title_run.font.size = Pt(16)
+        title_run.font.bold = True
+        title_run.font.name = 'Arial'
+
+        logger.info("Adicionando dados do paciente")
+        # Dados do Paciente
+        patient_heading = doc.add_heading(level=2)
+        patient_run = patient_heading.add_run("Dados do Paciente")
+        patient_run.font.size = Pt(13)
+        patient_run.font.name = 'Arial'
+
+        patient_data = [
+            ("Nome", data['paciente']['nome']),
+            ("Data Nascimento", data['paciente']['dataNascimento']),
+            ("Sexo", data['paciente']['sexo']),
+            ("Peso", f"{data['paciente']['peso']} kg" if data['paciente']['peso'] else 'N/D'),
+            ("Altura", f"{data['paciente']['altura']} cm" if data['paciente']['altura'] else 'N/D'),
+            ("Data do Exame", data['paciente']['dataExame'])
+        ]
+
+        table = doc.add_table(rows=1, cols=2)
+        table.style = 'Table Grid'
+        table.autofit = True
+
+        header_cells = table.rows[0].cells
+        for i, cell in enumerate(header_cells):
+            # Aplicar formatação às células
+            set_cell_border(cell)
+            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            run = cell.paragraphs[0].add_run(["Campo", "Valor"][i])
+            run.font.bold = True
+            run.font.size = Pt(11)
+            run.font.name = 'Arial'
+
+        for label, value in patient_data:
+            row = table.add_row().cells
+            for cell in row:
+                set_cell_border(cell)
+            row[0].text = label
+            row[1].text = value if value else 'N/D'
+            # Formatar fonte
+            for paragraph in row[0].paragraphs:
+                for run in paragraph.runs:
+                    run.font.size = Pt(11)
+                    run.font.name = 'Arial'
+            for paragraph in row[1].paragraphs:
+                for run in paragraph.runs:
+                    run.font.size = Pt(11)
+                    run.font.name = 'Arial'
+
+        doc.add_paragraph().add_run().add_break()
+
+        logger.info("Adicionando medidas e cálculos")
+        # Medidas e Cálculos
+        measures_heading = doc.add_heading(level=2)
+        measures_run = measures_heading.add_run("Medidas e Cálculos")
+        measures_run.font.size = Pt(13)
+        measures_run.font.name = 'Arial'
+
+        measures_table = doc.add_table(rows=1, cols=4)
+        measures_table.style = 'Table Grid'
+        measures_table.autofit = True
+
+        # Cabeçalho da tabela
+        header = measures_table.rows[0].cells
+        header_texts = ["Medida", "Valor", "Cálculo", "Resultado"]
+        for i, cell in enumerate(header):
+            set_cell_border(cell)
+            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            run = cell.paragraphs[0].add_run(header_texts[i])
+            run.font.bold = True
+            run.font.size = Pt(11)
+            run.font.name = 'Arial'
+
+        # Dados da tabela
+        measures_data = [
+            ("Átrio Esquerdo", data['medidas']['atrio'], "Volume Diastólico Final", data['calculos']['volumeDiastFinal']),
+            ("Aorta", data['medidas']['aorta'], "Volume Sistólico Final", data['calculos']['volumeSistFinal']),
+            ("Diâmetro Diastólico", data['medidas']['diamDiastFinal'], "Volume Ejetado", data['calculos']['volumeEjetado']),
+            ("Diâmetro Sistólico", data['medidas']['diamSistFinal'], "Fração de Ejeção", data['calculos']['fracaoEjecao']),
+            ("Espessura do Septo", data['medidas']['espDiastSepto'], "Percentual Enc. Cavidade", data['calculos']['percentEncurt']),
+            ("Espessura PPVE", data['medidas']['espDiastPPVE'], "Espessura Relativa", data['calculos']['espRelativa']),
+            ("Ventrículo Direito", data['medidas']['vd'], "Massa do VE", data['calculos']['massaVE'])
+        ]
+
+        for measure in measures_data:
+            row = measures_table.add_row().cells
+            for i, value in enumerate(row):
+                set_cell_border(value)
+                value.text = str(measure[i] if measure[i] else 'N/D')
+                for paragraph in value.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(11)
+                        run.font.name = 'Arial'
+
+        doc.add_paragraph().add_run().add_break()
+
+        logger.info("Processando o laudo")
+        # Laudo
+        report_heading = doc.add_heading(level=2)
+        report_run = report_heading.add_run("Laudo")
+        report_run.font.size = Pt(13)
+        report_run.font.name = 'Arial'
+
+        logger.info("Processando o conteúdo HTML do laudo")
+        soup = BeautifulSoup(data['laudo'], 'html.parser')
+        
+        def process_paragraph_alignment(p_tag):
+            """Determina o alinhamento do parágrafo baseado no estilo HTML"""
+            try:
+                style = p_tag.get('style', '')
+                if 'text-align: center' in style:
+                    return WD_ALIGN_PARAGRAPH.CENTER
+                elif 'text-align: right' in style:
+                    return WD_ALIGN_PARAGRAPH.RIGHT
+                elif 'text-align: justify' in style:
+                    return WD_ALIGN_PARAGRAPH.JUSTIFY
+                return WD_ALIGN_PARAGRAPH.LEFT
+            except Exception as e:
+                logger.error(f"Erro ao processar alinhamento: {str(e)}")
+                return WD_ALIGN_PARAGRAPH.LEFT
+
+        def process_text_formatting(element, paragraph):
+            """Processa a formatação do texto mantendo estilos aninhados"""
+            if isinstance(element, str):
+                run = paragraph.add_run(element)
+                run.font.size = Pt(12)
+                run.font.name = 'Arial'
+                return
+
+            if element.name in ['strong', 'b']:
+                run = paragraph.add_run(element.get_text())
+                run.bold = True
+            elif element.name in ['em', 'i']:
+                run = paragraph.add_run(element.get_text())
+                run.italic = True
+            elif element.name == 'u':
+                run = paragraph.add_run(element.get_text())
+                run.underline = True
+            elif element.name == 'br':
+                paragraph.add_run().add_break()
+            else:
+                for child in element.children:
+                    process_text_formatting(child, paragraph)
+
+            # Aplicar fonte padrão
+            for run in paragraph.runs:
+                run.font.size = Pt(12)
+                run.font.name = 'Arial'
+
+        # Processar o conteúdo do laudo mantendo a formatação
+        for p in soup.find_all(['p', 'div']):
+            if 'medical-signature' in p.get('class', []):
+                logger.info("Processando assinatura médica")
+                # Adicionar espaço antes da assinatura
+                doc.add_paragraph().add_run().add_break()
+                
+                # Adicionar linha para assinatura
+                signature_line = doc.add_paragraph()
+                signature_line.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+                signature_line.paragraph_format.space_before = Pt(24)  # 2cm aproximadamente
+                
+                # Adicionar informações do médico
+                doctor_info = [
+                    (f"Dr(a). {data['medico']['nome']}", True),
+                    (f"CRM: {data['medico']['crm']}", False)
+                ]
+                
+                if data['medico']['rqe']:
+                    doctor_info.append((f"RQE: {data['medico']['rqe']}", False))
+
+                for info, is_bold in doctor_info:
+                    p = doc.add_paragraph()
+                    p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+                    run = p.add_run(info)
+                    run.font.bold = is_bold
+                    run.font.size = Pt(12)
+                    run.font.name = 'Arial'
+            else:
+                paragraph = doc.add_paragraph()
+                paragraph.paragraph_format.alignment = process_paragraph_alignment(p)
+                paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
+                
+                for element in p.children:
+                    process_text_formatting(element, paragraph)
+
+        logger.info("Salvando o documento")
+        # Salvar o documento
+        doc_stream = io.BytesIO()
+        doc.save(doc_stream)
+        doc_stream.seek(0)
+
+        logger.info("Documento gerado com sucesso")
+        return send_file(
+            doc_stream,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            as_attachment=True,
+            download_name=f"Laudo_{data['paciente']['nome'].replace(' ', '_')}.docx"
+        )
+
+    except Exception as e:
+        logger.error(f"Erro ao gerar DOC: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/reports')
 def reports():

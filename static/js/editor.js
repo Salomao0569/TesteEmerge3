@@ -581,16 +581,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     element.style.setProperty('padding-top', '0.5cm', 'important');
                     element.style.setProperty('border-top', '1px solid #000', 'important');
                     element.style.setProperty('page-break-inside', 'avoid', 'important');
+                    element.style.setProperty('page-break-after', 'avoid', 'important');
                     
                     // Processar os parágrafos dentro da assinatura
-                    Array.from(element.getElementsByTagName('p')).forEach(p => {
-                        p.style.setProperty('margin', '0 0 0.3cm 0', 'important');
+                    Array.from(element.getElementsByTagName('p')).forEach((p, index, arr) => {
+                        p.style.setProperty('margin', '0', 'important');
                         p.style.setProperty('padding', '0', 'important');
                         p.style.setProperty('line-height', '1.2', 'important');
+                        if (index < arr.length - 1) {
+                            p.style.setProperty('margin-bottom', '0.3cm', 'important');
+                        }
                     });
                     
                     return; // Não processar mais os filhos da assinatura
-                }
+                } // Fim do bloco medical-signature
 
                 // Preservar formatação de texto
                 const content = element.innerHTML;
