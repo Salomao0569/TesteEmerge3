@@ -16,10 +16,13 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://biocardio:biocardio86@34.46.61.123:5432/biocardio'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_size': 3,
-    'pool_recycle': 300,
-    'pool_timeout': 60,
-    'pool_pre_ping': True
+    'pool_size': 1,
+    'pool_timeout': 30,
+    'pool_pre_ping': True,
+    'max_overflow': 0,
+    'connect_args': {
+        'connect_timeout': 10
+    }
 }
 
 # Configure logging
