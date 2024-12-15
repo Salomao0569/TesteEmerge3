@@ -198,6 +198,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/4a/8e/5a01644697b03016de339ef444cfff28367f92984dc74eddaab1ed60eada/docx-0.2.4.tar.gz", hash = "sha256:9d7595eac6e86cda0b7136a2995318d039c1f3eaa368a3300805abbbe5dc8877", size = 54925 }
 
 [[package]]
+name = "docx2python"
+version = "3.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "lxml" },
+    { name = "paragraphs" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6c/80/c6a61729394e81ba7526c01bb3531e0b4a43773a6085aea156b52a0e061d/docx2python-3.3.0.tar.gz", hash = "sha256:38a50e05b3ff91456cb0c0ef497c3458f1f3f4aa557a85a47bedd935becdd371", size = 10083950 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9e/57/9970f9b10b1cd5a5ae688071ba1b71025747abd76dea2958551ac19a43c8/docx2python-3.3.0-py3-none-any.whl", hash = "sha256:0a661b31e451a13081bd9c7405f0f350800a157e9c9c834a61811fb7f2d9cb59", size = 50177 },
+]
+
+[[package]]
 name = "email-validator"
 version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -525,6 +539,15 @@ wheels = [
 ]
 
 [[package]]
+name = "paragraphs"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/24/71/2462530f2e70991c1d19c03423a0bc1cdde8e49a415762edaebe7c19f9a3/paragraphs-1.0.1.tar.gz", hash = "sha256:ad393f2e99432740f36c115280aa454c53c8048e6a2cda0b81df4effc8043a60", size = 7045 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/18/79/806f22675c50f9cc827376756186c8601ef52a9cf08d2c7b80964e1daba2/paragraphs-1.0.1-py3-none-any.whl", hash = "sha256:9a189d8dfc6241b5caa9b3ae730ee6ccce53e483d3b45183d13f657f7d0d1b35", size = 5139 },
+]
+
+[[package]]
 name = "pillow"
 version = "11.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -654,6 +677,7 @@ dependencies = [
     { name = "beautifulsoup4" },
     { name = "cssmin" },
     { name = "docx" },
+    { name = "docx2python" },
     { name = "email-validator" },
     { name = "flask" },
     { name = "flask-assets" },
@@ -678,6 +702,7 @@ requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12.3" },
     { name = "cssmin", specifier = ">=0.2.0" },
     { name = "docx", specifier = ">=0.2.4" },
+    { name = "docx2python" },
     { name = "email-validator", specifier = ">=2.2.0" },
     { name = "flask", specifier = ">=3.1.0" },
     { name = "flask-assets", specifier = ">=2.1.0" },

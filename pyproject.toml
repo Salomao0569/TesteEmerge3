@@ -24,4 +24,5 @@ dependencies = [
     "flask-caching>=2.3.0",
     "flask-compress>=1.17",
     "sqlalchemy",
+    "docx2python",
 ]

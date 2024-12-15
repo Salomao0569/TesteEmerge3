@@ -10,13 +10,24 @@ from flask_compress import Compress
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from sqlalchemy import text
-from docx import Document
-from docx.shared import Pt, Cm, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
+try:
+    from docx import Document
+    from docx.shared import Pt, Cm, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+    print("Módulos python-docx importados com sucesso")
+except ImportError as e:
+    print(f"Erro ao importar módulos python-docx: {e}")
+    raise
 
 from models import db, Doctor, Template
+
+# Configurar logging detalhado
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 # Configuração do logging
 logging.basicConfig(level=logging.DEBUG)
@@ -122,16 +133,40 @@ def templates():
 
 @app.route('/gerar_doc', methods=['POST'])
 def gerar_doc():
+    """
+    Gera um documento DOC com o laudo do paciente.
+    Utiliza python-docx para criar o documento e BeautifulSoup para processar o HTML.
+    """
     try:
         logger.info("Iniciando função gerar_doc")
-        from docx import Document
-        from docx.shared import Pt, Cm, RGBColor
-        from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
-        from docx.oxml import OxmlElement
-        from docx.oxml.ns import qn
-        import html2text
-        from bs4 import BeautifulSoup
-        import io
+        logger.info(f"Headers da requisição: {dict(request.headers)}")
+        if not request.is_json:
+            logger.error("Requisição não contém JSON")
+            return jsonify({"error": "Requisição deve ser JSON"}), 400
+        
+        data = request.get_json()
+        if not data:
+            logger.error("JSON vazio ou inválido")
+            return jsonify({"error": "JSON inválido"}), 400
+            
+        required_fields = ['paciente', 'medidas', 'calculos', 'laudo', 'medico']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            logger.error(f"Campos obrigatórios faltando: {missing_fields}")
+            return jsonify({"error": f"Campos obrigatórios faltando: {missing_fields}"}), 400
+
+        # Importar módulos necessários
+        logger.info("Verificando módulos necessários...")
+        try:
+            # Verificar se os módulos já estão disponíveis
+            if not all(var in globals() for var in ['Document', 'Pt', 'Cm', 'RGBColor', 'WD_ALIGN_PARAGRAPH', 'WD_LINE_SPACING']):
+                logger.error("Módulos necessários não encontrados")
+                return jsonify({"error": "Erro interno do servidor"}), 500
+            
+            logger.info("Módulos verificados com sucesso")
+        except Exception as e:
+            logger.error(f"Erro ao verificar módulos: {str(e)}")
+            return jsonify({"error": "Erro interno do servidor"}), 500
 
         logger.info("Iniciando geração do documento")
         data = request.get_json()
@@ -276,8 +311,16 @@ def gerar_doc():
         report_run.font.name = 'Arial'
 
         logger.info("Processando o conteúdo HTML do laudo")
-        soup = BeautifulSoup(data['laudo'], 'html.parser')
-        
+        try:
+            soup = BeautifulSoup(data['laudo'], 'html.parser')
+            if not soup:
+                logger.error("Erro ao processar HTML do laudo")
+                return jsonify({"error": "Erro ao processar HTML do laudo"}), 500
+            logger.info("HTML do laudo processado com sucesso")
+        except Exception as e:
+            logger.error(f"Erro ao processar HTML com BeautifulSoup: {str(e)}")
+            return jsonify({"error": "Erro ao processar HTML do laudo"}), 500
+
         def process_paragraph_alignment(p_tag):
             """Determina o alinhamento do parágrafo baseado no estilo HTML"""
             try:
@@ -364,12 +407,19 @@ def gerar_doc():
         doc_stream.seek(0)
 
         logger.info("Documento gerado com sucesso")
-        return send_file(
-            doc_stream,
-            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            as_attachment=True,
-            download_name=f"Laudo_{data['paciente']['nome'].replace(' ', '_')}.docx"
-        )
+        try:
+            logger.info("Preparando arquivo para download")
+            response = send_file(
+                doc_stream,
+                mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                as_attachment=True,
+                download_name=f"Laudo_{data['paciente']['nome'].replace(' ', '_')}.docx"
+            )
+            logger.info("Arquivo preparado com sucesso")
+            return response
+        except Exception as e:
+            logger.error(f"Erro ao enviar arquivo: {str(e)}")
+            return jsonify({"error": "Erro ao gerar arquivo para download"}), 500
 
     except Exception as e:
         logger.error(f"Erro ao gerar DOC: {str(e)}", exc_info=True)

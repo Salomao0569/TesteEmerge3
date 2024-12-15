@@ -1,4 +1,3 @@
-
 function gerarDOC() {
     const editor = document.getElementById('editor');
     const nome = document.getElementById('nome').value || 'Paciente';
@@ -19,12 +18,21 @@ function gerarDOC() {
         new Date().toISOString().split('T')[0];
     const dataFormatada = new Date(dataExame).toLocaleDateString('pt-BR');
     
-    fetch('/gerar_doc', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+    // Obter o token CSRF da meta tag
+    const csrfMetaTag = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfMetaTag) {
+        console.error('Meta tag CSRF não encontrada');
+        alert('Erro de segurança: Token CSRF não encontrado. Por favor, recarregue a página.');
+        return;
+    }
+    const csrfToken = csrfMetaTag.getAttribute('content');
+    if (!csrfToken) {
+        console.error('Token CSRF vazio');
+        alert('Erro de segurança: Token CSRF inválido. Por favor, recarregue a página.');
+        return;
+    }
+    
+    const data = {
             paciente: {
                 nome: document.getElementById('nome').value || 'N/D',
                 dataNascimento: document.getElementById('dataNascimento').value || 'N/D',
@@ -60,8 +68,18 @@ function gerarDOC() {
                 crm: doctorSelect.selectedOptions[0].dataset.crm,
                 rqe: doctorSelect.selectedOptions[0].dataset.rqe || ''
             }
+        };
+
+        console.log('Dados a serem enviados:', data);
+
+        fetch('/gerar_doc', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(data),
         })
-    })
     .then(response => {
         if (!response.ok) {
             return response.json().then(error => {
