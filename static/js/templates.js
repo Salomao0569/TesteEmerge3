@@ -90,7 +90,12 @@ async function createTemplate(event) {
     const content = document.getElementById('templateContent').value.trim();
     
     if (!name || !category || !content) {
-        console.log('Campos obrigatórios faltando');
+        alert('Por favor, preencha todos os campos obrigatórios');
+        return;
+    }
+
+    if (content.length < 10) {
+        alert('O conteúdo da frase deve ter pelo menos 10 caracteres');
         return;
     }
     

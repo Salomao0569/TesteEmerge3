@@ -22,12 +22,20 @@ class Doctor(db.Model):
         }
 
 class Template(db.Model):
+    CATEGORIES = {
+        'laudo': 'Modelo de Laudo Completo',
+        'normal': 'Frase Normal',
+        'alterado': 'Frase Alterada',
+        'conclusao': 'Frase de Conclusão'
+    }
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50), nullable=False)
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'))
     doctor = db.relationship('Doctor', backref='templates')
+    created_at = db.Column(db.DateTime, default=db.func.now())
     
     def __repr__(self):
         return f'<Template {self.name}>'
