@@ -1,13 +1,13 @@
 
 run = "python main.py"
-modules = ["python-3.11"]
+modules = ["python-3.11", "postgresql-16"]
 
 [nix]
 channel = "stable-24_05"
 
 [deployment]
 run = "python main.py"
-deploymentTarget = "cloudrun"
+deploymentTarget = "vm"
 
 [env]
 PYTHON_VERSION = "3.11"
