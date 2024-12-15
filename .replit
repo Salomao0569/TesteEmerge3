@@ -1,4 +1,5 @@
 
+run = "python main.py"
 modules = ["python-3.11"]
 
 [nix]
@@ -7,15 +8,10 @@ channel = "stable-24_05"
 [deployment]
 run = "python main.py"
 deploymentTarget = "cloudrun"
-ignorePorts = false
 
 [env]
 PYTHON_VERSION = "3.11"
-REPLIT_DISABLE_PACKAGE_LAYER = "1"
-
-[languages]
-python = "3.11"
 
 [[ports]]
 localPort = 5000
-externalPort = 443
+externalPort = 80

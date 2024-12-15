@@ -23,19 +23,13 @@ logging.basicConfig(level=logging.INFO)
 # Initialize assets
 assets = init_assets(app)
 
-# Initialize database only once
+# Initialize database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
 db.init_app(app)
 
 with app.app_context():
-    try:
-        db.create_all()
-        app.logger.info("Database tables created successfully")
-    except Exception as e:
-        app.logger.error(f"Error initializing database: {str(e)}")
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
-        db.init_app(app)
-        db.create_all()
-        app.logger.info("Fallback to SQLite successful")
+    db.create_all()
+    app.logger.info("Database tables created successfully")
 
 @app.route('/')
 def index():
