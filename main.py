@@ -35,17 +35,35 @@ def templates():
     return render_template('templates.html')
 
 #Example route for generating a DOCX report.  This needs to be adapted to your actual application
-@app.route('/generate_report', methods=['POST'])
-def generate_report():
+@app.route('/gerar_doc', methods=['POST'])
+def gerar_doc():
     try:
-        data = request.get_json() # Assumes report data is sent as JSON
+        data = request.get_json()
         parser = HtmlToDocx()
-        doc = parser.parse_html(data['laudo']) #Use parse_html to create the docx object
-        #Further doc manipulation can be added here (saving, returning, etc.)
-        return jsonify({"message": "Report generated successfully"}), 200
+        doc = parser.parse_html_string(data['laudo'])
+        
+        # Configurar estilos do documento
+        for paragraph in doc.paragraphs:
+            paragraph.paragraph_format.line_spacing = 1.5
+            paragraph.paragraph_format.space_after = Pt(12)
+            
+        # Salvar temporariamente
+        temp_path = "temp_report.docx"
+        doc.save(temp_path)
+        
+        with open(temp_path, 'rb') as f:
+            doc_data = f.read()
+        os.remove(temp_path)
+        
+        return send_file(
+            io.BytesIO(doc_data),
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            as_attachment=True,
+            download_name=f"Laudo_{data['paciente']['nome']}.docx"
+        )
     except Exception as e:
-        print(f"Error generating report: {e}")
-        return jsonify({"error": "Report generation failed"}), 500
+        print(f"Erro ao gerar DOC: {e}")
+        return jsonify({"error": "Falha ao gerar documento"}), 500
 
 
 
