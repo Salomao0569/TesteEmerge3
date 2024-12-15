@@ -19,8 +19,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_size': 3,
     'pool_recycle': 300,
     'pool_timeout': 60,
-    'pool_pre_ping': True,
-    'connect_timeout': 60
+    'pool_pre_ping': True
 }
 
 # Configure logging
