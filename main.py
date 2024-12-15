@@ -12,46 +12,24 @@ import os
 
 app = Flask(__name__)
 
-# SQLite configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO)
 
 # Initialize database
 db.init_app(app)
 
-# Create tables
+# Drop and recreate tables
 with app.app_context():
     try:
-        app.logger.info("Creating tables in PostgreSQL...")
+        app.logger.info("Recriando tabelas no SQLite...")
+        db.drop_all()
         db.create_all()
-        
-        # Add sample data if needed
-        if not Doctor.query.first():
-            sample_doctor = Doctor(
-                full_name='Dr. Sample',
-                crm='12345',
-                rqe='67890'
-            )
-            db.session.add(sample_doctor)
-            
-            sample_template = Template(
-                name='Template Padrão',
-                content='Exame realizado com ritmo cardíaco regular...',
-                category='laudo',
-                doctor=sample_doctor
-            )
-            db.session.add(sample_template)
-            db.session.commit()
-            
-        app.logger.info("Database initialized successfully!")
+        app.logger.info("Tabelas recriadas com sucesso!")
     except Exception as e:
-        app.logger.error(f"Database initialization error: {str(e)}")
+        app.logger.error(f"Erro ao recriar tabelas: {str(e)}")
 
 assets = init_assets(app)
 
@@ -230,4 +208,4 @@ def delete_doctor(id):
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

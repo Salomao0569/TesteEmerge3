@@ -7,7 +7,8 @@ dependencies = [
     "email-validator>=2.2.0",
     "flask>=3.1.0",
     "flask-sqlalchemy>=3.1.1",
-    "psycopg2-binary>=2.9.9",
+    "pg8000>=1.30.3",  # Driver PostgreSQL puro Python
+    "psycopg2-binary>=2.9.10",
     "flask-login>=0.6.3",
     "flask-cors>=5.0.0",
     "flask-wtf>=1.2.2",
@@ -16,6 +17,4 @@ dependencies = [
     "cssmin>=0.2.0",
     "jsmin>=3.0.1",
     "python-docx>=1.0.0",
-    "docx>=0.2.4",
-    "html2text>=2024.2.26",
 ]
