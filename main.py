@@ -12,11 +12,11 @@ import os
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://biocardio:biocardio86@34.95.184.194:3306/biocardio'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://biocardio:biocardio86@34.46.61.123:5432/biocardio'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_size': 10,
-    'pool_recycle': 3600,
+    'pool_size': 5,
+    'pool_recycle': 1800,
     'pool_timeout': 30
 }
 
