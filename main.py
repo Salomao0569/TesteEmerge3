@@ -44,18 +44,33 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32))
 app.config['WTF_CSRF_SECRET_KEY'] = os.getenv('WTF_CSRF_SECRET_KEY', secrets.token_hex(32))
+app.config['WTF_CSRF_ENABLED'] = True
+app.config['WTF_CSRF_CHECK_DEFAULT'] = True
 app.config['CACHE_TYPE'] = 'simple'
 
 # Inicialização das extensões
 try:
     print("Iniciando configuração do Flask...")
+    
+    # Inicializar CSRF primeiro
+    csrf = CSRFProtect()
+    csrf.init_app(app)
+    print("CSRF inicializado com sucesso")
+    
+    # Outras extensões
     db.init_app(app)
-    csrf = CSRFProtect(app)
+    print("Database inicializado com sucesso")
+    
     cache = Cache(app)
+    print("Cache inicializado com sucesso")
+    
     Compress(app)
-    print("Extensões inicializadas com sucesso!")
+    print("Compress inicializado com sucesso")
+    
+    print("Todas as extensões inicializadas com sucesso!")
 except Exception as e:
     print(f"Erro ao inicializar extensões: {str(e)}")
+    logger.error(f"Erro detalhado ao inicializar extensões: {str(e)}", exc_info=True)
     raise
 
 # Inicialização do banco de dados
@@ -132,7 +147,10 @@ def templates():
     return render_template('templates.html', doctors=doctors, templates=templates)
 
 @app.route('/gerar_doc', methods=['POST'])
+@csrf.exempt  # Removemos a proteção CSRF desta rota específica já que estamos tratando manualmente
 def gerar_doc():
+    logger.info("Iniciando rota gerar_doc")
+    logger.info(f"Headers recebidos: {dict(request.headers)}")
     """
     Gera um documento DOC com o laudo do paciente.
     Utiliza python-docx para criar o documento e BeautifulSoup para processar o HTML.
@@ -140,14 +158,23 @@ def gerar_doc():
     try:
         logger.info("Iniciando função gerar_doc")
         logger.info(f"Headers da requisição: {dict(request.headers)}")
+        
+        # Verificar se é uma requisição JSON
         if not request.is_json:
             logger.error("Requisição não contém JSON")
             return jsonify({"error": "Requisição deve ser JSON"}), 400
         
-        data = request.get_json()
-        if not data:
-            logger.error("JSON vazio ou inválido")
+        # Obter e validar dados JSON
+        try:
+            data = request.get_json()
+            logger.info(f"Dados recebidos: {str(data)[:500]}...")  # Log primeiros 500 caracteres
+        except Exception as e:
+            logger.error(f"Erro ao processar JSON da requisição: {str(e)}")
             return jsonify({"error": "JSON inválido"}), 400
+            
+        if not data:
+            logger.error("JSON vazio")
+            return jsonify({"error": "JSON vazio"}), 400
             
         required_fields = ['paciente', 'medidas', 'calculos', 'laudo', 'medico']
         missing_fields = [field for field in required_fields if field not in data]
@@ -312,14 +339,22 @@ def gerar_doc():
 
         logger.info("Processando o conteúdo HTML do laudo")
         try:
+            if not data.get('laudo'):
+                logger.error("Conteúdo do laudo está vazio")
+                return jsonify({"error": "Conteúdo do laudo não pode estar vazio"}), 400
+                
+            logger.info(f"Conteúdo do laudo recebido: {data['laudo'][:100]}...")
             soup = BeautifulSoup(data['laudo'], 'html.parser')
-            if not soup:
-                logger.error("Erro ao processar HTML do laudo")
-                return jsonify({"error": "Erro ao processar HTML do laudo"}), 500
+            
+            if not soup or not soup.find_all(['p', 'div']):
+                logger.error("HTML do laudo inválido ou vazio")
+                return jsonify({"error": "Formato do laudo inválido"}), 400
+                
             logger.info("HTML do laudo processado com sucesso")
+            logger.info(f"Elementos encontrados: {len(soup.find_all(['p', 'div']))} parágrafos/divs")
         except Exception as e:
-            logger.error(f"Erro ao processar HTML com BeautifulSoup: {str(e)}")
-            return jsonify({"error": "Erro ao processar HTML do laudo"}), 500
+            logger.error(f"Erro ao processar HTML com BeautifulSoup: {str(e)}", exc_info=True)
+            return jsonify({"error": "Erro ao processar o formato do laudo"}), 500
 
         def process_paragraph_alignment(p_tag):
             """Determina o alinhamento do parágrafo baseado no estilo HTML"""

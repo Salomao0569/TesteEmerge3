@@ -18,17 +18,15 @@ function gerarDOC() {
         new Date().toISOString().split('T')[0];
     const dataFormatada = new Date(dataExame).toLocaleDateString('pt-BR');
     
-    // Obter o token CSRF da meta tag
-    const csrfMetaTag = document.querySelector('meta[name="csrf-token"]');
-    if (!csrfMetaTag) {
-        console.error('Meta tag CSRF não encontrada');
-        alert('Erro de segurança: Token CSRF não encontrado. Por favor, recarregue a página.');
-        return;
-    }
-    const csrfToken = csrfMetaTag.getAttribute('content');
-    if (!csrfToken) {
-        console.error('Token CSRF vazio');
-        alert('Erro de segurança: Token CSRF inválido. Por favor, recarregue a página.');
+    // Obter o token CSRF usando a função utilitária
+    let headers;
+    try {
+        headers = addCSRFToken({
+            'Content-Type': 'application/json'
+        });
+    } catch (error) {
+        console.error('Erro ao obter token CSRF:', error.message);
+        alert('Erro de segurança: ' + error.message + '. Por favor, recarregue a página.');
         return;
     }
     
@@ -74,10 +72,7 @@ function gerarDOC() {
 
         fetch('/gerar_doc', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
+            headers: headers,
             body: JSON.stringify(data),
         })
     .then(response => {
@@ -100,6 +95,22 @@ function gerarDOC() {
     })
     .catch(error => {
         console.error('Erro ao gerar DOC:', error);
-        alert('Erro ao gerar o documento DOC: ' + error.message);
+        let errorMessage = 'Erro ao gerar o documento DOC: ';
+        
+        if (error.response) {
+            // Erro do servidor com resposta
+            console.error('Resposta do servidor:', error.response);
+            errorMessage += error.response.data?.error || error.message;
+        } else if (error.request) {
+            // Erro de rede sem resposta do servidor
+            console.error('Erro de rede:', error.request);
+            errorMessage += 'Erro de conexão com o servidor';
+        } else {
+            // Erro de configuração da requisição
+            console.error('Erro de configuração:', error.message);
+            errorMessage += error.message;
+        }
+        
+        alert(errorMessage);
     });
 }
