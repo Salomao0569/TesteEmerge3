@@ -1,6 +1,41 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     const editor = document.getElementById('editor');
+    const wordCountDisplay = document.createElement('div');
+    wordCountDisplay.className = 'text-muted small mt-2';
+    editor.parentNode.insertBefore(wordCountDisplay, editor.nextSibling);
+
+    // Auto-save a cada 30 segundos
+    setInterval(() => {
+        localStorage.setItem('editorContent', editor.innerHTML);
+    }, 30000);
+
+    // Contagem de palavras/caracteres
+    function updateWordCount() {
+        const text = editor.innerText;
+        const wordCount = text.trim().split(/\s+/).length;
+        const charCount = text.length;
+        wordCountDisplay.textContent = `Palavras: ${wordCount} | Caracteres: ${charCount}`;
+    }
+
+    editor.addEventListener('input', updateWordCount);
+    updateWordCount();
+
+    // Atalhos de teclado adicionais
+    editor.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            localStorage.setItem('editorContent', editor.innerHTML);
+        }
+        if (e.ctrlKey && e.key === 'b') {
+            e.preventDefault();
+            execCommand('bold');
+        }
+        if (e.ctrlKey && e.key === 'i') {
+            e.preventDefault();
+            execCommand('italic');
+        }
+    });
     
     // Função simples para executar comandos
     window.execCommand = function(command, value = null) {

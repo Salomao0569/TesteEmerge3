@@ -100,6 +100,10 @@
 .editor-area {
     min-height: 300px;
     padding: 1rem;
+    transition: all 0.2s ease;
+    font-family: Arial, sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
     border: 1px solid #ced4da;
     border-radius: 0.25rem;
     background-color: white;
