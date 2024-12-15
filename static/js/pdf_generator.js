@@ -120,15 +120,8 @@ function gerarPDF() {
         };
         
         processNode(tempDiv);
-        
-        for (let i = 0; i < lines.length; i++) {
-            if (currentY > pageHeight - margin) {
-                doc.addPage();
-                currentY = margin;
-            }
-            doc.text(lines[i], margin, currentY);
-            currentY += 7;
-        }
+
+        currentY += 10; // Espaço antes da assinatura
 
         // Assinatura do Médico
         const doctorSelect = document.getElementById('selectedDoctor');

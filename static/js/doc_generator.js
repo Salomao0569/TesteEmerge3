@@ -32,15 +32,20 @@ function gerarDOC() {
             fonte: window.getComputedStyle(document.getElementById('editor')).fontFamily,
             tamanho: window.getComputedStyle(document.getElementById('editor')).fontSize,
             espacamento: window.getComputedStyle(document.getElementById('editor')).lineHeight,
+            alinhamento: window.getComputedStyle(document.getElementById('editor')).textAlign,
+            margemParagrafo: window.getComputedStyle(document.getElementById('editor')).marginBottom,
             estilos: Array.from(document.getElementById('editor').getElementsByTagName('*')).map(el => ({
                 tag: el.tagName,
                 style: el.getAttribute('style'),
-                className: el.className
+                className: el.className,
+                computedStyle: {
+                    fontWeight: window.getComputedStyle(el).fontWeight,
+                    fontStyle: window.getComputedStyle(el).fontStyle,
+                    textDecoration: window.getComputedStyle(el).textDecoration,
+                    textAlign: window.getComputedStyle(el).textAlign
+                }
             }))
         },
-        formatacao: {
-            fonte: window.getComputedStyle(document.getElementById('editor')).fontFamily,
-            tamanho: window.getComputedStyle(document.getElementById('editor')).fontSize,
             espacamento: window.getComputedStyle(document.getElementById('editor')).lineHeight
         },
         medico: {
