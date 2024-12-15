@@ -89,16 +89,14 @@ async function createTemplate(event) {
         const category = document.getElementById('templateCategory').value;
         const contentArea = document.getElementById('templateContent');
         
-        if (!name || !category || !contentArea.value.trim()) {
-            console.log('Campos obrigatórios faltando');
+        if (!name || !category || !contentArea.innerHTML.trim()) {
+            alert('Todos os campos são obrigatórios');
             return;
         }
 
-        // Preserve formatting by getting innerHTML instead of value
         const content = contentArea.innerHTML;
         const templateData = { name, category, content };
-        console.log('Enviando dados:', templateData);
-
+        
         const response = await fetch('/api/templates', {
             method: 'POST',
             headers: {
@@ -122,8 +120,9 @@ async function createTemplate(event) {
         await loadTemplates();
         
         } catch (error) {
-        console.error('Erro ao cadastrar frase:', error);
-    }
+            console.error('Erro ao cadastrar frase:', error);
+            alert('Erro ao cadastrar frase. Por favor, tente novamente.');
+        }
 }
 
 // Função para deletar um template
