@@ -57,7 +57,34 @@
                         </div>
                         <div class="col-12">
                             <label for="templateContent" class="form-label">Conteúdo</label>
-                            <textarea id="templateContent" class="form-control" rows="15" style="min-height: 400px;" required></textarea>
+                            <div class="editor-toolbar mb-2">
+                                <div class="btn-group me-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('bold')">
+                                        <i class="fas fa-bold"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('italic')">
+                                        <i class="fas fa-italic"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('underline')">
+                                        <i class="fas fa-underline"></i>
+                                    </button>
+                                </div>
+                                <select class="form-select form-select-sm d-inline-block w-auto me-2" onchange="execCommand('fontName', false, this.value)">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Calibri">Calibri</option>
+                                    <option value="Georgia">Georgia</option>
+                                </select>
+                                <select class="form-select form-select-sm d-inline-block w-auto me-2" onchange="execCommand('fontSize', false, this.value)">
+                                    <option value="1">8pt</option>
+                                    <option value="2">10pt</option>
+                                    <option value="3">12pt</option>
+                                    <option value="4">14pt</option>
+                                    <option value="5">18pt</option>
+                                    <option value="6">24pt</option>
+                                </select>
+                            </div>
+                            <div id="templateContent" class="form-control" contenteditable="true" style="min-height: 400px; overflow-y: auto;"></div>
                         </div>
                     </div>
                     <div class="mt-3">

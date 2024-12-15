@@ -84,20 +84,21 @@ function updateTemplatesTable(templates) {
 async function createTemplate(event) {
     event.preventDefault();
     
-    // Validar campos obrigatórios
-    const name = document.getElementById('templateName').value.trim();
-    const category = document.getElementById('templateCategory').value;
-    const content = document.getElementById('templateContent').value.trim();
-    
-    if (!name || !category || !content) {
-        console.log('Campos obrigatórios faltando');
-        return;
-    }
-    
-    const templateData = { name, category, content };
-    console.log('Enviando dados:', templateData);
-
     try {
+        const name = document.getElementById('templateName').value.trim();
+        const category = document.getElementById('templateCategory').value;
+        const contentArea = document.getElementById('templateContent');
+        
+        if (!name || !category || !contentArea.value.trim()) {
+            console.log('Campos obrigatórios faltando');
+            return;
+        }
+
+        // Preserve formatting by getting innerHTML instead of value
+        const content = contentArea.innerHTML;
+        const templateData = { name, category, content };
+        console.log('Enviando dados:', templateData);
+
         const response = await fetch('/api/templates', {
             method: 'POST',
             headers: {
