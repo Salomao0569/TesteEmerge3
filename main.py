@@ -23,9 +23,18 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_timeout': 30,
     'pool_recycle': 1800,
     'connect_args': {
+        'connect_timeout': 10,
         'sslmode': 'disable'
     }
 }
+
+# Log da tentativa de conexão
+app.logger.info("Tentando conectar ao PostgreSQL...")
+try:
+    db.create_all()
+    app.logger.info("Conexão com PostgreSQL estabelecida com sucesso!")
+except Exception as e:
+    app.logger.error(f"Erro ao conectar com PostgreSQL: {str(e)}")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
