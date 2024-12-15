@@ -1,3 +1,4 @@
+
 run = "python main.py"
 modules = ["python-3.11:v3.11", "postgresql-16:v16", "postgresql-16"]
 
@@ -16,4 +17,4 @@ DATABASE_URL = "postgresql://biocardio:biocardio86@34.46.61.123:5432/biocardio"
 
 [[ports]]
 localPort = 3000
-externalPort = 3000
+externalPort = 80
