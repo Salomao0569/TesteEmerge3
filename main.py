@@ -16,16 +16,8 @@ database_url = os.environ.get('DATABASE_URL')
 if not database_url:
     raise Exception("DATABASE_URL não encontrada nas variáveis de ambiente")
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://biocardio:biocardio86@34.95.184.194:5432/biocardio'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_size': 5,
-    'pool_timeout': 30,
-    'pool_recycle': 1800,
-    'connect_args': {
-        'connect_timeout': 30
-    }
-}
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
