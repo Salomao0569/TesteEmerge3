@@ -27,9 +27,21 @@ db.init_app(app)
 assets = init_assets(app)
 
 with app.app_context():
-    db.drop_all()
-    db.create_all()
-    app.logger.info("Database tables recreated successfully")
+    try:
+        with db.engine.connect() as conn:
+            conn.execute(db.text('DROP SCHEMA public CASCADE'))
+            conn.execute(db.text('CREATE SCHEMA public'))
+            conn.commit()
+        db.create_all()
+        app.logger.info("Database tables recreated successfully")
+    except Exception as e:
+        app.logger.error(f"Error initializing database: {str(e)}")
+        # Fallback to SQLite if PostgreSQL fails
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
+        db.init_app(app)
+        db.drop_all()
+        db.create_all()
+        app.logger.info("Fallback to SQLite successful")
 
 @app.route('/')
 def index():
