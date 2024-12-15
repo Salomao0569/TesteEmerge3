@@ -14,90 +14,66 @@ function calcularMassaVE() {
 }
 
 function calcularResultados() {
-    // Feedback visual
-    const feedback = document.createElement('div');
-    feedback.className = 'calculation-feedback';
-    feedback.textContent = 'Calculando...';
-    document.body.appendChild(feedback);
-    
-    setTimeout(() => feedback.remove(), 1000);
     const peso = parseFloat(document.getElementById('peso').value) || 0;
     const altura = parseFloat(document.getElementById('altura').value) || 0;
     const diamDiastFinal = parseFloat(document.getElementById('diam_diast_final').value) || 0;
     const diamSistFinal = parseFloat(document.getElementById('diam_sist_final').value) || 0;
     const espDiastSepto = parseFloat(document.getElementById('esp_diast_septo').value) || 0;
     const espDiastPPVE = parseFloat(document.getElementById('esp_diast_ppve').value) || 0;
-    
-    console.log("Valores obtidos:", { peso, altura, diamDiastFinal, diamSistFinal, espDiastSepto, espDiastPPVE });
-
-    const elementos = {
-        'print_volume_diast_final': '',
-        'print_volume_sist_final': '',
-        'print_volume_ejetado': '',
-        'print_fracao_ejecao': '',
-        'print_percent_encurt': '',
-        'print_esp_relativa': '',
-        'print_massa_ve': '',
-        'print_indice_massa': '',
-        'superficie': ''
-    };
 
     // Superfície corpórea (DuBois)
+    let superficie = 0;
     if (peso > 0 && altura > 0) {
-        const superficie = 0.007184 * Math.pow(peso, 0.425) * Math.pow(altura, 0.725);
-        elementos.superficie = superficie.toFixed(2);
-        
-        if (diamDiastFinal > 0) {
-            // Volume Diastólico Final (Teichholz)
-            const volumeDiastFinal = 7 * Math.pow(diamDiastFinal / 10, 3) / (2.4 + diamDiastFinal / 10);
-            elementos.print_volume_diast_final = `${Math.round(volumeDiastFinal)} mL`;
-
-            if (diamSistFinal > 0) {
-                // Volume Sistólico Final
-                const volumeSistFinal = 7 * Math.pow(diamSistFinal / 10, 3) / (2.4 + diamSistFinal / 10);
-                elementos.print_volume_sist_final = `${Math.round(volumeSistFinal)} mL`;
-
-                // Volume Ejetado
-                const volumeEjetado = volumeDiastFinal - volumeSistFinal;
-                elementos.print_volume_ejetado = `${Math.round(volumeEjetado)} mL`;
-
-                // Fração de Ejeção
-                const fracaoEjecao = (volumeEjetado / volumeDiastFinal) * 100;
-                elementos.print_fracao_ejecao = `${Math.round(fracaoEjecao)} %`;
-
-                // Percentual de Encurtamento
-                const percentEncurt = ((diamDiastFinal - diamSistFinal) / diamDiastFinal) * 100;
-                elementos.print_percent_encurt = `${Math.round(percentEncurt)} %`;
-            }
-
-            if (espDiastPPVE > 0) {
-                const espessuraRelativa = (2 * espDiastPPVE / diamDiastFinal).toFixed(2);
-                elementos.print_esp_relativa = espessuraRelativa;
-            }
-        }
-
-        if (diamDiastFinal > 0 && espDiastSepto > 0 && espDiastPPVE > 0) {
-            const massaVE = calcularMassaVE();
-            elementos.print_massa_ve = `${massaVE} g`;
-
-            if (superficie > 0 && massaVE > 0) {
-                const indiceMassa = (massaVE / superficie).toFixed(1);
-                elementos.print_indice_massa = `${indiceMassa} g/m²`;
-            }
-        }
+        superficie = Math.round((0.007184 * Math.pow(peso, 0.425) * Math.pow(altura, 0.725)) * 100) / 100;
+        document.getElementById('superficie').value = superficie.toFixed(2);
     }
 
-    // Atualizar elementos no DOM
-    Object.keys(elementos).forEach(id => {
-        const elemento = document.getElementById(id);
-        if (elemento && elementos[id] !== '') {
-            if (id === 'superficie') {
-                elemento.value = elementos[id];
-            } else {
-                elemento.textContent = elementos[id];
-            }
+    // Volume Diastólico Final (Teichholz)
+    let volumeDiastFinal = 0;
+    if (diamDiastFinal > 0) {
+        volumeDiastFinal = Math.round(7 * Math.pow(diamDiastFinal / 10, 3) / (2.4 + diamDiastFinal / 10));
+        document.getElementById('print_volume_diast_final').textContent = volumeDiastFinal + ' mL';
+    }
+
+    // Volume Sistólico Final
+    let volumeSistFinal = 0;
+    if (diamSistFinal > 0) {
+        volumeSistFinal = Math.round(7 * Math.pow(diamSistFinal / 10, 3) / (2.4 + diamSistFinal / 10));
+        document.getElementById('print_volume_sist_final').textContent = volumeSistFinal + ' mL';
+    }
+
+    // Volume Ejetado
+    if (volumeDiastFinal > 0 && volumeSistFinal > 0) {
+        const volumeEjetado = volumeDiastFinal - volumeSistFinal;
+        document.getElementById('print_volume_ejetado').textContent = volumeEjetado + ' mL';
+        
+        // Fração de Ejeção
+        const fracaoEjecao = Math.round((volumeEjetado / volumeDiastFinal) * 100);
+        document.getElementById('print_fracao_ejecao').textContent = fracaoEjecao + ' %';
+    }
+
+    // Percentual de Encurtamento
+    if (diamDiastFinal > 0 && diamSistFinal > 0) {
+        const percentEncurt = Math.round(((diamDiastFinal - diamSistFinal) / diamDiastFinal) * 100);
+        document.getElementById('print_percent_encurt').textContent = percentEncurt + ' %';
+    }
+
+    // Espessura Relativa
+    if (diamDiastFinal > 0 && espDiastPPVE > 0) {
+        const espessuraRelativa = Math.round((2 * espDiastPPVE / diamDiastFinal) * 100) / 100;
+        document.getElementById('print_esp_relativa').textContent = espessuraRelativa.toFixed(2);
+    }
+
+    // Massa VE e Índice de Massa
+    if (diamDiastFinal > 0 && espDiastSepto > 0 && espDiastPPVE > 0) {
+        const massaVE = calcularMassaVE();
+        document.getElementById('print_massa_ve').textContent = massaVE + ' g';
+
+        if (superficie > 0) {
+            const indiceMassa = Math.round((massaVE / superficie) * 10) / 10;
+            document.getElementById('print_indice_massa').textContent = indiceMassa + ' g/m²';
         }
-    });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
