@@ -22,23 +22,21 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Initialize database and assets
-db.init_app(app)
+# Initialize assets
 assets = init_assets(app)
+
+# Initialize database only once
+db.init_app(app)
 
 with app.app_context():
     try:
-        db.drop_all()
         db.create_all()
-        app.logger.info("Database tables recreated successfully")
+        app.logger.info("Database tables created successfully")
     except Exception as e:
         app.logger.error(f"Error initializing database: {str(e)}")
-        # Fallback to SQLite if PostgreSQL fails
+        # Fallback to SQLite if needed
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
-        if not hasattr(app, 'db_initialized'):
-            db.init_app(app)
-            app.db_initialized = True
-        db.drop_all()
+        db.init_app(app)
         db.create_all()
         app.logger.info("Fallback to SQLite successful")
 
