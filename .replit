@@ -6,7 +6,7 @@ modules = ["postgresql-16", "postgresql-16", "python-3.11"]
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "python main.py"]
+run = ["sh", "-c", "python -u main.py"]
 deploymentTarget = "cloudrun"
 
 [env]
@@ -43,5 +43,5 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "python -u main.py"
 waitForPort = 3000

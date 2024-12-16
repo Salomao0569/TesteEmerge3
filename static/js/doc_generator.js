@@ -1,5 +1,6 @@
 function gerarDOC() {
     try {
+        console.log('Iniciando geração do DOC...');
         const editor = document.getElementById('editor');
         const nome = document.getElementById('nome').value || 'Paciente';
         const doctorSelect = document.getElementById('selectedDoctor');
@@ -11,6 +12,7 @@ function gerarDOC() {
 
         // Preparar o conteúdo do editor com formatação adequada
         const laudoContent = $('#editor').summernote('code');
+        console.log('Conteúdo do editor:', laudoContent);
         if (!laudoContent) {
             alert('Erro: Conteúdo do laudo não pode estar vazio');
             return;

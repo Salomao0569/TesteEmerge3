@@ -141,8 +141,10 @@ def templates():
 @app.route('/gerar_doc', methods=['POST'])
 @csrf.exempt  # Removemos a proteção CSRF desta rota específica já que estamos tratando manualmente
 def gerar_doc():
-    logger.info("Iniciando rota gerar_doc")
+    logger.info("=== Iniciando geração de documento DOC ===")
     logger.info(f"Headers recebidos: {dict(request.headers)}")
+    logger.info(f"Content-Type: {request.content_type}")
+    logger.info(f"Dados recebidos: {request.get_data()[:500]}...")  # Logging primeiros 500 bytes
     """
     Gera um documento DOC com o laudo do paciente.
     Utiliza python-docx para criar o documento e BeautifulSoup para processar o HTML.
