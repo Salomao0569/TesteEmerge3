@@ -1,34 +1,38 @@
 function gerarDOC() {
-    const editor = document.getElementById('editor');
-    const nome = document.getElementById('nome').value || 'Paciente';
-    const doctorSelect = document.getElementById('selectedDoctor');
-    
-    if (!doctorSelect.value) {
-        alert('Por favor, selecione um médico antes de gerar o documento.');
-        return;
-    }
-
-    // Preparar o conteúdo do editor com formatação adequada
-    const laudoContent = window.prepareContentForDocument ? 
-        window.prepareContentForDocument() : 
-        editor.innerHTML;
-    
-    // Formatar a data do exame
-    const dataExame = document.getElementById('dataExame').value || 
-        new Date().toISOString().split('T')[0];
-    const dataFormatada = new Date(dataExame).toLocaleDateString('pt-BR');
-    
-    // Obter o token CSRF usando a função utilitária
-    let headers;
     try {
-        headers = addCSRFToken({
-            'Content-Type': 'application/json'
-        });
-    } catch (error) {
-        console.error('Erro ao obter token CSRF:', error.message);
-        alert('Erro de segurança: ' + error.message + '. Por favor, recarregue a página.');
-        return;
-    }
+        const editor = document.getElementById('editor');
+        const nome = document.getElementById('nome').value || 'Paciente';
+        const doctorSelect = document.getElementById('selectedDoctor');
+        
+        if (!doctorSelect.value) {
+            alert('Por favor, selecione um médico antes de gerar o documento.');
+            return;
+        }
+
+        // Preparar o conteúdo do editor com formatação adequada
+        const laudoContent = $('#editor').summernote('code');
+        if (!laudoContent) {
+            alert('Erro: Conteúdo do laudo não pode estar vazio');
+            return;
+        }
+        
+        // Formatar a data do exame
+        const dataExame = document.getElementById('dataExame').value || 
+            new Date().toISOString().split('T')[0];
+        const dataFormatada = new Date(dataExame).toLocaleDateString('pt-BR');
+        
+        // Obter o token CSRF
+        const metaTag = document.querySelector('meta[name="csrf-token"]');
+        if (!metaTag) {
+            console.error('Meta tag CSRF não encontrada');
+            alert('Erro de segurança: Token CSRF não encontrado. Por favor, recarregue a página.');
+            return;
+        }
+        
+        const headers = {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': metaTag.getAttribute('content')
+        };
     
     const data = {
             paciente: {
@@ -74,43 +78,51 @@ function gerarDOC() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(data),
+            credentials: 'same-origin'
         })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(error => {
-                throw new Error(error.error || 'Erro ao gerar o documento');
-            });
-        }
-        return response.blob();
-    })
-    .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Laudo_${nome.replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
-    })
-    .catch(error => {
-        console.error('Erro ao gerar DOC:', error);
-        let errorMessage = 'Erro ao gerar o documento DOC: ';
-        
-        if (error.response) {
-            // Erro do servidor com resposta
-            console.error('Resposta do servidor:', error.response);
-            errorMessage += error.response.data?.error || error.message;
-        } else if (error.request) {
-            // Erro de rede sem resposta do servidor
-            console.error('Erro de rede:', error.request);
-            errorMessage += 'Erro de conexão com o servidor';
-        } else {
-            // Erro de configuração da requisição
-            console.error('Erro de configuração:', error.message);
-            errorMessage += error.message;
-        }
-        
-        alert(errorMessage);
-    });
+        .then(response => {
+            if (!response.ok) {
+                if (response.headers.get('content-type')?.includes('application/json')) {
+                    return response.json().then(error => {
+                        throw new Error(error.error || 'Erro ao gerar o documento');
+                    });
+                }
+                throw new Error('Erro ao gerar o documento');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            if (!blob) {
+                throw new Error('Documento gerado está vazio');
+            }
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Laudo_${nome.replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        })
+        .catch(error => {
+            console.error('Erro ao gerar DOC:', error);
+            let errorMessage = 'Erro ao gerar o documento DOC: ';
+            
+            if (error.response) {
+                console.error('Resposta do servidor:', error.response);
+                errorMessage += error.response.data?.error || error.message;
+            } else if (error.request) {
+                console.error('Erro de rede:', error.request);
+                errorMessage += 'Erro de conexão com o servidor';
+            } else {
+                console.error('Erro:', error);
+                errorMessage += error.message;
+            }
+            
+            alert(errorMessage);
+        });
+    } catch (error) {
+        console.error('Erro ao preparar dados:', error);
+        alert('Erro ao preparar dados para geração do documento: ' + error.message);
+    }
 }

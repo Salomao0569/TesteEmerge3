@@ -1,35 +1,41 @@
 $(document).ready(function() {
     console.log('Iniciando configuração do Summernote...');
     
-    $('#editor').summernote({
-        height: 500,
-        lang: 'pt-BR',
-        toolbar: [
-            ['style', ['style']],
-            ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
-            ['fontsize', ['fontsize']],
-            ['color', ['color']],
-            ['para', ['ul', 'ol', 'paragraph']],
-            ['table', ['table']],
-            ['insert', ['link', 'picture']],
-            ['view', ['fullscreen', 'codeview']]
-        ],
-        fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '24', '36'],
-        styleTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-        placeholder: 'Digite o conteúdo do laudo aqui...',
-        callbacks: {
-            onChange: function(contents) {
-                localStorage.setItem('reportContent', contents);
-            },
-            onInit: function() {
-                console.log('Summernote inicializado com sucesso');
-                const savedContent = localStorage.getItem('reportContent');
-                if (savedContent) {
-                    $('#editor').summernote('code', savedContent);
+    try {
+        $('#editor').summernote({
+            height: 500,
+            lang: 'pt-BR',
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture']],
+                ['view', ['fullscreen', 'codeview']]
+            ],
+            fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '24', '36'],
+            styleTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+            placeholder: 'Digite o conteúdo do laudo aqui...',
+            callbacks: {
+                onChange: function(contents) {
+                    // Armazenar conteúdo no localStorage para backup
+                    localStorage.setItem('reportContent', contents);
+                },
+                onInit: function() {
+                    console.log('Summernote inicializado com sucesso');
+                    // Restaurar conteúdo do backup se existir
+                    const savedContent = localStorage.getItem('reportContent');
+                    if (savedContent) {
+                        $('#editor').summernote('code', savedContent);
+                    }
                 }
             }
-        }
-    });
+        });
+    } catch (error) {
+        console.error('Erro ao configurar Summernote:', error);
+    }
 });
 
 // Função para inserir template selecionado
@@ -51,7 +57,7 @@ function insertSelectedPhrase() {
     }
 }
 
-// Função para incluir dados do médico
+// Função para inserir assinatura do médico
 function inserirAssinaturaMedico() {
     const select = document.getElementById('selectedDoctor');
     if (!select) return;
@@ -71,16 +77,5 @@ function inserirAssinaturaMedico() {
         CRM: ${crm}${rqe ? `<br>RQE: ${rqe}` : ''}
     </p>`;
 
-    const currentContent = $('#editor').summernote('code');
-    $('#editor').summernote('code', currentContent + dadosMedico);
+    $('#editor').summernote('pasteHTML', dadosMedico);
 }
-
-// Event listener para o select de médicos
-$(document).ready(function() {
-    const doctorSelect = document.getElementById('selectedDoctor');
-    if (doctorSelect) {
-        doctorSelect.addEventListener('change', function() {
-            incluirDadosMedico();
-        });
-    }
-});
