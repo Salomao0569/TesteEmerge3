@@ -77,5 +77,7 @@ function inserirAssinaturaMedico() {
         CRM: ${crm}${rqe ? `<br>RQE: ${rqe}` : ''}
     </p>`;
 
-    $('#editor').summernote('pasteHTML', dadosMedico);
+    // Get current content and add doctor info at the end
+    const currentContent = $('#editor').summernote('code');
+    $('#editor').summernote('code', currentContent + '\n\n' + dadosMedico);
 }
