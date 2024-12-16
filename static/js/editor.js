@@ -1,40 +1,33 @@
 
 $(document).ready(function() {
     $('#editor').summernote({
+        height: 300,
         lang: 'pt-BR',
-        height: 500,
         toolbar: [
-            ['style', ['style']],
-            ['font', ['bold', 'italic', 'underline', 'clear']],
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough']],
             ['para', ['ul', 'ol', 'paragraph']],
-            ['table', ['table']],
+            ['height', ['height']],
             ['insert', ['link']],
             ['view', ['fullscreen', 'codeview']],
-            ['custom', ['undo', 'redo']]
-        ],
-        styleTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-        callbacks: {
-            onChange: function(contents) {
-                localStorage.setItem('reportContent', contents);
-                updateWordCount();
-            },
-            onInit: function() {
-                console.log('Summernote inicializado com sucesso');
-                const savedContent = localStorage.getItem('reportContent');
-                if (savedContent) {
-                    $('#editor').summernote('code', savedContent);
-                }
-            }
-        }
+            ['help', ['help']]
+        ]
     });
-
-    function updateWordCount() {
-        const text = $('#editor').summernote('code').replace(/<[^>]*>/g, ' ');
-        const words = text.trim().split(/\s+/).length;
-        $('.word-count').text(`${words} palavras`);
-    }
-
-    window.getEditorContent = function() {
-        return $('#editor').summernote('code');
-    };
 });
+
+function insertSelectedTemplate() {
+    const templateSelect = document.getElementById('templateSelect');
+    const selectedOption = templateSelect.options[templateSelect.selectedIndex];
+    if (selectedOption && selectedOption.value) {
+        $('#editor').summernote('code', selectedOption.title);
+    }
+}
+
+function insertSelectedPhrase() {
+    const phraseSelect = document.getElementById('phraseSelect');
+    const selectedOption = phraseSelect.options[phraseSelect.selectedIndex];
+    if (selectedOption && selectedOption.value) {
+        const currentContent = $('#editor').summernote('code');
+        $('#editor').summernote('code', currentContent + '\n' + selectedOption.title);
+    }
+}
