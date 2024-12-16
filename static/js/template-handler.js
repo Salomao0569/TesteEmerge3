@@ -4,12 +4,7 @@ function insertSelectedTemplate(templateId) {
         fetch(`/api/templates/${templateId}`)
             .then(response => response.json())
             .then(template => {
-                const editor = tinymce.get('editor');
-                if (editor) {
-                    editor.setContent(template.content);
-                } else {
-                    console.error('Editor não encontrado');
-                }
+                $('#editor').summernote('code', template.content);
             })
             .catch(error => {
                 console.error('Erro ao carregar template:', error);
@@ -22,11 +17,6 @@ function insertSelectedTemplate(templateId) {
 // Função para salvar novo template
 async function saveTemplate() {
     try {
-        const editor = tinymce.get('editor');
-        if (!editor) {
-            throw new Error('Editor não encontrado');
-        }
-
         const templateName = document.getElementById('templateName').value;
         const doctorId = document.getElementById('doctorId').value;
 
@@ -37,7 +27,7 @@ async function saveTemplate() {
 
         const templateData = {
             name: templateName,
-            content: editor.getContent(),
+            content: $('#editor').summernote('code'),
             category: 'laudo',
             doctor_id: parseInt(doctorId)
         };

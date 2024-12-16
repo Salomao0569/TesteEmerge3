@@ -252,7 +252,7 @@
                         </div>
                     </div>
                 </div>
-                <textarea id="editor" class="form-control">
+                <div id="editor">
                     <p>Exame realizado com ritmo cardíaco regular. Evidenciando:</p>
                     <p>Cavidades cardíacas com dimensões normais.<br>Raiz da aorta com diâmetro preservado.<br>Espessura miocárdica do ventrículo esquerdo conservada.</p>
                     <p>Desempenho sistólico do ventrículo esquerdo conservado. Não foram observadas alterações segmentares da contratilidade ventricular.</p>
@@ -319,5 +319,39 @@
     <script src="/static/js/doctors.js"></script>
     <script src="/static/js/form_validation.js"></script>
     <script src="/static/js/doc_generator.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#editor').summernote({
+                lang: 'pt-BR',
+                height: 300,
+                callbacks: {
+                    onInit: function() {
+                        // Função executada após a inicialização do Summernote
+                    },
+                    onChange: function(contents, $editable) {
+                        // Função executada sempre que o conteúdo do editor muda
+                    },
+                    onPaste: function(e) {
+                        // Função executada ao colar conteúdo no editor
+                    },
+                    onImageUpload: function(files) {
+                        // Função executada ao enviar uma imagem para o editor
+                    },
+                    onMediaDelete: function(target) {
+                        // Função executada ao deletar uma mídia do editor
+                    },
+                    onKeyup: function(e) {
+                        // Função executada ao pressionar uma tecla no editor
+                    },
+                    onBlur: function() {
+                        // Função executada ao perder foco
+                    },
+                    onFocus: function() {
+                        // Função executada ao ganhar foco
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
