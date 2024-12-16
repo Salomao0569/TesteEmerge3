@@ -248,17 +248,22 @@
                 <div class="row">
                     <div class="col-md-6">
                         <label for="selectedDoctor" class="form-label">Médico Responsável</label>
-                        <select id="selectedDoctor" class="form-select" required>
-                            <option value="">Selecione o médico...</option>
-                            {% for doctor in doctors %}
-                            <option value="{{ doctor.id }}" 
-                                    data-crm="{{ doctor.crm }}" 
-                                    data-rqe="{{ doctor.rqe }}">
-                                {{ doctor.full_name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <div class="form-text">Os dados do médico serão incluídos automaticamente ao final do laudo</div>
+                        <div class="input-group">
+                            <select id="selectedDoctor" class="form-select" required>
+                                <option value="">Selecione o médico...</option>
+                                {% for doctor in doctors %}
+                                <option value="{{ doctor.id }}" 
+                                        data-crm="{{ doctor.crm }}" 
+                                        data-rqe="{{ doctor.rqe }}">
+                                    {{ doctor.full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" class="btn btn-primary" onclick="inserirAssinaturaMedico()">
+                                <i class="fas fa-signature me-1"></i>Inserir Assinatura
+                            </button>
+                        </div>
+                        <div class="form-text">Clique no botão para inserir a assinatura do médico no laudo</div>
                     </div>
                 </div>
             </div>

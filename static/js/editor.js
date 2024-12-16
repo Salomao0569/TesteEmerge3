@@ -52,7 +52,7 @@ function insertSelectedPhrase() {
 }
 
 // Função para incluir dados do médico
-function incluirDadosMedico() {
+function inserirAssinaturaMedico() {
     const select = document.getElementById('selectedDoctor');
     if (!select) return;
     
@@ -66,13 +66,13 @@ function incluirDadosMedico() {
     const crm = option.dataset.crm;
     const rqe = option.dataset.rqe;
 
-    const dadosMedico = `
-        <p style="margin-top: 20px; text-align: center;">
-            <strong>${medicName}</strong><br>
-            CRM: ${crm}${rqe ? `<br>RQE: ${rqe}` : ''}
-        </p>`;
+    const dadosMedico = `\n\n<p style="text-align: center;">
+        <strong>${medicName}</strong><br>
+        CRM: ${crm}${rqe ? `<br>RQE: ${rqe}` : ''}
+    </p>`;
 
-    $('#editor').summernote('pasteHTML', dadosMedico);
+    const currentContent = $('#editor').summernote('code');
+    $('#editor').summernote('code', currentContent + dadosMedico);
 }
 
 // Event listener para o select de médicos
