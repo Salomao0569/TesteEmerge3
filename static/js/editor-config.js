@@ -2,28 +2,39 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Iniciando configuração do TinyMCE...');
 
-    const editor = tinymce.init({
+    // Configurar TinyMCE para modo de uso sem API key
+    tinymce.init({
         selector: '#editor',
         height: 500,
         menubar: true,
+        statusbar: true,
         branding: false,
-        plugins: 'lists link image table wordcount',
-        readonly: false,
-        setup: function(editor) {
-            editor.on('init', function() {
-                console.log('Editor inicializado com sucesso');
-            });
-        },
-        
-        toolbar: 'undo redo | formatselect | ' +
-                'bold italic underline strikethrough | ' +
-                'alignleft aligncenter alignright alignjustify | ' +
-                'outdent indent | numlist bullist | ' +
-                'table image media | removeformat | help',
-        
-        content_css: [
-            'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'
+        promotion: false,
+
+    tinymce.init({
+        selector: '#editor',
+        height: 500,
+        menubar: true,
+        statusbar: true,
+        branding: false,
+        promotion: false,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
+            'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'table', 'help', 'wordcount'
         ],
+        toolbar: 'undo redo | formatselect | ' +
+                'bold italic backcolor | alignleft aligncenter ' +
+                'alignright alignjustify | bullist numlist outdent indent | ' +
+                'removeformat | table help',
+        content_style: `
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                line-height: 1.5;
+                margin: 1rem;
+            }
+        `,
         content_style: `
             body {
                 font-family: Arial, sans-serif;
@@ -40,51 +51,41 @@ document.addEventListener('DOMContentLoaded', function() {
         autosave_restore_when_empty: true,
 
         setup: function(editor) {
-            // Adicionar botão de assinatura do médico
+            editor.on('init', function() {
+                console.log('Editor inicializado com sucesso');
+            });
+
             editor.ui.registry.addButton('assinatura', {
                 text: 'Assinatura',
-                icon: 'signature',
                 onAction: function() {
                     const doctorSelect = document.getElementById('doctorId');
                     if (doctorSelect && doctorSelect.value) {
                         const doctorInfo = doctorSelect.options[doctorSelect.selectedIndex].text;
                         const signature = `
-                            <br><br>
                             <div class="medical-signature" style="text-align: center; margin-top: 30px;">
                                 <p>_______________________________________________</p>
                                 <p>${doctorInfo}</p>
-                            </div>
-                        `;
+                            </div>`;
                         editor.insertContent(signature);
                     } else {
                         alert('Por favor, selecione um médico antes de adicionar a assinatura.');
                     }
                 }
             });
-
-            // Evento de mudança do editor
+        },
+        init_instance_callback: function(editor) {
             editor.on('change', function() {
-                editor.save();
-                const content = editor.getContent();
-                const reportName = document.getElementById('reportName').value;
-                const doctorId = document.getElementById('doctorId').value;
-                
-                if (reportName && doctorId) {
-                    const reportData = {
-                        name: reportName,
-                        content: content,
-                        doctor_id: parseInt(doctorId),
-                        category: 'laudo'
-                    };
+                const form = document.getElementById('reportForm');
+                if (form) {
+                    const formData = new FormData(form);
+                    formData.append('content', editor.getContent());
                     
-                    // Autosave para o backend
                     fetch('/api/templates', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-Token': getCSRFToken()
+                            'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify(reportData)
+                        body: JSON.stringify(Object.fromEntries(formData))
                     }).catch(error => console.error('Erro ao salvar:', error));
                 }
             });

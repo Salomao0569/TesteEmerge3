@@ -6,102 +6,81 @@ from flask import Flask, render_template, request, jsonify, send_file, make_resp
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from flask_cors import CORS
-import logging
-
-# Configurar logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from sqlalchemy import text
+
+# Carregar variáveis de ambiente primeiro
+load_dotenv()
+
+# Configurar logging uma única vez no início
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 try:
     from docx import Document
     from docx.shared import Pt, Cm, RGBColor
     from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
-    print("Módulos python-docx importados com sucesso")
+    logger.info("Módulos python-docx importados com sucesso")
 except ImportError as e:
-    print(f"Erro ao importar módulos python-docx: {e}")
-    raise
+    logger.error(f"Erro ao importar módulos python-docx: {e}")
+    # Não vamos levantar o erro aqui, apenas log
+    Document = None
+    logger.warning("Algumas funcionalidades de geração de documentos podem estar indisponíveis")
 
 from models import db, Doctor, Template
 
-# Configurar logging detalhado
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+# Inicialização do Flask e extensões
+app = Flask(__name__)
+
+# Configurações do Flask
+app.config.update(
+    SECRET_KEY=secrets.token_hex(32),
+    WTF_CSRF_ENABLED=True,
+    WTF_CSRF_CHECK_DEFAULT=True,
+    SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL'),
+    SQLALCHEMY_TRACK_MODIFICATIONS=False,
+    CACHE_TYPE='simple'
 )
 
-# Configuração do logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
-# Carregar variáveis de ambiente
-load_dotenv()
-
-# Inicialização do Flask
-app = Flask(__name__)
-CORS(app)
+# Inicializar extensões
+db.init_app(app)
 csrf = CSRFProtect(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# Configuração básica do Flask
-app.config['SECRET_KEY'] = 'your-secret-key-here'
-app.config['WTF_CSRF_ENABLED'] = True
-app.config['WTF_CSRF_CHECK_DEFAULT'] = False  # Desabilitar verificação CSRF para rotas específicas
+logger.info("Flask e extensões inicializados")
 
-logger.info("Iniciando configuração do Flask...")
-
-# Configuração das extensões
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-#app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32))
-#app.config['WTF_CSRF_SECRET_KEY'] = os.getenv('WTF_CSRF_SECRET_KEY', secrets.token_hex(32))
-#app.config['WTF_CSRF_ENABLED'] = True
-#app.config['WTF_CSRF_CHECK_DEFAULT'] = True
-app.config['CACHE_TYPE'] = 'simple'
-
-# Inicialização das extensões
-try:
-    
-    print("CSRF inicializado com sucesso")
-    
-    # Adicionando CORS
-    
-    print("CORS inicializado com sucesso")
-    
-    # Outras extensões
-    db.init_app(app)
-    print("Database inicializado com sucesso")
-    
-    #cache = Cache(app)
-    #print("Cache inicializado com sucesso")
-    
-    #Compress(app)
-    #print("Compress inicializado com sucesso")
-    
-    print("Todas as extensões inicializadas com sucesso!")
-except Exception as e:
-    print(f"Erro ao inicializar extensões: {str(e)}")
-    logger.error(f"Erro detalhado ao inicializar extensões: {str(e)}", exc_info=True)
-    raise
+# Log de inicialização
+logger.info("Todas as extensões inicializadas com sucesso!")
 
 # Inicialização do banco de dados
-with app.app_context():
+def init_db():
     try:
-        print("Verificando conexão com o banco de dados...")
-        # Tenta executar uma query simples para verificar a conexão
-        db.session.execute(text('SELECT 1'))
-        db.session.commit()
-        print("Conexão com o banco de dados estabelecida.")
-        
-        print("Criando tabelas se não existirem...")
-        db.create_all()
-        print("Banco de dados inicializado e conectado com sucesso!")
+        with app.app_context():
+            logger.info("Verificando conexão com o banco de dados...")
+            # Testar conexão
+            db.session.execute(text('SELECT 1'))
+            db.session.commit()
+            logger.info("Conexão com o banco de dados estabelecida.")
+            
+            # Criar tabelas
+            logger.info("Criando tabelas se não existirem...")
+            db.create_all()
+            logger.info("Banco de dados inicializado com sucesso!")
+            return True
     except Exception as e:
-        print(f"Erro ao inicializar o banco de dados: {str(e)}")
-        print(f"DATABASE_URL configurada: {app.config['SQLALCHEMY_DATABASE_URI']}")
-        raise
+        logger.error(f"Erro ao inicializar o banco de dados: {str(e)}")
+        logger.error(f"DATABASE_URL configurada: {app.config['SQLALCHEMY_DATABASE_URI']}")
+        return False
+
+# Inicializar o banco de dados
+if not init_db():
+    raise Exception("Falha ao inicializar o banco de dados")
 
 @app.route('/')
 def index():
@@ -495,17 +474,34 @@ def get_templates():
 @app.route('/api/templates', methods=['POST'])
 def create_template():
     try:
+        logger.info("Recebendo requisição para criar template")
+        if not request.is_json:
+            logger.error("Requisição não contém JSON")
+            return jsonify({"error": "Content-Type deve ser application/json"}), 400
+
         data = request.get_json()
+        logger.info(f"Dados recebidos: {data}")
+
+        required_fields = ['name', 'content']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            logger.error(f"Campos obrigatórios faltando: {missing_fields}")
+            return jsonify({"error": f"Campos obrigatórios faltando: {missing_fields}"}), 400
+
         new_template = Template(
             name=data['name'],
             content=data['content'],
             category=data.get('category', 'laudo'),
             doctor_id=data.get('doctor_id')
         )
+        
         db.session.add(new_template)
         db.session.commit()
+        logger.info(f"Template criado com sucesso: ID {new_template.id}")
+        
         return jsonify(new_template.to_dict()), 201
     except Exception as e:
+        logger.error(f"Erro ao criar template: {str(e)}", exc_info=True)
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
