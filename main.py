@@ -2,11 +2,15 @@ import os
 import io
 import secrets
 import logging
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
-from flask_caching import Cache
-from flask_compress import Compress
+from flask_cors import CORS
+import logging
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from sqlalchemy import text
@@ -38,34 +42,43 @@ load_dotenv()
 
 # Inicialização do Flask
 app = Flask(__name__)
+CORS(app)
+csrf = CSRFProtect(app)
+
+# Configuração básica do Flask
+app.config['SECRET_KEY'] = 'your-secret-key-here'
+app.config['WTF_CSRF_ENABLED'] = True
+app.config['WTF_CSRF_CHECK_DEFAULT'] = False  # Desabilitar verificação CSRF para rotas específicas
+
+logger.info("Iniciando configuração do Flask...")
 
 # Configuração das extensões
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32))
-app.config['WTF_CSRF_SECRET_KEY'] = os.getenv('WTF_CSRF_SECRET_KEY', secrets.token_hex(32))
-app.config['WTF_CSRF_ENABLED'] = True
-app.config['WTF_CSRF_CHECK_DEFAULT'] = True
+#app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32))
+#app.config['WTF_CSRF_SECRET_KEY'] = os.getenv('WTF_CSRF_SECRET_KEY', secrets.token_hex(32))
+#app.config['WTF_CSRF_ENABLED'] = True
+#app.config['WTF_CSRF_CHECK_DEFAULT'] = True
 app.config['CACHE_TYPE'] = 'simple'
 
 # Inicialização das extensões
 try:
-    print("Iniciando configuração do Flask...")
     
-    # Inicializar CSRF primeiro
-    csrf = CSRFProtect()
-    csrf.init_app(app)
     print("CSRF inicializado com sucesso")
+    
+    # Adicionando CORS
+    
+    print("CORS inicializado com sucesso")
     
     # Outras extensões
     db.init_app(app)
     print("Database inicializado com sucesso")
     
-    cache = Cache(app)
-    print("Cache inicializado com sucesso")
+    #cache = Cache(app)
+    #print("Cache inicializado com sucesso")
     
-    Compress(app)
-    print("Compress inicializado com sucesso")
+    #Compress(app)
+    #print("Compress inicializado com sucesso")
     
     print("Todas as extensões inicializadas com sucesso!")
 except Exception as e:
@@ -465,6 +478,19 @@ def reports():
     doctors = Doctor.query.all()
     templates = Template.query.all()
     return render_template('reports.html', doctors=doctors, templates=templates)
+
+@app.route('/api/templates', methods=['GET'])
+def get_templates():
+    try:
+        category = request.args.get('category')
+        query = Template.query
+        if category:
+            query = query.filter_by(category=category)
+        templates = query.all()
+        return jsonify([template.to_dict() for template in templates])
+    except Exception as e:
+        logger.error(f"Erro ao buscar templates: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/templates', methods=['POST'])
 def create_template():
