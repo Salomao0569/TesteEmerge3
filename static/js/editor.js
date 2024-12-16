@@ -1,17 +1,28 @@
 
 $(document).ready(function() {
     $('#editor').summernote({
-        height: 300,
+        height: 500,
         lang: 'pt-BR',
+        focus: true,
         toolbar: [
-            ['style', ['bold', 'italic', 'underline', 'clear']],
-            ['font', ['strikethrough']],
+            ['style', ['style']],
+            ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+            ['fontname', ['fontname']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
             ['para', ['ul', 'ol', 'paragraph']],
-            ['height', ['height']],
-            ['insert', ['link']],
-            ['view', ['fullscreen', 'codeview']],
-            ['help', ['help']]
-        ]
+            ['table', ['table']],
+            ['insert', ['link', 'picture']],
+            ['view', ['fullscreen', 'codeview', 'help']]
+        ],
+        fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Helvetica', 'Impact', 'Tahoma', 'Times New Roman', 'Verdana'],
+        fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '24', '36'],
+        styleTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+        callbacks: {
+            onInit: function() {
+                console.log('Summernote inicializado');
+            }
+        }
     });
 });
 
@@ -28,6 +39,6 @@ function insertSelectedPhrase() {
     const selectedOption = phraseSelect.options[phraseSelect.selectedIndex];
     if (selectedOption && selectedOption.value) {
         const currentContent = $('#editor').summernote('code');
-        $('#editor').summernote('code', currentContent + '\n' + selectedOption.title);
+        $('#editor').summernote('pasteHTML', selectedOption.title);
     }
 }
