@@ -1,24 +1,43 @@
 // Configuração avançada do TinyMCE para o editor de laudos
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Iniciando configuração do TinyMCE...');
     tinymce.init({
         selector: '#editor',
+        height: 500,
+        menubar: true,
+        branding: false,
         plugins: [
-            // Core editing features
-            'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-            // Advanced premium features
-            'checklist', 'mediaembed', 'casechange', 'export', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'editimage', 'advtemplate', 'ai', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown', 'importword', 'exportword', 'exportpdf'
+            'print preview powerpaste searchreplace autolink directionality',
+            'visualblocks visualchars fullscreen image link media table',
+            'charmap hr pagebreak nonbreaking anchor insertdatetime',
+            'advlist lists wordcount textpattern help',
+            'emoticons autosave code codesample',
+            // Plugins premium disponíveis
+            'importword exportword exportpdf'
+        ].join(' '),
+        toolbar: 'undo redo | formatselect | ' +
+                'bold italic underline strikethrough | ' +
+                'alignleft aligncenter alignright alignjustify | ' +
+                'outdent indent | numlist bullist | ' +
+                'table image media | removeformat | help',
+        
+        // Configurações de autosave
+        autosave_ask_before_unload: true,
+        autosave_interval: '30s',
+        autosave_prefix: '{path}{query}-{id}-',
+        
+        // Configurações de conteúdo
+        content_css: [
+            'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'
         ],
-        toolbar: [
-            { name: 'history', items: ['undo', 'redo'] },
-            { name: 'styles', items: ['styles', 'blocks', 'fontfamily', 'fontsize'] },
-            { name: 'formatting', items: ['bold', 'italic', 'underline', 'strikethrough'] },
-            { name: 'alignment', items: ['alignleft', 'aligncenter', 'alignright', 'alignjustify'] },
-            { name: 'indentation', items: ['indent', 'outdent'] },
-            { name: 'advanced', items: ['link', 'image', 'media', 'mergetags'] },
-            { name: 'tables', items: ['table', 'tabledelete', 'tableprops', 'tablerowprops', 'tablecellprops'] },
-            { name: 'lists', items: ['checklist', 'numlist', 'bullist'] },
-            { name: 'special', items: ['emoticons', 'charmap', 'hr', 'removeformat'] }
-        ],
+        content_style: `
+            body {
+                font-family: Arial, sans-serif;
+                margin: 1rem;
+                max-width: 100%;
+            }
+            p { margin: 0 0 1rem 0; }
+        `,
         menubar: true,
         statusbar: true,
         tinycomments_mode: 'embedded',
@@ -76,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const doctorInfo = doctorSelect.options[doctorSelect.selectedIndex].text;
                         const signature = `
                             <br><br>
-                            <div style="text-align: center; margin-top: 30px;">
+                            <div class="medical-signature" style="text-align: center; margin-top: 30px;">
                                 <p>_______________________________________________</p>
                                 <p>${doctorInfo}</p>
                             </div>
@@ -85,6 +104,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         alert('Por favor, selecione um médico antes de adicionar a assinatura.');
                     }
+                }
+            });
+
+            // Evento de mudança do editor
+            editor.on('change', function() {
+                editor.save();
+                // Salvamento automático após mudanças
+                const content = editor.getContent();
+                const reportName = document.getElementById('reportName').value;
+                const doctorId = document.getElementById('doctorId').value;
+                
+                if (reportName && doctorId) {
+                    const reportData = {
+                        name: reportName,
+                        content: content,
+                        doctor_id: parseInt(doctorId),
+                        category: 'laudo'
+                    };
+                    
+                    // Autosave para o backend
+                    fetch('/api/templates', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(reportData)
+                    }).catch(console.error);
                 }
             });
         },
