@@ -85,19 +85,13 @@ async function createReport(event) {
             throw new Error('Por favor, insira um nome para o modelo de laudo');
         }
         
-        const editor = document.getElementById('editor');
-        if (!editor || !editor.innerHTML.trim()) {
+        const editor = tinymce.get('editor');
+        if (!editor || !editor.getContent().trim()) {
             throw new Error('Por favor, insira o conteúdo do laudo');
         }
 
-        // Capturar o conteúdo HTML mantendo toda a formatação e espaços
-        const htmlContent = editor.innerHTML
-            .replace(/<div><br><\/div>/g, '<br>')
-            .replace(/<div>/g, '<p>')
-            .replace(/<\/div>/g, '</p>')
-            .replace(/\s+/g, ' ')
-            .replace(/<br\s*\/?>/g, '<br>\n')
-            .trim();
+        // Capturar o conteúdo HTML do TinyMCE
+        const htmlContent = editor.getContent();
         
         // Log para debug
         console.log('HTML capturado:', htmlContent);

@@ -7,49 +7,37 @@
     <meta name="description" content="Sistema de geração de laudos médicos">
     <title>Modelos de Laudos</title>
 
+    <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="/static/css/styles.css" rel="stylesheet">
+    
+    <!-- TinyMCE -->
+    <script src="https://cdn.tiny.cloud/1/p5rxiailcav2xcbcf4cdttlwnwuw5fqnun1e7hcgakwd7cgf/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
-        .editor-area {
-            min-height: 400px;
-            padding: 1rem;
-            background-color: white;
-            border: 1px solid #ced4da;
-            border-radius: 0.25rem;
+        .tox-tinymce {
+            min-height: 500px !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 0.25rem !important;
         }
-        
-        .editor-area:focus {
-            outline: none;
-            border-color: #86b7fe;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-        }
-        
         .formatted-content {
             padding: 1rem;
             background-color: white;
             border: 1px solid #ced4da;
             border-radius: 0.25rem;
+            font-family: Arial, sans-serif;
         }
-        
         .text-preview {
             color: #666;
             font-size: 0.9rem;
         }
-        
-        /* Preservar formatação no editor e visualização */
-        .editor-area *, .formatted-content * {
-            font-family: inherit;
+        .tox-statusbar {
+            border-top: 1px solid #ced4da !important;
         }
-        
-        .editor-area p, .formatted-content p {
-            margin-bottom: 1rem;
-        }
-        
-        .editor-area ul, .editor-area ol,
-        .formatted-content ul, .formatted-content ol {
-            padding-left: 2rem;
-            margin-bottom: 1rem;
+        .tox .tox-toolbar {
+            background-color: #f8f9fa !important;
+            border-bottom: 1px solid #ced4da !important;
         }
     </style>
 </head>
@@ -102,68 +90,11 @@
                             </select>
                         </div>
                         <div class="col-12">
-                            <!-- Editor Toolbar -->
-                            <!-- Barra de Formatação -->
-                            <div class="editor-toolbar mb-2">
-                                <div class="btn-toolbar" role="toolbar">
-                                    <div class="btn-group me-2" role="group">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('bold')" title="Negrito">
-                                            <i class="fas fa-bold"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('italic')" title="Itálico">
-                                            <i class="fas fa-italic"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('underline')" title="Sublinhado">
-                                            <i class="fas fa-underline"></i>
-                                        </button>
-                                    </div>
-                                    
-                                    <div class="btn-group me-2" role="group">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeFontSize('decrease')" title="Diminuir fonte">
-                                            <i class="fas fa-minus"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeFontSize('increase')" title="Aumentar fonte">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                    <div class="btn-group me-2" role="group">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('insertUnorderedList')" title="Lista">
-                                            <i class="fas fa-list-ul"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('insertOrderedList')" title="Lista numerada">
-                                            <i class="fas fa-list-ol"></i>
-                                        </button>
-                                    </div>
-                                    <div class="btn-group me-2" role="group">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addMedicalSignature()" title="Adicionar Assinatura">
-                                            <i class="fas fa-signature"></i>
-                                        </button>
-                                    </div>
-                                    <div class="btn-group me-2" role="group">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('justifyLeft')" title="Alinhar à esquerda">
-                                            <i class="fas fa-align-left"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('justifyCenter')" title="Centralizar">
-                                            <i class="fas fa-align-center"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('justifyRight')" title="Alinhar à direita">
-                                            <i class="fas fa-align-right"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('justifyFull')" title="Justificar">
-                                            <i class="fas fa-align-justify"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('undo')" title="Desfazer (Ctrl+Z)">
-                                            <i class="fas fa-undo"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="execCommand('redo')" title="Refazer (Ctrl+Y)">
-                                            <i class="fas fa-redo"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Editor Area -->
-                            <div contenteditable="true" id="editor" class="form-control editor-area" style="min-height: 400px;">
-                                <p>Exame realizado com ritmo cardíaco regular. Evidenciando:</p>
+                            <!-- TinyMCE Container -->
+                            <div id="editor-container">
+                                <textarea id="editor" name="editor">
+                                    <p>Exame realizado com ritmo cardíaco regular. Evidenciando:</p>
+                                </textarea>
                             </div>
                         </div>
                     </div>
@@ -204,8 +135,8 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/editor.js"></script>
+    <!-- Scripts -->
+    <script src="/static/js/editor-config.js"></script>
     <script src="/static/js/reports.js"></script>
 </body>
 </html>
