@@ -5,10 +5,7 @@ function gerarDOC() {
         const nome = document.getElementById('nome').value || 'Paciente';
         const doctorSelect = document.getElementById('selectedDoctor');
         
-        if (!doctorSelect.value) {
-            alert('Por favor, selecione um médico antes de gerar o documento.');
-            return;
-        }
+        // Remove referência ao médico já que não é mais necessário
 
         // Preparar o conteúdo do editor com formatação adequada
         const laudoContent = $('#editor').summernote('code');
@@ -65,13 +62,7 @@ function gerarDOC() {
                 espRelativa: document.getElementById('print_esp_relativa').textContent,
                 massaVE: document.getElementById('print_massa_ve').textContent
             },
-            laudo: laudoContent,
-            medico: {
-                id: doctorSelect.value,
-                nome: doctorSelect.selectedOptions[0].text,
-                crm: doctorSelect.selectedOptions[0].dataset.crm,
-                rqe: doctorSelect.selectedOptions[0].dataset.rqe || ''
-            }
+            laudo: laudoContent
         };
 
         console.log('Dados a serem enviados:', data);

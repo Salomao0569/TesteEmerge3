@@ -9,6 +9,10 @@ from flask_cors import CORS
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from sqlalchemy import text
+import sys
+
+# Configurar encoding para UTF-8
+sys.stdout.reconfigure(encoding='utf-8')
 
 # Carregar variáveis de ambiente primeiro
 load_dotenv()
@@ -20,18 +24,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-try:
-    from docx import Document
-    from docx.shared import Pt, Cm, RGBColor
-    from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
-    from docx.oxml import OxmlElement
-    from docx.oxml.ns import qn
-    logger.info("Módulos python-docx importados com sucesso")
-except ImportError as e:
-    logger.error(f"Erro ao importar módulos python-docx: {e}")
-    # Não vamos levantar o erro aqui, apenas log
-    Document = None
-    logger.warning("Algumas funcionalidades de geração de documentos podem estar indisponíveis")
+# Importar módulos necessários para geração de documentos
+from docx import Document
+from docx.shared import Pt, Cm, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+logger.info("Módulos python-docx importados com sucesso")
 
 from models import db, Doctor, Template
 
@@ -139,42 +138,33 @@ def templates():
     return render_template('templates.html', doctors=doctors, templates=templates)
 
 @app.route('/gerar_doc', methods=['POST'])
-@csrf.exempt  # Removemos a proteção CSRF desta rota específica já que estamos tratando manualmente
 def gerar_doc():
-    logger.info("=== Iniciando geração de documento DOC ===")
-    logger.info(f"Headers recebidos: {dict(request.headers)}")
-    logger.info(f"Content-Type: {request.content_type}")
-    logger.info(f"Dados recebidos: {request.get_data()[:500]}...")  # Logging primeiros 500 bytes
     """
     Gera um documento DOC com o laudo do paciente.
     Utiliza python-docx para criar o documento e BeautifulSoup para processar o HTML.
     """
     try:
-        logger.info("Iniciando função gerar_doc")
-        logger.info(f"Headers da requisição: {dict(request.headers)}")
+        logger.info("=== Iniciando geração de documento DOC ===")
         
         # Verificar se é uma requisição JSON
         if not request.is_json:
             logger.error("Requisição não contém JSON")
             return jsonify({"error": "Requisição deve ser JSON"}), 400
-        
+
         # Obter e validar dados JSON
-        try:
-            data = request.get_json()
-            logger.info(f"Dados recebidos: {str(data)[:500]}...")  # Log primeiros 500 caracteres
-        except Exception as e:
-            logger.error(f"Erro ao processar JSON da requisição: {str(e)}")
-            return jsonify({"error": "JSON inválido"}), 400
-            
+        data = request.get_json()
         if not data:
             logger.error("JSON vazio")
             return jsonify({"error": "JSON vazio"}), 400
             
-        required_fields = ['paciente', 'medidas', 'calculos', 'laudo', 'medico']
+        # Validar campos obrigatórios
+        required_fields = ['paciente', 'medidas', 'calculos', 'laudo']
         missing_fields = [field for field in required_fields if field not in data]
         if missing_fields:
             logger.error(f"Campos obrigatórios faltando: {missing_fields}")
             return jsonify({"error": f"Campos obrigatórios faltando: {missing_fields}"}), 400
+
+        logger.info("Dados recebidos e validados com sucesso")
 
         # Importar módulos necessários
         logger.info("Verificando módulos necessários...")
@@ -393,41 +383,23 @@ def gerar_doc():
                 run.font.size = Pt(12)
                 run.font.name = 'Arial'
 
-        # Processar o conteúdo do laudo mantendo a formatação
-        for p in soup.find_all(['p', 'div']):
-            if 'medical-signature' in p.get('class', []):
-                logger.info("Processando assinatura médica")
-                # Adicionar espaço antes da assinatura
-                doc.add_paragraph().add_run().add_break()
+        # Processando o conteúdo do laudo mantendo a formatação
+        for element in soup.find_all(['p', 'div']):
+            # Pular elementos vazios
+            if not element.text.strip():
+                continue
                 
-                # Adicionar linha para assinatura
-                signature_line = doc.add_paragraph()
-                signature_line.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-                signature_line.paragraph_format.space_before = Pt(24)  # 2cm aproximadamente
-                
-                # Adicionar informações do médico
-                doctor_info = [
-                    (f"Dr(a). {data['medico']['nome']}", True),
-                    (f"CRM: {data['medico']['crm']}", False)
-                ]
-                
-                if data['medico']['rqe']:
-                    doctor_info.append((f"RQE: {data['medico']['rqe']}", False))
-
-                for info, is_bold in doctor_info:
-                    p = doc.add_paragraph()
-                    p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-                    run = p.add_run(info)
-                    run.font.bold = is_bold
-                    run.font.size = Pt(12)
-                    run.font.name = 'Arial'
+            # Criar novo parágrafo
+            paragraph = doc.add_paragraph()
+            paragraph.paragraph_format.alignment = process_paragraph_alignment(element)
+            paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
+            
+            # Processar o texto e formatação
+            if element.contents:
+                for content in element.contents:
+                    process_text_formatting(content, paragraph)
             else:
-                paragraph = doc.add_paragraph()
-                paragraph.paragraph_format.alignment = process_paragraph_alignment(p)
-                paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
-                
-                for element in p.children:
-                    process_text_formatting(element, paragraph)
+                process_text_formatting(element, paragraph)
 
         logger.info("Salvando o documento")
         # Salvar o documento
