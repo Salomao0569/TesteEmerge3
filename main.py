@@ -8,28 +8,36 @@ from flask_cors import CORS
 from flask_talisman import Talisman
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_caching import Cache
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from docx import Document
 from docx.shared import Pt, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from assets import init_assets
+
+# Configurar logging mais detalhado
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 # Carregar variáveis de ambiente
 load_dotenv()
 
-# Configurar logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
 # Initialize Flask app
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
+
+# Redis configuration
+REDIS_URL = os.getenv('REDIS_URL', 'memory://')
 
 # Configurações de segurança
 app.config.update(
-    SECRET_KEY=os.getenv('SECRET_KEY', os.urandom(32)),  # Usar variável de ambiente ou gerar
+    SECRET_KEY=os.getenv('SECRET_KEY', os.urandom(32)),
     WTF_CSRF_ENABLED=True,
     WTF_CSRF_CHECK_DEFAULT=True,
     SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL'),
@@ -37,7 +45,10 @@ app.config.update(
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
-    PERMANENT_SESSION_LIFETIME=1800  # 30 minutos
+    PERMANENT_SESSION_LIFETIME=1800,  # 30 minutos
+    RATELIMIT_STORAGE_URL=REDIS_URL,
+    CACHE_TYPE="simple",
+    CACHE_REDIS_URL=REDIS_URL
 )
 
 # Initialize extensions
@@ -46,6 +57,10 @@ from models import db, Doctor, Template
 # Initialize extensions with app
 db.init_app(app)
 csrf = CSRFProtect(app)
+cache = Cache(app)
+
+# Initialize assets
+assets = init_assets(app)
 
 # Configurar CORS com opções seguras
 CORS(app, resources={
@@ -65,8 +80,9 @@ talisman = Talisman(
     content_security_policy={
         'default-src': "'self'",
         'img-src': "'self' data:",
-        'script-src': "'self' 'unsafe-inline'",
-        'style-src': "'self' 'unsafe-inline'"
+        'script-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+        'style-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+        'font-src': "'self' https://cdnjs.cloudflare.com"
     }
 )
 
@@ -74,12 +90,26 @@ talisman = Talisman(
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri=app.config['RATELIMIT_STORAGE_URL']
 )
 
 # Create tables
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+        logger.info("Banco de dados inicializado com sucesso")
+    except Exception as e:
+        logger.error(f"Erro ao inicializar banco de dados: {e}")
+
+@app.before_request
+def log_request_info():
+    logger.info(f"Request: {request.method} {request.url}")
+
+@app.after_request
+def log_response_info(response):
+    logger.info(f"Response: {response.status}")
+    return response
 
 @app.route('/')
 def index():
