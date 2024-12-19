@@ -1,49 +1,42 @@
 function gerarDOC() {
     try {
         console.log('Iniciando geração do DOC...');
-        const editor = document.getElementById('editor');
-        const nome = document.getElementById('nome').value || 'Paciente';
-        const doctorSelect = document.getElementById('selectedDoctor');
-        
-        // Remove referência ao médico já que não é mais necessário
 
-        // Preparar o conteúdo do editor com formatação adequada
+        // Obter dados do formulário
+        const paciente = {
+            nome: document.getElementById('nome').value || 'N/D',
+            dataNascimento: document.getElementById('dataNascimento').value || 'N/D',
+            sexo: document.getElementById('sexo').value || 'N/D',
+            peso: document.getElementById('peso').value ? `${document.getElementById('peso').value} kg` : 'N/D',
+            altura: document.getElementById('altura').value ? `${document.getElementById('altura').value} cm` : 'N/D',
+            dataExame: document.getElementById('dataExame').value || new Date().toLocaleDateString('pt-BR')
+        };
+
+        console.log('Dados do paciente:', paciente);
+
+        // Obter dados do médico
+        const doctorSelect = document.getElementById('selectedDoctor');
+        const doctorData = doctorSelect.value ? {
+            nome: doctorSelect.options[doctorSelect.selectedIndex].text,
+            crm: doctorSelect.options[doctorSelect.selectedIndex].dataset.crm,
+            rqe: doctorSelect.options[doctorSelect.selectedIndex].dataset.rqe
+        } : null;
+
+        console.log('Dados do médico:', doctorData);
+
+        // Obter conteúdo do editor
         const laudoContent = $('#editor').summernote('code');
-        console.log('Conteúdo do editor:', laudoContent);
-        if (!laudoContent) {
-            alert('Erro: Conteúdo do laudo não pode estar vazio');
-            return;
-        }
-        
-        // Formatar a data do exame
-        const dataExame = document.getElementById('dataExame').value || 
-            new Date().toISOString().split('T')[0];
-        const dataFormatada = new Date(dataExame).toLocaleDateString('pt-BR');
-        
-        // Obter o token CSRF
+        console.log('Conteúdo do editor recuperado');
+
+        // Obter token CSRF
         const metaTag = document.querySelector('meta[name="csrf-token"]');
         if (!metaTag) {
-            console.error('Meta tag CSRF não encontrada');
-            alert('Erro de segurança: Token CSRF não encontrado. Por favor, recarregue a página.');
-            return;
+            throw new Error('Meta tag CSRF não encontrada');
         }
-        
-        const headers = {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': metaTag.getAttribute('content')
-        };
-    
-    const data = {
-            paciente: {
-                nome: document.getElementById('nome').value || 'N/D',
-                dataNascimento: document.getElementById('dataNascimento').value || 'N/D',
-                sexo: document.getElementById('sexo').value || 'N/D',
-                peso: document.getElementById('peso').value ? 
-                    document.getElementById('peso').value : 'N/D',
-                altura: document.getElementById('altura').value ? 
-                    document.getElementById('altura').value : 'N/D',
-                dataExame: dataFormatada
-            },
+
+        // Preparar dados para envio
+        const data = {
+            paciente: paciente,
             medidas: {
                 atrio: document.getElementById('atrio').value || 'N/D',
                 aorta: document.getElementById('aorta').value || 'N/D',
@@ -62,18 +55,23 @@ function gerarDOC() {
                 espRelativa: document.getElementById('print_esp_relativa').textContent,
                 massaVE: document.getElementById('print_massa_ve').textContent
             },
-            laudo: laudoContent
+            laudo: laudoContent,
+            medico: doctorData
         };
 
-        console.log('Dados a serem enviados:', data);
+        console.log('Dados preparados para envio:', data);
 
+        // Enviar requisição
         fetch('/gerar_doc', {
             method: 'POST',
-            headers: headers,
-            body: JSON.stringify(data),
-            credentials: 'same-origin'
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': metaTag.getAttribute('content')
+            },
+            body: JSON.stringify(data)
         })
         .then(response => {
+            console.log('Resposta recebida:', response);
             if (!response.ok) {
                 if (response.headers.get('content-type')?.includes('application/json')) {
                     return response.json().then(error => {
@@ -85,35 +83,25 @@ function gerarDOC() {
             return response.blob();
         })
         .then(blob => {
+            console.log('Blob recebido:', blob);
             if (!blob) {
                 throw new Error('Documento gerado está vazio');
             }
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Laudo_${nome.replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
+            a.download = `Laudo_${paciente.nome.replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
             a.remove();
+            console.log('Download iniciado');
         })
         .catch(error => {
             console.error('Erro ao gerar DOC:', error);
-            let errorMessage = 'Erro ao gerar o documento DOC: ';
-            
-            if (error.response) {
-                console.error('Resposta do servidor:', error.response);
-                errorMessage += error.response.data?.error || error.message;
-            } else if (error.request) {
-                console.error('Erro de rede:', error.request);
-                errorMessage += 'Erro de conexão com o servidor';
-            } else {
-                console.error('Erro:', error);
-                errorMessage += error.message;
-            }
-            
-            alert(errorMessage);
+            alert('Erro ao gerar o documento DOC: ' + error.message);
         });
+
     } catch (error) {
         console.error('Erro ao preparar dados:', error);
         alert('Erro ao preparar dados para geração do documento: ' + error.message);

@@ -2,84 +2,67 @@ import os
 import io
 import secrets
 import logging
-from flask import Flask, render_template, request, jsonify, send_file, make_response
+from flask import Flask, render_template, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from flask_cors import CORS
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from sqlalchemy import text
-import sys
-
-# Configurar encoding para UTF-8
-sys.stdout.reconfigure(encoding='utf-8')
-
-# Carregar variáveis de ambiente primeiro
-load_dotenv()
-
-# Configurar logging uma única vez no início
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-# Importar módulos necessários para geração de documentos
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-logger.info("Módulos python-docx importados com sucesso")
 
-from models import db, Doctor, Template
+# Carregar variáveis de ambiente
+load_dotenv()
 
-# Inicialização do Flask e extensões
 app = Flask(__name__)
 
-# Configurações do Flask
+# Configurações básicas
 app.config.update(
     SECRET_KEY=secrets.token_hex(32),
     WTF_CSRF_ENABLED=True,
     WTF_CSRF_CHECK_DEFAULT=True,
     SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL'),
-    SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    CACHE_TYPE='simple'
+    SQLALCHEMY_TRACK_MODIFICATIONS=False
 )
 
 # Inicializar extensões
-db.init_app(app)
+db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app)
 
-logger.info("Flask e extensões inicializados")
+# Definição dos modelos
+class Doctor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    full_name = db.Column(db.String(100), nullable=False)
+    crm = db.Column(db.String(20), nullable=False, unique=True)
+    rqe = db.Column(db.String(20))
 
-# Log de inicialização
-logger.info("Todas as extensões inicializadas com sucesso!")
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'full_name': self.full_name,
+            'crm': self.crm,
+            'rqe': self.rqe
+        }
 
-# Inicialização do banco de dados
-def init_db():
-    try:
-        with app.app_context():
-            logger.info("Verificando conexão com o banco de dados...")
-            # Testar conexão
-            db.session.execute(text('SELECT 1'))
-            db.session.commit()
-            logger.info("Conexão com o banco de dados estabelecida.")
-            
-            # Criar tabelas
-            logger.info("Criando tabelas se não existirem...")
-            db.create_all()
-            logger.info("Banco de dados inicializado com sucesso!")
-            return True
-    except Exception as e:
-        logger.error(f"Erro ao inicializar o banco de dados: {str(e)}")
-        logger.error(f"DATABASE_URL configurada: {app.config['SQLALCHEMY_DATABASE_URI']}")
-        return False
+class Template(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'))
 
-# Inicializar o banco de dados
-if not init_db():
-    raise Exception("Falha ao inicializar o banco de dados")
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'content': self.content,
+            'category': self.category,
+            'doctor_id': self.doctor_id
+        }
 
 @app.route('/')
 def index():
@@ -88,7 +71,6 @@ def index():
         templates = Template.query.all()
         return render_template('index.html', doctors=doctors, templates=templates)
     except Exception as e:
-        print(f"Erro ao acessar o banco: {e}")
         return "Erro ao conectar ao banco de dados", 500
 
 @app.route('/doctors')
@@ -139,291 +121,109 @@ def templates():
 
 @app.route('/gerar_doc', methods=['POST'])
 def gerar_doc():
-    """
-    Gera um documento DOC com o laudo do paciente.
-    Utiliza python-docx para criar o documento e BeautifulSoup para processar o HTML.
-    """
     try:
-        logger.info("=== Iniciando geração de documento DOC ===")
-        
-        # Verificar se é uma requisição JSON
+        print("Iniciando geração do documento DOC...")
         if not request.is_json:
-            logger.error("Requisição não contém JSON")
             return jsonify({"error": "Requisição deve ser JSON"}), 400
 
-        # Obter e validar dados JSON
         data = request.get_json()
-        if not data:
-            logger.error("JSON vazio")
-            return jsonify({"error": "JSON vazio"}), 400
-            
-        # Validar campos obrigatórios
-        required_fields = ['paciente', 'medidas', 'calculos', 'laudo']
-        missing_fields = [field for field in required_fields if field not in data]
-        if missing_fields:
-            logger.error(f"Campos obrigatórios faltando: {missing_fields}")
-            return jsonify({"error": f"Campos obrigatórios faltando: {missing_fields}"}), 400
+        print("Dados recebidos:", data)
 
-        logger.info("Dados recebidos e validados com sucesso")
-
-        # Importar módulos necessários
-        logger.info("Verificando módulos necessários...")
-        try:
-            # Verificar se os módulos já estão disponíveis
-            if not all(var in globals() for var in ['Document', 'Pt', 'Cm', 'RGBColor', 'WD_ALIGN_PARAGRAPH', 'WD_LINE_SPACING']):
-                logger.error("Módulos necessários não encontrados")
-                return jsonify({"error": "Erro interno do servidor"}), 500
-            
-            logger.info("Módulos verificados com sucesso")
-        except Exception as e:
-            logger.error(f"Erro ao verificar módulos: {str(e)}")
-            return jsonify({"error": "Erro interno do servidor"}), 500
-
-        logger.info("Iniciando geração do documento")
-        data = request.get_json()
         doc = Document()
 
-        def set_cell_border(cell, **kwargs):
-            """Define as bordas de uma célula da tabela"""
-            tc = cell._tc
-            tcPr = tc.get_or_add_tcPr()
-            
-            for edge in ['top', 'left', 'bottom', 'right']:
-                edge_val = kwargs.get(edge, 'single')
-                if edge_val:
-                    tag = 'w:{}'.format(edge)
-                    element = OxmlElement(tag)
-                    element.set(qn('w:val'), edge_val)
-                    element.set(qn('w:sz'), '4')
-                    element.set(qn('w:space'), '0')
-                    element.set(qn('w:color'), '000000')
-                    tcPr.append(element)
-
-        # Configurar margens e orientação do documento
+        # Configurar margens
         sections = doc.sections
         for section in sections:
             section.top_margin = Cm(2)
             section.bottom_margin = Cm(2)
             section.left_margin = Cm(2.5)
             section.right_margin = Cm(2.5)
-            section.page_height = Cm(29.7)  # A4
-            section.page_width = Cm(21.0)   # A4
 
-        logger.info("Configurando título do documento")
         # Título
         title = doc.add_paragraph()
-        title_format = title.paragraph_format
-        title_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        title_format.space_before = Pt(0)
-        title_format.space_after = Pt(20)
+        title.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
         title_run = title.add_run("Laudo de Ecodopplercardiograma")
         title_run.font.size = Pt(16)
         title_run.font.bold = True
-        title_run.font.name = 'Arial'
 
-        logger.info("Adicionando dados do paciente")
         # Dados do Paciente
-        patient_heading = doc.add_heading(level=2)
-        patient_run = patient_heading.add_run("Dados do Paciente")
-        patient_run.font.size = Pt(13)
-        patient_run.font.name = 'Arial'
-
-        patient_data = [
-            ("Nome", data['paciente']['nome']),
-            ("Data Nascimento", data['paciente']['dataNascimento']),
-            ("Sexo", data['paciente']['sexo']),
-            ("Peso", f"{data['paciente']['peso']} kg" if data['paciente']['peso'] else 'N/D'),
-            ("Altura", f"{data['paciente']['altura']} cm" if data['paciente']['altura'] else 'N/D'),
-            ("Data do Exame", data['paciente']['dataExame'])
+        doc.add_heading("Dados do Paciente", level=2)
+        paciente = data.get('paciente', {})
+        patient_info = [
+            f"Nome: {paciente.get('nome', 'N/D')}",
+            f"Data de Nascimento: {paciente.get('dataNascimento', 'N/D')}",
+            f"Sexo: {paciente.get('sexo', 'N/D')}",
+            f"Peso: {paciente.get('peso', 'N/D')}",
+            f"Altura: {paciente.get('altura', 'N/D')}",
+            f"Data do Exame: {paciente.get('dataExame', 'N/D')}"
         ]
+        for info in patient_info:
+            doc.add_paragraph(info)
 
-        table = doc.add_table(rows=1, cols=2)
-        table.style = 'Table Grid'
-        table.autofit = True
-
-        header_cells = table.rows[0].cells
-        for i, cell in enumerate(header_cells):
-            # Aplicar formatação às células
-            set_cell_border(cell)
-            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-            run = cell.paragraphs[0].add_run(["Campo", "Valor"][i])
-            run.font.bold = True
-            run.font.size = Pt(11)
-            run.font.name = 'Arial'
-
-        for label, value in patient_data:
-            row = table.add_row().cells
-            for cell in row:
-                set_cell_border(cell)
-            row[0].text = label
-            row[1].text = value if value else 'N/D'
-            # Formatar fonte
-            for paragraph in row[0].paragraphs:
-                for run in paragraph.runs:
-                    run.font.size = Pt(11)
-                    run.font.name = 'Arial'
-            for paragraph in row[1].paragraphs:
-                for run in paragraph.runs:
-                    run.font.size = Pt(11)
-                    run.font.name = 'Arial'
-
-        doc.add_paragraph().add_run().add_break()
-
-        logger.info("Adicionando medidas e cálculos")
         # Medidas e Cálculos
-        measures_heading = doc.add_heading(level=2)
-        measures_run = measures_heading.add_run("Medidas e Cálculos")
-        measures_run.font.size = Pt(13)
-        measures_run.font.name = 'Arial'
+        doc.add_heading("Medidas e Cálculos", level=2)
+        medidas = data.get('medidas', {})
+        calculos = data.get('calculos', {})
 
-        measures_table = doc.add_table(rows=1, cols=4)
-        measures_table.style = 'Table Grid'
-        measures_table.autofit = True
+        table = doc.add_table(rows=1, cols=4)
+        table.style = 'Table Grid'
+        header = table.rows[0].cells
+        for i, text in enumerate(["Medida", "Valor", "Cálculo", "Resultado"]):
+            header[i].text = text
 
-        # Cabeçalho da tabela
-        header = measures_table.rows[0].cells
-        header_texts = ["Medida", "Valor", "Cálculo", "Resultado"]
-        for i, cell in enumerate(header):
-            set_cell_border(cell)
-            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-            run = cell.paragraphs[0].add_run(header_texts[i])
-            run.font.bold = True
-            run.font.size = Pt(11)
-            run.font.name = 'Arial'
-
-        # Dados da tabela
-        measures_data = [
-            ("Átrio Esquerdo", data['medidas']['atrio'], "Volume Diastólico Final", data['calculos']['volumeDiastFinal']),
-            ("Aorta", data['medidas']['aorta'], "Volume Sistólico Final", data['calculos']['volumeSistFinal']),
-            ("Diâmetro Diastólico", data['medidas']['diamDiastFinal'], "Volume Ejetado", data['calculos']['volumeEjetado']),
-            ("Diâmetro Sistólico", data['medidas']['diamSistFinal'], "Fração de Ejeção", data['calculos']['fracaoEjecao']),
-            ("Espessura do Septo", data['medidas']['espDiastSepto'], "Percentual Enc. Cavidade", data['calculos']['percentEncurt']),
-            ("Espessura PPVE", data['medidas']['espDiastPPVE'], "Espessura Relativa", data['calculos']['espRelativa']),
-            ("Ventrículo Direito", data['medidas']['vd'], "Massa do VE", data['calculos']['massaVE'])
+        # Adicionar dados na tabela
+        measure_calc_pairs = [
+            ("Átrio Esquerdo", medidas.get('atrio', 'N/D'), "Volume Diastólico Final", calculos.get('volumeDiastFinal', 'N/D')),
+            ("Aorta", medidas.get('aorta', 'N/D'), "Volume Sistólico Final", calculos.get('volumeSistFinal', 'N/D')),
+            ("Diâmetro Diastólico", medidas.get('diamDiastFinal', 'N/D'), "Volume Ejetado", calculos.get('volumeEjetado', 'N/D')),
+            ("Diâmetro Sistólico", medidas.get('diamSistFinal', 'N/D'), "Fração de Ejeção", calculos.get('fracaoEjecao', 'N/D')),
+            ("Espessura do Septo", medidas.get('espDiastSepto', 'N/D'), "Percentual Enc. Cavidade", calculos.get('percentEncurt', 'N/D')),
+            ("Espessura PPVE", medidas.get('espDiastPPVE', 'N/D'), "Espessura Relativa", calculos.get('espRelativa', 'N/D')),
+            ("Ventrículo Direito", medidas.get('vd', 'N/D'), "Massa do VE", calculos.get('massaVE', 'N/D'))
         ]
 
-        for measure in measures_data:
-            row = measures_table.add_row().cells
-            for i, value in enumerate(row):
-                set_cell_border(value)
-                value.text = str(measure[i] if measure[i] else 'N/D')
-                for paragraph in value.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.size = Pt(11)
-                        run.font.name = 'Arial'
+        for measure, value, calc, result in measure_calc_pairs:
+            row = table.add_row().cells
+            row[0].text = measure
+            row[1].text = value
+            row[2].text = calc
+            row[3].text = result
 
-        doc.add_paragraph().add_run().add_break()
-
-        logger.info("Processando o laudo")
         # Laudo
-        report_heading = doc.add_heading(level=2)
-        report_run = report_heading.add_run("Laudo")
-        report_run.font.size = Pt(13)
-        report_run.font.name = 'Arial'
-
-        logger.info("Processando o conteúdo HTML do laudo")
-        try:
-            if not data.get('laudo'):
-                logger.error("Conteúdo do laudo está vazio")
-                return jsonify({"error": "Conteúdo do laudo não pode estar vazio"}), 400
-                
-            logger.info(f"Conteúdo do laudo recebido: {data['laudo'][:100]}...")
+        doc.add_heading("Laudo", level=2)
+        if data.get('laudo'):
             soup = BeautifulSoup(data['laudo'], 'html.parser')
-            
-            if not soup or not soup.find_all(['p', 'div']):
-                logger.error("HTML do laudo inválido ou vazio")
-                return jsonify({"error": "Formato do laudo inválido"}), 400
-                
-            logger.info("HTML do laudo processado com sucesso")
-            logger.info(f"Elementos encontrados: {len(soup.find_all(['p', 'div']))} parágrafos/divs")
-        except Exception as e:
-            logger.error(f"Erro ao processar HTML com BeautifulSoup: {str(e)}", exc_info=True)
-            return jsonify({"error": "Erro ao processar o formato do laudo"}), 500
+            for p in soup.find_all(['p', 'div']):
+                if p.get_text().strip():
+                    doc.add_paragraph(p.get_text().strip())
 
-        def process_paragraph_alignment(p_tag):
-            """Determina o alinhamento do parágrafo baseado no estilo HTML"""
-            try:
-                style = p_tag.get('style', '')
-                if 'text-align: center' in style:
-                    return WD_ALIGN_PARAGRAPH.CENTER
-                elif 'text-align: right' in style:
-                    return WD_ALIGN_PARAGRAPH.RIGHT
-                elif 'text-align: justify' in style:
-                    return WD_ALIGN_PARAGRAPH.JUSTIFY
-                return WD_ALIGN_PARAGRAPH.LEFT
-            except Exception as e:
-                logger.error(f"Erro ao processar alinhamento: {str(e)}")
-                return WD_ALIGN_PARAGRAPH.LEFT
+        # Dados do Médico
+        if data.get('medico'):
+            medico = data['medico']
+            doc.add_paragraph()  # Espaço em branco
+            p = doc.add_paragraph()
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p.add_run(f"{medico['nome']}\n").bold = True
+            p.add_run(f"CRM: {medico['crm']}")
+            if medico.get('rqe'):
+                p.add_run(f"\nRQE: {medico['rqe']}")
 
-        def process_text_formatting(element, paragraph):
-            """Processa a formatação do texto mantendo estilos aninhados"""
-            if isinstance(element, str):
-                run = paragraph.add_run(element)
-                run.font.size = Pt(12)
-                run.font.name = 'Arial'
-                return
+        print("Documento gerado, preparando para download...")
 
-            if element.name in ['strong', 'b']:
-                run = paragraph.add_run(element.get_text())
-                run.bold = True
-            elif element.name in ['em', 'i']:
-                run = paragraph.add_run(element.get_text())
-                run.italic = True
-            elif element.name == 'u':
-                run = paragraph.add_run(element.get_text())
-                run.underline = True
-            elif element.name == 'br':
-                paragraph.add_run().add_break()
-            else:
-                for child in element.children:
-                    process_text_formatting(child, paragraph)
-
-            # Aplicar fonte padrão
-            for run in paragraph.runs:
-                run.font.size = Pt(12)
-                run.font.name = 'Arial'
-
-        # Processando o conteúdo do laudo mantendo a formatação
-        for element in soup.find_all(['p', 'div']):
-            # Pular elementos vazios
-            if not element.text.strip():
-                continue
-                
-            # Criar novo parágrafo
-            paragraph = doc.add_paragraph()
-            paragraph.paragraph_format.alignment = process_paragraph_alignment(element)
-            paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
-            
-            # Processar o texto e formatação
-            if element.contents:
-                for content in element.contents:
-                    process_text_formatting(content, paragraph)
-            else:
-                process_text_formatting(element, paragraph)
-
-        logger.info("Salvando o documento")
-        # Salvar o documento
+        # Salvar documento
         doc_stream = io.BytesIO()
         doc.save(doc_stream)
         doc_stream.seek(0)
 
-        logger.info("Documento gerado com sucesso")
-        try:
-            logger.info("Preparando arquivo para download")
-            response = send_file(
-                doc_stream,
-                mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                as_attachment=True,
-                download_name=f"Laudo_{data['paciente']['nome'].replace(' ', '_')}.docx"
-            )
-            logger.info("Arquivo preparado com sucesso")
-            return response
-        except Exception as e:
-            logger.error(f"Erro ao enviar arquivo: {str(e)}")
-            return jsonify({"error": "Erro ao gerar arquivo para download"}), 500
+        return send_file(
+            doc_stream,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            as_attachment=True,
+            download_name=f"Laudo_{paciente.get('nome', 'laudo').replace(' ', '_')}.docx"
+        )
 
     except Exception as e:
-        logger.error(f"Erro ao gerar DOC: {str(e)}", exc_info=True)
+        print("Erro ao gerar DOC:", str(e))
         return jsonify({"error": str(e)}), 500
 
 @app.route('/reports')
@@ -442,40 +242,26 @@ def get_templates():
         templates = query.all()
         return jsonify([template.to_dict() for template in templates])
     except Exception as e:
-        logger.error(f"Erro ao buscar templates: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/templates', methods=['POST'])
 def create_template():
     try:
-        logger.info("Recebendo requisição para criar template")
         if not request.is_json:
-            logger.error("Requisição não contém JSON")
             return jsonify({"error": "Content-Type deve ser application/json"}), 400
 
         data = request.get_json()
-        logger.info(f"Dados recebidos: {data}")
-
-        required_fields = ['name', 'content']
-        missing_fields = [field for field in required_fields if field not in data]
-        if missing_fields:
-            logger.error(f"Campos obrigatórios faltando: {missing_fields}")
-            return jsonify({"error": f"Campos obrigatórios faltando: {missing_fields}"}), 400
-
         new_template = Template(
             name=data['name'],
             content=data['content'],
             category=data.get('category', 'laudo'),
             doctor_id=data.get('doctor_id')
         )
-        
+
         db.session.add(new_template)
         db.session.commit()
-        logger.info(f"Template criado com sucesso: ID {new_template.id}")
-        
         return jsonify(new_template.to_dict()), 201
     except Exception as e:
-        logger.error(f"Erro ao criar template: {str(e)}", exc_info=True)
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
@@ -491,11 +277,6 @@ def delete_template(template_id):
         return jsonify({"error": str(e)}), 400
 
 if __name__ == '__main__':
-    try:
-        with app.app_context():
-            db.create_all()
-            print("Tabelas criadas com sucesso!")
-    except Exception as e:
-        print(f"Erro ao criar tabelas: {e}")
-    
+    with app.app_context():
+        db.create_all()
     app.run(host='0.0.0.0', port=3000, debug=True)
