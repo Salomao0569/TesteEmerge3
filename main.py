@@ -40,7 +40,7 @@ app.config.update(
     SECRET_KEY=os.getenv('SECRET_KEY', os.urandom(32)),
     WTF_CSRF_ENABLED=True,
     WTF_CSRF_CHECK_DEFAULT=True,
-    SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL'),
+    SQLALCHEMY_DATABASE_URI=os.environ['DATABASE_URL'],
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_HTTPONLY=True,
@@ -59,6 +59,16 @@ db.init_app(app)
 csrf = CSRFProtect(app)
 cache = Cache(app)
 
+# Initialize database
+with app.app_context():
+    try:
+        logger.info("Iniciando criação das tabelas do banco de dados...")
+        db.create_all()
+        logger.info("Tabelas criadas com sucesso")
+    except Exception as e:
+        logger.error(f"Erro ao criar tabelas: {e}")
+        raise
+
 # Initialize assets
 assets = init_assets(app)
 
@@ -67,7 +77,7 @@ CORS(app, resources={
     r"/api/*": {
         "origins": os.getenv('ALLOWED_ORIGINS', '*').split(','),
         "methods": ["GET", "POST", "DELETE"],
-        "allow_headers": ["Content-Type", "Authorization"]
+        "allow_headers": ["Content-Type", "Authorization", "X-CSRFToken"]
     }
 })
 
@@ -95,17 +105,10 @@ limiter = Limiter(
     storage_uri=app.config['RATELIMIT_STORAGE_URL']
 )
 
-# Create tables
-with app.app_context():
-    try:
-        db.create_all()
-        logger.info("Banco de dados inicializado com sucesso")
-    except Exception as e:
-        logger.error(f"Erro ao inicializar banco de dados: {e}")
-
 @app.before_request
 def log_request_info():
     logger.info(f"Request: {request.method} {request.url}")
+    logger.debug(f"Headers: {dict(request.headers)}")
 
 @app.after_request
 def log_response_info(response):
