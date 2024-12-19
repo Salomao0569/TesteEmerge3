@@ -80,9 +80,10 @@ talisman = Talisman(
     content_security_policy={
         'default-src': "'self'",
         'img-src': "'self' data:",
-        'script-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net",
-        'style-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net",
-        'font-src': "'self' https://cdnjs.cloudflare.com"
+        'script-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net https://code.jquery.com https://stackpath.bootstrapcdn.com https://cdnjs.cloudflare.com",
+        'style-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
+        'font-src': "'self' https://cdnjs.cloudflare.com",
+        'connect-src': "'self'"
     }
 )
 
