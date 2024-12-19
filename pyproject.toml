@@ -25,4 +25,5 @@ dependencies = [
     "flask-compress>=1.17",
     "sqlalchemy",
     "docx2python",
+    "flask-migrate",
 ]

@@ -17,6 +17,11 @@ from docx.oxml.ns import qn
 # Carregar variáveis de ambiente
 load_dotenv()
 
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Initialize Flask app
 app = Flask(__name__)
 
 # Configurações básicas
@@ -28,41 +33,18 @@ app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS=False
 )
 
-# Inicializar extensões
-db = SQLAlchemy(app)
-csrf = CSRFProtect(app)
-CORS(app)
+# Initialize extensions
+db = SQLAlchemy()
+csrf = CSRFProtect()
+cors = CORS()
 
-# Definição dos modelos
-class Doctor(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    full_name = db.Column(db.String(100), nullable=False)
-    crm = db.Column(db.String(20), nullable=False, unique=True)
-    rqe = db.Column(db.String(20))
+# Initialize extensions with app
+db.init_app(app)
+csrf.init_app(app)
+cors.init_app(app)
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'full_name': self.full_name,
-            'crm': self.crm,
-            'rqe': self.rqe
-        }
-
-class Template(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'))
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'content': self.content,
-            'category': self.category,
-            'doctor_id': self.doctor_id
-        }
+# Import models after db initialization
+from models import Doctor, Template
 
 @app.route('/')
 def index():
@@ -71,6 +53,7 @@ def index():
         templates = Template.query.all()
         return render_template('index.html', doctors=doctors, templates=templates)
     except Exception as e:
+        logger.error(f"Erro ao carregar página inicial: {e}")
         return "Erro ao conectar ao banco de dados", 500
 
 @app.route('/doctors')
@@ -122,12 +105,12 @@ def templates():
 @app.route('/gerar_doc', methods=['POST'])
 def gerar_doc():
     try:
-        print("Iniciando geração do documento DOC...")
+        logger.info("Iniciando geração do documento DOC...")
         if not request.is_json:
             return jsonify({"error": "Requisição deve ser JSON"}), 400
 
         data = request.get_json()
-        print("Dados recebidos:", data)
+        logger.info("Dados recebidos para geração do documento")
 
         doc = Document()
 
@@ -171,7 +154,6 @@ def gerar_doc():
         for i, text in enumerate(["Medida", "Valor", "Cálculo", "Resultado"]):
             header[i].text = text
 
-        # Adicionar dados na tabela
         measure_calc_pairs = [
             ("Átrio Esquerdo", medidas.get('atrio', 'N/D'), "Volume Diastólico Final", calculos.get('volumeDiastFinal', 'N/D')),
             ("Aorta", medidas.get('aorta', 'N/D'), "Volume Sistólico Final", calculos.get('volumeSistFinal', 'N/D')),
@@ -208,7 +190,7 @@ def gerar_doc():
             if medico.get('rqe'):
                 p.add_run(f"\nRQE: {medico['rqe']}")
 
-        print("Documento gerado, preparando para download...")
+        logger.info("Documento gerado, preparando para download...")
 
         # Salvar documento
         doc_stream = io.BytesIO()
@@ -223,14 +205,8 @@ def gerar_doc():
         )
 
     except Exception as e:
-        print("Erro ao gerar DOC:", str(e))
+        logger.error(f"Erro ao gerar DOC: {e}")
         return jsonify({"error": str(e)}), 500
-
-@app.route('/reports')
-def reports():
-    doctors = Doctor.query.all()
-    templates = Template.query.all()
-    return render_template('reports.html', doctors=doctors, templates=templates)
 
 @app.route('/api/templates', methods=['GET'])
 def get_templates():
@@ -276,7 +252,18 @@ def delete_template(template_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
+@app.route('/reports')
+def reports():
+    doctors = Doctor.query.all()
+    templates = Template.query.all()
+    return render_template('reports.html', doctors=doctors, templates=templates)
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    try:
+        with app.app_context():
+            logger.info("Iniciando criação das tabelas...")
+            db.create_all()
+            logger.info("Tabelas criadas com sucesso!")
+        app.run(host='0.0.0.0', port=3000, debug=True)
+    except Exception as e:
+        logger.error(f"Erro ao iniciar aplicação: {e}")
