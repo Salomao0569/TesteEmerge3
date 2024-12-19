@@ -1,36 +1,43 @@
 import os
 import io
-import secrets
 import logging
 from flask import Flask, render_template, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from flask_cors import CORS
+from flask_talisman import Talisman
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from docx import Document
-from docx.shared import Pt, Cm, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
+from docx.shared import Pt, Cm
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 # Carregar variáveis de ambiente
 load_dotenv()
 
 # Configurar logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 # Initialize Flask app
 app = Flask(__name__)
 
-# Configurações básicas
+# Configurações de segurança
 app.config.update(
-    SECRET_KEY=secrets.token_hex(32),
+    SECRET_KEY=os.getenv('SECRET_KEY', os.urandom(32)),  # Usar variável de ambiente ou gerar
     WTF_CSRF_ENABLED=True,
     WTF_CSRF_CHECK_DEFAULT=True,
     SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL'),
-    SQLALCHEMY_TRACK_MODIFICATIONS=False
+    SQLALCHEMY_TRACK_MODIFICATIONS=False,
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=1800  # 30 minutos
 )
 
 # Initialize extensions
@@ -39,7 +46,36 @@ from models import db, Doctor, Template
 # Initialize extensions with app
 db.init_app(app)
 csrf = CSRFProtect(app)
-CORS(app)
+
+# Configurar CORS com opções seguras
+CORS(app, resources={
+    r"/api/*": {
+        "origins": os.getenv('ALLOWED_ORIGINS', '*').split(','),
+        "methods": ["GET", "POST", "DELETE"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
+
+# Configurar Talisman para headers de segurança
+talisman = Talisman(
+    app,
+    force_https=False,  # Replit já gerencia HTTPS
+    strict_transport_security=True,
+    session_cookie_secure=True,
+    content_security_policy={
+        'default-src': "'self'",
+        'img-src': "'self' data:",
+        'script-src': "'self' 'unsafe-inline'",
+        'style-src': "'self' 'unsafe-inline'"
+    }
+)
+
+# Configurar rate limiting
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
 
 # Create tables
 with app.app_context():
@@ -260,6 +296,9 @@ def reports():
 if __name__ == '__main__':
     try:
         port = int(os.environ.get('PORT', 3000))
-        app.run(host='0.0.0.0', port=port, debug=False)
+        if os.getenv('FLASK_ENV') == 'development':
+            app.run(host='0.0.0.0', port=port, debug=True)
+        else:
+            app.run(host='0.0.0.0', port=port, debug=False)
     except Exception as e:
         logger.error(f"Erro ao iniciar aplicação: {e}")

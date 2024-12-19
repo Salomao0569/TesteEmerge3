@@ -26,4 +26,7 @@ dependencies = [
     "sqlalchemy",
     "docx2python",
     "flask-migrate",
+    "gunicorn>=23.0.0",
+    "flask-talisman>=1.1.0",
+    "flask-limiter>=3.9.2",
 ]
