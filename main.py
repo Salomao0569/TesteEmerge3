@@ -34,19 +34,16 @@ app.config.update(
 )
 
 # Initialize extensions
-db = SQLAlchemy()
-csrf = CSRFProtect()
-cors = CORS()
+from models import db, Doctor, Template
 
 # Initialize extensions with app
 db.init_app(app)
-csrf.init_app(app)
-cors.init_app(app)
+csrf = CSRFProtect(app)
+CORS(app)
 
-# Initialize db in models
-import models
-models.db = db
-from models import Doctor, Template
+# Create tables
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def index():
@@ -103,6 +100,50 @@ def templates():
     doctors = Doctor.query.all()
     templates = Template.query.all()
     return render_template('templates.html', doctors=doctors, templates=templates)
+
+@app.route('/api/templates', methods=['GET'])
+def get_templates():
+    try:
+        category = request.args.get('category')
+        query = Template.query
+        if category:
+            query = query.filter_by(category=category)
+        templates = query.all()
+        return jsonify([template.to_dict() for template in templates])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/templates', methods=['POST'])
+def create_template():
+    try:
+        if not request.is_json:
+            return jsonify({"error": "Content-Type deve ser application/json"}), 400
+
+        data = request.get_json()
+        new_template = Template(
+            name=data['name'],
+            content=data['content'],
+            category=data.get('category', 'laudo'),
+            doctor_id=data.get('doctor_id')
+        )
+
+        db.session.add(new_template)
+        db.session.commit()
+        return jsonify(new_template.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+@app.route('/api/templates/<int:template_id>', methods=['DELETE'])
+def delete_template(template_id):
+    try:
+        template = Template.query.get_or_404(template_id)
+        db.session.delete(template)
+        db.session.commit()
+        return '', 204
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
 
 @app.route('/gerar_doc', methods=['POST'])
 def gerar_doc():
@@ -210,50 +251,6 @@ def gerar_doc():
         logger.error(f"Erro ao gerar DOC: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/templates', methods=['GET'])
-def get_templates():
-    try:
-        category = request.args.get('category')
-        query = Template.query
-        if category:
-            query = query.filter_by(category=category)
-        templates = query.all()
-        return jsonify([template.to_dict() for template in templates])
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/templates', methods=['POST'])
-def create_template():
-    try:
-        if not request.is_json:
-            return jsonify({"error": "Content-Type deve ser application/json"}), 400
-
-        data = request.get_json()
-        new_template = Template(
-            name=data['name'],
-            content=data['content'],
-            category=data.get('category', 'laudo'),
-            doctor_id=data.get('doctor_id')
-        )
-
-        db.session.add(new_template)
-        db.session.commit()
-        return jsonify(new_template.to_dict()), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
-
-@app.route('/api/templates/<int:template_id>', methods=['DELETE'])
-def delete_template(template_id):
-    try:
-        template = Template.query.get_or_404(template_id)
-        db.session.delete(template)
-        db.session.commit()
-        return '', 204
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
-
 @app.route('/reports')
 def reports():
     doctors = Doctor.query.all()
@@ -262,10 +259,6 @@ def reports():
 
 if __name__ == '__main__':
     try:
-        with app.app_context():
-            logger.info("Iniciando criação das tabelas...")
-            db.create_all()
-            logger.info("Tabelas criadas com sucesso!")
         app.run(host='0.0.0.0', port=3000, debug=True)
     except Exception as e:
         logger.error(f"Erro ao iniciar aplicação: {e}")

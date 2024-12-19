@@ -1,16 +1,15 @@
-
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
 
-db = None  # Will be initialized by main.py
+db = SQLAlchemy()
 
 class Doctor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(100), nullable=False)
     crm = db.Column(db.String(20), nullable=False, unique=True)
     rqe = db.Column(db.String(20))
-    
+
     def __repr__(self):
         return f'<Doctor {self.full_name}>'
 
@@ -31,7 +30,7 @@ class Template(db.Model):
     doctor = db.relationship('Doctor', backref='templates')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     def __repr__(self):
         return f'<Template {self.name}>'
 
