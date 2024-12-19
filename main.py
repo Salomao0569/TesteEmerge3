@@ -43,7 +43,9 @@ db.init_app(app)
 csrf.init_app(app)
 cors.init_app(app)
 
-# Import models after db initialization
+# Initialize db in models
+import models
+models.db = db
 from models import Doctor, Template
 
 @app.route('/')

@@ -1,8 +1,9 @@
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
 
-db = SQLAlchemy()
+db = None  # Will be initialized by main.py
 
 class Doctor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -35,7 +36,6 @@ class Template(db.Model):
         return f'<Template {self.name}>'
 
     def to_dict(self):
-        """Convert template to dictionary preserving HTML formatting"""
         doctor_data = None
         if self.doctor:
             doctor_data = {
@@ -47,11 +47,10 @@ class Template(db.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'content': self.content,  # Content is stored as raw HTML
+            'content': self.content,
             'category': self.category,
             'doctor': doctor_data
         }
 
     def set_content(self, html_content):
-        """Set content ensuring HTML is preserved"""
         self.content = html_content
