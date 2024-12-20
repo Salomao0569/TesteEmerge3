@@ -27,6 +27,7 @@ class Template(db.Model):
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50), nullable=False)  # 'laudo', 'normal', 'alterado', 'conclusao'
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'))
+    order = db.Column(db.Integer, default=0)  # Para ordenação das frases
     doctor = db.relationship('Doctor', backref='templates')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
