@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 from models import db, Doctor, Template, Report
 
 app = Flask(__name__)
@@ -10,11 +10,14 @@ app = Flask(__name__)
 # Configuração básica
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.urandom(32)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(32))
+app.config['WTF_CSRF_ENABLED'] = True
+app.config['WTF_CSRF_CHECK_DEFAULT'] = False  # Don't check CSRF for all routes by default
 
 # Inicializar extensões
 db.init_app(app)
-csrf = CSRFProtect(app)
+csrf = CSRFProtect()
+csrf.init_app(app)
 
 @app.route('/')
 def index():
@@ -159,6 +162,12 @@ def get_report(report_id):
         return jsonify(report.to_dict())
     except Exception as e:
         return jsonify({"error": str(e)}), 404
+
+@app.after_request
+def add_csrf_header(response):
+    if 'text/html' in response.headers.get('Content-Type', ''):
+        response.headers.set('X-CSRFToken', generate_csrf())
+    return response
 
 if __name__ == '__main__':
     with app.app_context():

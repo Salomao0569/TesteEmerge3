@@ -1,22 +1,26 @@
 // Função para inserir template selecionado no editor
-function insertSelectedTemplate(templateId) {
+async function insertSelectedTemplate(templateId) {
     try {
-        fetch(`/api/templates/${templateId}`, {
-            headers: addCSRFToken({
-                'Content-Type': 'application/json'
-            })
-        })
-        .then(response => response.json())
-        .then(template => {
-            if (template.error) {
-                throw new Error(template.error);
+        const token = getCSRFToken();
+        if (!token) {
+            throw new Error('Token CSRF não disponível');
+        }
+
+        const response = await fetch(`/api/templates/${templateId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': token,
+                'Accept': 'application/json'
             }
-            $('#editor').summernote('code', template.content);
-        })
-        .catch(error => {
-            console.error('Erro ao carregar template:', error);
-            alert('Erro ao carregar template: ' + error.message);
         });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erro ao carregar template');
+        }
+
+        const template = await response.json();
+        $('#editor').summernote('code', template.content);
     } catch (error) {
         console.error('Erro ao inserir template:', error);
         alert('Erro ao inserir template: ' + error.message);
@@ -28,29 +32,31 @@ async function saveTemplate() {
     try {
         const templateName = document.getElementById('templateName').value;
         const doctorId = document.getElementById('doctorId').value;
+        const content = $('#editor').summernote('code');
 
         if (!templateName || !doctorId) {
-            alert('Por favor, preencha todos os campos obrigatórios');
-            return;
+            throw new Error('Por favor, preencha todos os campos obrigatórios');
+        }
+
+        const token = getCSRFToken();
+        if (!token) {
+            throw new Error('Token CSRF não disponível');
         }
 
         const templateData = {
             name: templateName,
-            content: $('#editor').summernote('code'),
+            content: content,
             category: 'laudo',
             doctor_id: parseInt(doctorId)
         };
 
-        const csrfToken = getCSRFToken();
-        if (!csrfToken) {
-            throw new Error('Token CSRF não encontrado');
-        }
-
         const response = await fetch('/api/templates', {
             method: 'POST',
-            headers: addCSRFToken({
-                'Content-Type': 'application/json'
-            }),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': token,
+                'Accept': 'application/json'
+            },
             body: JSON.stringify(templateData)
         });
 
@@ -59,32 +65,28 @@ async function saveTemplate() {
             throw new Error(errorData.error || 'Erro ao salvar template');
         }
 
-        const result = await response.json();
+        await response.json();
         alert('Template salvo com sucesso!');
         location.reload();
     } catch (error) {
         console.error('Erro ao salvar template:', error);
-        alert('Erro ao salvar template: ' + error.message);
+        alert(error.message);
     }
 }
 
 // Função para obter o token CSRF
-function getCsrfToken() {
+function getCSRFToken() {
     const metaTag = document.querySelector('meta[name="csrf-token"]');
     if (!metaTag) {
         console.error('Meta tag CSRF não encontrada');
-        return '';
+        return null;
     }
-    return metaTag.getAttribute('content');
-}
-
-// Helper function to add CSRF token to headers
-function addCSRFToken(headers) {
-    const csrfToken = getCsrfToken();
-    if (csrfToken) {
-        headers['X-CSRFToken'] = csrfToken;
+    const token = metaTag.getAttribute('content');
+    if (!token) {
+        console.error('Token CSRF está vazio');
+        return null;
     }
-    return headers;
+    return token;
 }
 
 // Event Listeners
@@ -95,5 +97,11 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             saveTemplate();
         });
+    }
+
+    // Verificar se o token CSRF está disponível
+    const token = getCSRFToken();
+    if (!token) {
+        console.error('CSRF token não está disponível na página');
     }
 });
