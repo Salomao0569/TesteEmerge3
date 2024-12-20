@@ -336,3 +336,28 @@
     z-index: 1000;
     animation: fadeInOut 2s ease;
 }
+
+/* Ajustes para inputs na tabela */
+.table input.form-control {
+    padding: 0.75rem 0.5rem;
+    height: auto;
+    min-height: 42px;
+}
+
+.table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+}
+
+.table tr {
+    line-height: 1.6;
+}
+
+/* Ajuste específico para a tabela de medidas */
+.card-body .table-responsive table {
+    margin-bottom: 2rem;
+}
+
+.card-body .table-responsive td {
+    min-height: 60px;
+}
