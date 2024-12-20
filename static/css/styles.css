@@ -363,7 +363,7 @@
 }
 
 #templateContent {
-    min-height: 400px;
+    min-height: 800px; /* Aumentado de 400px para 800px */
     padding: 1.25rem;
     transition: all 0.2s ease;
     font-family: Arial, sans-serif !important;
@@ -375,4 +375,10 @@
     white-space: pre-wrap;
     word-wrap: break-word;
     margin-bottom: 1.5rem;
+}
+
+/* Ensure the CKEditor container also respects the height */
+.ck-editor__editable_inline {
+    min-height: 800px !important;
+    max-height: none !important;
 }

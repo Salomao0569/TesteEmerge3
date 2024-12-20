@@ -88,14 +88,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 ]
             },
             // Altura mínima do editor
-            height: '400px',
+            height: '800px',
+            autogrow: {
+                minHeight: '800px',
+                maxHeight: null
+            },
             // Plugins removidos
             removePlugins: []
         })
         .then(editor => {
             // Armazenar a instância do editor globalmente
             window.editor = editor;
-            
+
             // Configurar autosave
             let autoSaveTimeout;
             editor.model.document.on('change:data', () => {
@@ -104,38 +108,38 @@ document.addEventListener('DOMContentLoaded', function() {
                     localStorage.setItem('editorAutosave', editor.getData());
                 }, 1000);
             });
-            
+
             // Restaurar conteúdo salvo se existir
             const savedContent = localStorage.getItem('editorAutosave');
             if (savedContent) {
                 editor.setData(savedContent);
             }
-            
+
             // Adicionar manipulador para o formulário
             const form = document.getElementById('templateForm');
             if (form) {
                 form.addEventListener('submit', async function(e) {
                     e.preventDefault();
-                    
+
                     try {
                         // Obter token CSRF
                         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
                         if (!csrfToken) {
                             throw new Error('Token CSRF não encontrado');
                         }
-                        
+
                         // Preparar dados do formulário
                         const formData = {
                             name: document.getElementById('templateName').value,
                             category: document.getElementById('templateCategory').value,
                             content: editor.getData()
                         };
-                        
+
                         // Validar dados
                         if (!formData.name || !formData.category || !formData.content) {
                             throw new Error('Todos os campos são obrigatórios');
                         }
-                        
+
                         // Enviar dados para o servidor
                         const response = await fetch('/api/templates', {
                             method: 'POST',
@@ -145,9 +149,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             },
                             body: JSON.stringify(formData)
                         });
-                        
+
                         const data = await response.json();
-                        
+
                         if (data.success) {
                             // Limpar autosave após salvar com sucesso
                             localStorage.removeItem('editorAutosave');
@@ -162,24 +166,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             }
-            
+
             // Adicionar atalhos de teclado personalizados
             editor.keystrokes.set('Ctrl+S', (keyEvtData, cancel) => {
                 cancel();
                 form?.dispatchEvent(new Event('submit'));
             });
-            
+
             // Configurar manipulação de colagem
             editor.editing.view.document.on('clipboardInput', (evt, data) => {
                 // Limpar formatação indesejada do conteúdo colado
                 const dataTransfer = data.dataTransfer;
                 const textContent = dataTransfer.getData('text/plain');
-                
+
                 // Se não houver HTML, usar texto puro
                 if (!dataTransfer.getData('text/html')) {
                     data.content = editor.data.processor.toView(textContent);
                 }
             });
+            
+            // Ensure the editor container has the correct height
+            const editorElement = editor.ui.getEditableElement();
+            editorElement.style.minHeight = '800px';
+            editorElement.style.height = 'auto';
         })
         .catch(error => {
             console.error('Erro ao inicializar o editor:', error);
