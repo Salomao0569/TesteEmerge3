@@ -331,10 +331,7 @@ def reports():
 
 if __name__ == '__main__':
     try:
-        port = int(os.environ.get('PORT', 3000))
-        if os.getenv('FLASK_ENV') == 'development':
-            app.run(host='0.0.0.0', port=port, debug=True)
-        else:
-            app.run(host='0.0.0.0', port=port, debug=False)
+        port = int(os.environ.get('PORT', 80))
+        app.run(host='0.0.0.0', port=port, debug=False)
     except Exception as e:
         logger.error(f"Erro ao iniciar aplicação: {e}")
