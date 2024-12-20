@@ -1,16 +1,25 @@
 // Função para inserir template selecionado no editor
 function insertSelectedTemplate(templateId) {
     try {
-        fetch(`/api/templates/${templateId}`)
-            .then(response => response.json())
-            .then(template => {
-                $('#editor').summernote('code', template.content);
+        fetch(`/api/templates/${templateId}`, {
+            headers: addCSRFToken({
+                'Content-Type': 'application/json'
             })
-            .catch(error => {
-                console.error('Erro ao carregar template:', error);
-            });
+        })
+        .then(response => response.json())
+        .then(template => {
+            if (template.error) {
+                throw new Error(template.error);
+            }
+            $('#editor').summernote('code', template.content);
+        })
+        .catch(error => {
+            console.error('Erro ao carregar template:', error);
+            alert('Erro ao carregar template: ' + error.message);
+        });
     } catch (error) {
         console.error('Erro ao inserir template:', error);
+        alert('Erro ao inserir template: ' + error.message);
     }
 }
 
@@ -32,17 +41,22 @@ async function saveTemplate() {
             doctor_id: parseInt(doctorId)
         };
 
+        const csrfToken = getCSRFToken();
+        if (!csrfToken) {
+            throw new Error('Token CSRF não encontrado');
+        }
+
         const response = await fetch('/api/templates', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken()
-            },
+            headers: addCSRFToken({
+                'Content-Type': 'application/json'
+            }),
             body: JSON.stringify(templateData)
         });
 
         if (!response.ok) {
-            throw new Error('Erro ao salvar template');
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erro ao salvar template');
         }
 
         const result = await response.json();
@@ -50,7 +64,7 @@ async function saveTemplate() {
         location.reload();
     } catch (error) {
         console.error('Erro ao salvar template:', error);
-        alert('Erro ao salvar template. Por favor, tente novamente.');
+        alert('Erro ao salvar template: ' + error.message);
     }
 }
 
@@ -62,6 +76,15 @@ function getCsrfToken() {
         return '';
     }
     return metaTag.getAttribute('content');
+}
+
+// Helper function to add CSRF token to headers
+function addCSRFToken(headers) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+        headers['X-CSRFToken'] = csrfToken;
+    }
+    return headers;
 }
 
 // Event Listeners
