@@ -18,7 +18,7 @@ from assets import init_assets
 
 # Configurar logging mais detalhado
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,  # Mudando para DEBUG para mais detalhes
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler()
@@ -107,12 +107,14 @@ limiter = Limiter(
 
 @app.before_request
 def log_request_info():
-    logger.info(f"Request: {request.method} {request.url}")
-    logger.debug(f"Headers: {dict(request.headers)}")
+    logger.debug('Headers: %s', dict(request.headers))
+    logger.debug('Body: %s', request.get_data())
+    logger.info('Request: %s %s', request.method, request.url)
 
 @app.after_request
-def log_response_info(response):
-    logger.info(f"Response: {response.status}")
+def after_request(response):
+    logger.info('Response: %s', response.status)
+    logger.debug('Response headers: %s', dict(response.headers))
     return response
 
 @app.route('/')
