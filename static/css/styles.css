@@ -339,18 +339,19 @@
 
 /* Ajustes para inputs na tabela */
 .table input.form-control {
-    padding: 0.75rem 0.5rem;
+    padding: 1rem 0.75rem;
     height: auto;
-    min-height: 42px;
+    min-height: 50px;
 }
 
 .table td {
-    padding: 1rem 0.75rem;
+    padding: 1.25rem 0.75rem;
     vertical-align: middle;
+    height: 70px;
 }
 
 .table tr {
-    line-height: 1.6;
+    line-height: 1.8;
 }
 
 /* Ajuste específico para a tabela de medidas */
