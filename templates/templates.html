@@ -58,8 +58,10 @@
                         </div>
                         <div class="col-12">
                             <label for="templateContent" class="form-label">Conteúdo</label>
-                            <!-- CKEditor container -->
-                            <textarea id="templateContent" name="templateContent" class="form-control"></textarea>
+                            <div class="editor-container">
+                                <textarea id="templateContent" name="templateContent" class="form-control" required></textarea>
+                            </div>
+                            <div id="editorError" class="invalid-feedback"></div>
                         </div>
                     </div>
                     <div class="mt-3">

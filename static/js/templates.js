@@ -87,14 +87,13 @@ async function createTemplate(event) {
     try {
         const name = document.getElementById('templateName').value.trim();
         const category = document.getElementById('templateCategory').value;
-        const contentArea = document.getElementById('templateContent');
+        const content = document.querySelector('#templateContent').value.trim();
         
-        if (!name || !category || !contentArea.innerHTML.trim()) {
+        if (!name || !category || !content) {
             alert('Todos os campos são obrigatórios');
             return;
         }
 
-        const content = contentArea.innerHTML;
         const templateData = { name, category, content };
         
         const response = await fetch('/api/templates', {
