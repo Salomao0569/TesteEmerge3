@@ -361,3 +361,18 @@
 .card-body .table-responsive td {
     min-height: 60px;
 }
+
+#templateContent {
+    min-height: 400px;
+    padding: 1.25rem;
+    transition: all 0.2s ease;
+    font-family: Arial, sans-serif !important;
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    background-color: white;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin-bottom: 1.5rem;
+}
