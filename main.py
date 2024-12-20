@@ -1,8 +1,9 @@
 import os
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
-from models import db, Doctor, Template
+from models import db, Doctor, Template, Report
 
 app = Flask(__name__)
 
@@ -114,6 +115,50 @@ def delete_template(template_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
+
+@app.route('/api/reports', methods=['POST'])
+def create_report():
+    try:
+        data = request.get_json()
+
+        # Converter string de data para objeto date
+        exam_date = datetime.strptime(data['exam_date'], '%Y-%m-%d').date() if data.get('exam_date') else None
+        birthdate = datetime.strptime(data['patient_birthdate'], '%Y-%m-%d').date() if data.get('patient_birthdate') else None
+
+        new_report = Report(
+            patient_name=data['patient_name'],
+            patient_birthdate=birthdate,
+            patient_gender=data['patient_gender'],
+            patient_weight=data.get('patient_weight'),
+            patient_height=data.get('patient_height'),
+            body_surface=data.get('body_surface'),
+            exam_date=exam_date,
+            left_atrium=data.get('left_atrium'),
+            aorta=data.get('aorta'),
+            ascending_aorta=data.get('ascending_aorta'),
+            diastolic_diameter=data.get('diastolic_diameter'),
+            systolic_diameter=data.get('systolic_diameter'),
+            septum_thickness=data.get('septum_thickness'),
+            posterior_wall=data.get('posterior_wall'),
+            right_ventricle=data.get('right_ventricle'),
+            content=data['content'],
+            doctor_id=data['doctor_id']
+        )
+
+        db.session.add(new_report)
+        db.session.commit()
+        return jsonify(new_report.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+@app.route('/api/reports/<int:report_id>', methods=['GET'])
+def get_report(report_id):
+    try:
+        report = Report.query.get_or_404(report_id)
+        return jsonify(report.to_dict())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 404
 
 if __name__ == '__main__':
     with app.app_context():

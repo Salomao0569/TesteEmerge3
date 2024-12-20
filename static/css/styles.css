@@ -66,9 +66,14 @@
 
 /* Ensure consistent formatting between editor and print */
 #editor {
+    min-height: 800px !important;
     font-family: Arial, 'Helvetica Neue', sans-serif !important;
     font-size: 12pt !important;
     line-height: 1.6 !important;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    background-color: white;
 }
 
 #editor p {
@@ -98,7 +103,7 @@
 }
 
 .editor-area {
-    min-height: 300px;
+    min-height: 800px !important;
     padding: 1rem;
     transition: all 0.2s ease;
     font-family: Arial, sans-serif !important;
@@ -109,8 +114,6 @@
     background-color: white;
     white-space: pre-wrap;
     word-wrap: break-word;
-    line-height: 1.5;
-    font-size: 14px;
 }
 
 @media (max-width: 768px) {
@@ -126,7 +129,7 @@
 }
 
 .formatted-content {
-    min-height: 300px;
+    min-height: 800px;
     padding: 1rem;
     border: 1px solid #ced4da;
     border-radius: 0.25rem;
@@ -363,7 +366,7 @@
 }
 
 #templateContent {
-    min-height: 800px; /* Aumentado de 400px para 800px */
+    min-height: 800px; 
     padding: 1.25rem;
     transition: all 0.2s ease;
     font-family: Arial, sans-serif !important;

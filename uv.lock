@@ -672,6 +672,15 @@ wheels = [
 ]
 
 [[package]]
+name = "oauthlib"
+version = "3.2.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/fa/fbf4001037904031639e6bfbfc02badfc7e12f137a8afa254df6c4c8a670/oauthlib-3.2.2.tar.gz", hash = "sha256:9859c40929662bec5d64f34d01c99e093149682a3f38915dc0655d5a633dd918", size = 177352 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7e/80/cab10959dc1faead58dc8384a781dfbf93cb4d33d50988f7a69f1b7c9bbe/oauthlib-3.2.2-py3-none-any.whl", hash = "sha256:8139f29aac13e25d502680e9e19963e83f16838d48a0d71c287fe40e7067fbca", size = 151688 },
+]
+
+[[package]]
 name = "ordered-set"
 version = "4.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -834,7 +843,7 @@ name = "redis"
 version = "5.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "async-timeout", marker = "python_full_version < '3.11.3'" },
+    { name = "async-timeout", marker = "python_full_version < '3.11.3' and python_full_version >= '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/47/da/d283a37303a995cd36f8b92db85135153dc4f7a8e4441aa827721b442cfb/redis-5.2.1.tar.gz", hash = "sha256:16f2e22dff21d5125e8481515e386711a34cbec50f0e44413dd7d9c060a54e0f", size = 4608355 }
 wheels = [
@@ -866,6 +875,7 @@ dependencies = [
     { name = "html2text" },
     { name = "htmldocx" },
     { name = "jsmin" },
+    { name = "oauthlib" },
     { name = "psycopg2-binary" },
     { name = "python-docx" },
     { name = "python-dotenv" },
@@ -896,6 +906,7 @@ requires-dist = [
     { name = "html2text", specifier = ">=2024.2.26" },
     { name = "htmldocx", specifier = ">=0.0.6" },
     { name = "jsmin", specifier = ">=3.0.1" },
+    { name = "oauthlib", specifier = ">=3.2.2" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "python-docx", specifier = ">=1.0.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
@@ -931,7 +942,7 @@ name = "sqlalchemy"
 version = "2.0.36"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "greenlet", marker = "(python_full_version < '3.13' and platform_machine == 'AMD64') or (python_full_version < '3.13' and platform_machine == 'WIN32') or (python_full_version < '3.13' and platform_machine == 'aarch64') or (python_full_version < '3.13' and platform_machine == 'amd64') or (python_full_version < '3.13' and platform_machine == 'ppc64le') or (python_full_version < '3.13' and platform_machine == 'win32') or (python_full_version < '3.13' and platform_machine == 'x86_64')" },
+    { name = "greenlet", marker = "(python_full_version < '3.13' and platform_machine == 'AMD64' and python_full_version >= '3.11') or (python_full_version < '3.13' and platform_machine == 'WIN32' and python_full_version >= '3.11') or (python_full_version < '3.13' and platform_machine == 'aarch64' and python_full_version >= '3.11') or (python_full_version < '3.13' and platform_machine == 'amd64' and python_full_version >= '3.11') or (python_full_version < '3.13' and platform_machine == 'ppc64le' and python_full_version >= '3.11') or (python_full_version < '3.13' and platform_machine == 'win32' and python_full_version >= '3.11') or (python_full_version < '3.13' and platform_machine == 'x86_64' and python_full_version >= '3.11')" },
     { name = "typing-extensions" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/50/65/9cbc9c4c3287bed2499e05033e207473504dc4df999ce49385fb1f8b058a/sqlalchemy-2.0.36.tar.gz", hash = "sha256:7f2767680b6d2398aea7082e45a774b2b0767b5c8d8ffb9c8b683088ea9b29c5", size = 9574485 }
