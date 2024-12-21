@@ -60,6 +60,7 @@
                 <h5 class="mb-0">Medidas e Cálculos</h5>
             </div>
             <div class="card-body">
+                <!-- Seção da tabela de medidas -->
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
@@ -75,19 +76,19 @@
                                 <td>Átrio Esquerdo</td>
                                 <td><input type="number" id="atrio" class="form-control" step="0.1"></td>
                                 <td>Volume Diastólico Final</td>
-                                <td id="print_volume_diast_final"></td>
+                                <td><div id="print_volume_diast_final" class="form-control-static"></div></td>
                             </tr>
                             <tr>
                                 <td>Aorta</td>
                                 <td><input type="number" id="aorta" class="form-control" step="0.1"></td>
                                 <td>Volume Sistólico Final</td>
-                                <td id="print_volume_sist_final"></td>
+                                <td><div id="print_volume_sist_final" class="form-control-static"></div></td>
                             </tr>
                             <tr>
                                 <td>Aorta Ascendente</td>
                                 <td><input type="number" id="aorta_asc" class="form-control" step="0.1"></td>
                                 <td>Volume Ejetado</td>
-                                <td id="print_volume_ejetado"></td>
+                                <td><div id="print_volume_ejetado" class="form-control-static"></div></td>
                             </tr>
                             <tr>
                                 <td>Diâmetro Diastólico</td>
@@ -95,32 +96,32 @@
                                 <td>Fração de Ejeção</td>
                                 <td>
                                     <div id="print_fracao_ejecao" class="form-control-static"></div>
-                                    <div id="classificacao_fe" class="alert alert-info py-1 mt-2"></div>
+                                    <div id="classificacao_fe" class="alert alert-info"></div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>Diâmetro Sistólico</td>
                                 <td><input type="number" id="diam_sist_final" class="form-control" step="0.1"></td>
                                 <td>Percentual de Encurtamento</td>
-                                <td id="print_percent_encurt"></td>
+                                <td><div id="print_percent_encurt" class="form-control-static"></div></td>
                             </tr>
                             <tr>
                                 <td>Espessura do Septo</td>
                                 <td><input type="number" id="esp_diast_septo" class="form-control" step="0.1"></td>
                                 <td>Espessura Relativa</td>
-                                <td id="print_esp_relativa"></td>
+                                <td><div id="print_esp_relativa" class="form-control-static"></div></td>
                             </tr>
                             <tr>
                                 <td>Espessura PPVE</td>
                                 <td><input type="number" id="esp_diast_ppve" class="form-control" step="0.1"></td>
                                 <td>Massa do VE</td>
-                                <td id="print_massa_ve"></td>
+                                <td><div id="print_massa_ve" class="form-control-static"></div></td>
                             </tr>
                             <tr>
                                 <td>Ventrículo Direito</td>
                                 <td><input type="number" id="vd" class="form-control" step="0.1"></td>
                                 <td>Índice de Massa</td>
-                                <td id="print_indice_massa"></td>
+                                <td><div id="print_indice_massa" class="form-control-static"></div></td>
                             </tr>
                         </tbody>
                     </table>
