@@ -1,10 +1,13 @@
 import os
 import logging
-from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from models import db, Doctor, Template, Report
+from dotenv import load_dotenv
+
+# Carregar variáveis de ambiente
+load_dotenv()
 
 # Configurar logging detalhado
 logging.basicConfig(
@@ -13,34 +16,41 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
+def create_app():
+    app = Flask(__name__)
 
-# Configuração detalhada do banco de dados
-database_url = os.environ.get('DATABASE_URL')
-if not database_url:
-    logger.error("DATABASE_URL não está definida nas variáveis de ambiente")
-    raise ValueError("DATABASE_URL é obrigatória")
+    # Configuração detalhada do banco de dados
+    database_url = os.environ.get('DATABASE_URL')
+    if not database_url:
+        logger.error("DATABASE_URL não está definida nas variáveis de ambiente")
+        raise ValueError("DATABASE_URL é obrigatória")
 
-logger.info("Inicializando aplicação com configurações...")
-logger.info(f"Database URL: {database_url}")
+    logger.info("Inicializando aplicação com configurações...")
+    logger.info(f"Database URL: {database_url}")
 
-# Configuração básica
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(32))
-app.config['WTF_CSRF_ENABLED'] = True
-app.config['WTF_CSRF_CHECK_DEFAULT'] = False
+    # Configuração básica
+    app.config.update(
+        SQLALCHEMY_DATABASE_URI=database_url,
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        SECRET_KEY=os.environ.get('SECRET_KEY', os.urandom(32)),
+        WTF_CSRF_ENABLED=True,
+        WTF_CSRF_CHECK_DEFAULT=False
+    )
 
-# Inicializar extensões com tratamento de erro detalhado
-try:
-    logger.info("Inicializando extensões do Flask...")
-    db.init_app(app)
-    csrf = CSRFProtect()
-    csrf.init_app(app)
-    logger.info("Extensões inicializadas com sucesso")
-except Exception as e:
-    logger.error(f"Erro crítico ao inicializar extensões: {str(e)}", exc_info=True)
-    raise
+    # Inicializar extensões com tratamento de erro detalhado
+    try:
+        logger.info("Inicializando extensões do Flask...")
+        db.init_app(app)
+        csrf = CSRFProtect()
+        csrf.init_app(app)
+        logger.info("Extensões inicializadas com sucesso")
+    except Exception as e:
+        logger.error(f"Erro crítico ao inicializar extensões: {str(e)}", exc_info=True)
+        raise
+
+    return app
+
+app = create_app()
 
 @app.route('/')
 def index():
