@@ -29,7 +29,7 @@ export default function App() {
           type="number"
           value={values.leftAtrium}
           onChange={(e) => handleInputChange('leftAtrium', e.target.value)}
-          style={{ color: changedFields.leftAtrium ? 'red' : 'inherit' }}
+          style={{ color: changedFields.leftAtrium ? '#ff0000' : '#000000' }}
           className={changedFields.leftAtrium ? 'changed-value' : ''}
         />
       </div>

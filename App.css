@@ -1,7 +1,7 @@
 
 .changed-value {
-  background-color: #e8f0fe;
-  border: 2px solid #4285f4 !important;
+  background-color: #fff;
+  border: 1px solid #ccc !important;
   transition: all 0.2s ease-in-out;
 }
 
