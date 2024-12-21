@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fração de Ejeção do VE</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 10px;
+            background-color: #e2e8f0;
+            color: #1a202c;
+            line-height: 1.4;
+        }
+        .container {
+            width: 100%;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            background-color: #1a365d;
+            color: #ffffff;
+            padding: 15px 10px;
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th {
+            background-color: #2d3748;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 10px 6px;
+            text-align: center;
+            border-bottom: 2px solid #1a365d;
+        }
+        td {
+            padding: 12px 6px;
+            text-align: center;
+            border-bottom: 1px solid #cbd5e0;
+            font-weight: 500;
+        }
+        .classification {
+            font-weight: 700;
+            padding-left: 12px;
+            text-align: left;
+        }
+        .normal { 
+            color: #047857;
+            background-color: #ecfdf5;
+        }
+        .discreto { 
+            color: #b45309;
+            background-color: #fefce8;
+        }
+        .moderado { 
+            color: #c2410c;
+            background-color: #fff7ed;
+        }
+        .grave { 
+            color: #b91c1c;
+            background-color: #fef2f2;
+        }
+        .medida-info {
+            font-size: 0.85rem;
+            color: #1a365d;
+            text-align: center;
+            padding: 12px;
+            background: #f1f5f9;
+            border-top: 2px solid #cbd5e0;
+            font-weight: 500;
+        }
+        @media screen and (min-width: 768px) {
+            .container {
+                max-width: 700px;
+            }
+            h1 {
+                font-size: 1.5rem;
+                padding: 20px;
+            }
+            table {
+                font-size: 1rem;
+            }
+            th, td {
+                padding: 14px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fração de Ejeção do Ventrículo Esquerdo</h1>
+        <table>
+            <tr>
+                <th>Classificação</th>
+                <th>Homens (%)</th>
+                <th>Mulheres (%)</th>
+            </tr>
+            <tr>
+                <td class="classification normal">Normal</td>
+                <td>52-72</td>
+                <td>54-74</td>
+            </tr>
+            <tr>
+                <td class="classification discreto">Disfunção discreta</td>
+                <td>41-51</td>
+                <td>41-53</td>
+            </tr>
+            <tr>
+                <td class="classification moderado">Disfunção moderada</td>
+                <td>30-40</td>
+                <td>30-40</td>
+            </tr>
+            <tr>
+                <td class="classification grave">Disfunção grave</td>
+                <td>< 30</td>
+                <td>< 30</td>
+            </tr>
+        </table>
+        <div class="medida-info">
+            Valores expressos em porcentagem (%)
+        </div>
+    </div>
+</body>
+</html>
