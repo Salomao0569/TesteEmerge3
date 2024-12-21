@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from models import db, Doctor, Template, Report
 from dotenv import load_dotenv
+from datetime import datetime
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -213,4 +214,4 @@ if __name__ == '__main__':
         except Exception as e:
             logger.error(f"Erro ao criar tabelas do banco de dados: {e}", exc_info=True)
             raise
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    app.run(host='0.0.0.0', port=3001, debug=True)
