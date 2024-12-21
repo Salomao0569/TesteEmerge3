@@ -35,10 +35,11 @@
         border-collapse: collapse;
         font-size: 9pt;
         table-layout: fixed;
+        border: none; /* Added to remove table border */
     }
 
     th, td {
-        border: 1px solid black;
+        border: none; /* Removed border from th and td */
         padding: 3px;
         word-wrap: break-word;
         overflow: hidden;
@@ -368,16 +369,19 @@
     vertical-align: middle;
     min-height: 60px;
     height: 60px;
+    border: none; /* Added to remove td border */
 }
 
 
 .card-body .table-responsive table {
     margin-bottom: 2rem;
+    border: none; /* Added to remove table border */
 }
 
 .card-body .table-responsive td {
     min-height: 60px;
     height: 60px;
+    border: none; /* Added to remove td border */
 }
 
 #templateContent {
