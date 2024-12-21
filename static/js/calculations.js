@@ -72,7 +72,7 @@ function calcularResultados() {
         const volumeEjetado = volumeDiastFinal - volumeSistFinal;
         elementos.printVolumeEjetado.textContent = volumeEjetado + ' mL';
 
-        const fracaoEjecao = Math.round((volumeEjetado/volumeDiastFinal) * 100);
+        const fracaoEjecao = Math.round((volumeEjetado / volumeDiastFinal) * 100);
         elementos.printFracaoEjecao.textContent = fracaoEjecao + ' %';
 
         const sexo = elementos.sexo.value;
@@ -159,11 +159,16 @@ function classificarVentriculoEsquerdo() {
     const analiseDiastDiv = document.getElementById('analise_ve_diast');
     const analiseSistDiv = document.getElementById('analise_ve_sist');
 
-    if (diamDiast === 0 || diamSist === 0 || !sexo) {
+    if (!classificacaoVEDiastDiv || !classificacaoVESistDiv || !analiseDiastDiv || !analiseSistDiv || !sexo) {
+        console.error('Elementos necessários não encontrados');
+        return;
+    }
+
+    if (diamDiast === 0 && diamSist === 0) {
         classificacaoVEDiastDiv.textContent = '';
         classificacaoVESistDiv.textContent = '';
-        analiseDiastDiv.value = '';
-        analiseSistDiv.value = '';
+        analiseDiastDiv.textContent = '';
+        analiseSistDiv.textContent = '';
         return;
     }
 
@@ -171,55 +176,68 @@ function classificarVentriculoEsquerdo() {
     let classificacaoSist = '';
 
     if (sexo === 'M') {
+        // Classificação do diâmetro diastólico para homens
         if (diamDiast <= 59) classificacaoDiast = 'Normal';
         else if (diamDiast <= 63) classificacaoDiast = 'Discretamente aumentado';
         else if (diamDiast <= 68) classificacaoDiast = 'Moderadamente aumentado';
         else classificacaoDiast = 'Acentuadamente aumentado';
 
+        // Classificação do diâmetro sistólico para homens
         if (diamSist <= 40) classificacaoSist = 'Normal';
         else if (diamSist <= 45) classificacaoSist = 'Discretamente aumentado';
         else if (diamSist <= 50) classificacaoSist = 'Moderadamente aumentado';
         else classificacaoSist = 'Acentuadamente aumentado';
     } else if (sexo === 'F') {
+        // Classificação do diâmetro diastólico para mulheres
         if (diamDiast <= 53) classificacaoDiast = 'Normal';
         else if (diamDiast <= 57) classificacaoDiast = 'Discretamente aumentado';
         else if (diamDiast <= 62) classificacaoDiast = 'Moderadamente aumentado';
         else classificacaoDiast = 'Acentuadamente aumentado';
 
+        // Classificação do diâmetro sistólico para mulheres
         if (diamSist <= 35) classificacaoSist = 'Normal';
         else if (diamSist <= 40) classificacaoSist = 'Discretamente aumentado';
         else if (diamSist <= 45) classificacaoSist = 'Moderadamente aumentado';
         else classificacaoSist = 'Acentuadamente aumentado';
     }
 
-    classificacaoVEDiastDiv.textContent = `Classificação: ${classificacaoDiast}`;
-    classificacaoVEDiastDiv.className = 'alert alert-info py-1';
-    analiseDiastDiv.value = `Diâmetro diastólico do ventrículo esquerdo ${classificacaoDiast.toLowerCase()}.`;
+    if (diamDiast > 0) {
+        classificacaoVEDiastDiv.textContent = `Classificação: ${classificacaoDiast}`;
+        classificacaoVEDiastDiv.className = 'alert alert-info py-1';
+        analiseDiastDiv.textContent = `Diâmetro diastólico do ventrículo esquerdo ${classificacaoDiast.toLowerCase()}.`;
+    }
 
-    classificacaoVESistDiv.textContent = `Classificação: ${classificacaoSist}`;
-    classificacaoVESistDiv.className = 'alert alert-info py-1';
-    analiseSistDiv.value = `Diâmetro sistólico do ventrículo esquerdo ${classificacaoSist.toLowerCase()}.`;
+    if (diamSist > 0) {
+        classificacaoVESistDiv.textContent = `Classificação: ${classificacaoSist}`;
+        classificacaoVESistDiv.className = 'alert alert-info py-1';
+        analiseSistDiv.textContent = `Diâmetro sistólico do ventrículo esquerdo ${classificacaoSist.toLowerCase()}.`;
+    }
 }
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('input[type="number"]');
-    const analiseFeDiv = document.getElementById('analise_fracao_ejecao');
+    const sexoSelect = document.getElementById('sexo');
 
-    inputs.forEach(input => {
-        input.addEventListener('input', () => {
-            calcularResultados();
-            if (input.id === 'atrio') {
-                classificarAtrioEsquerdo();
-            }
-            if (input.id === 'diam_diast_final' || input.id === 'diam_sist_final') {
-                classificarVentriculoEsquerdo();
-            }
+    if (inputs && sexoSelect) {
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                calcularResultados();
+                if (input.id === 'atrio') {
+                    classificarAtrioEsquerdo();
+                }
+                if (input.id === 'diam_diast_final' || input.id === 'diam_sist_final') {
+                    classificarVentriculoEsquerdo();
+                }
+            });
         });
-    });
 
-    document.getElementById('sexo')?.addEventListener('change', () => {
-        classificarAtrioEsquerdo();
-        classificarVentriculoEsquerdo();
-    });
+        sexoSelect.addEventListener('change', () => {
+            classificarAtrioEsquerdo();
+            classificarVentriculoEsquerdo();
+            calcularResultados();
+        });
+    } else {
+        console.error('Elementos necessários não encontrados durante a inicialização');
+    }
 });

@@ -144,24 +144,29 @@
                                 <td>Átrio Esquerdo</td>
                                 <td>
                                     <div class="mb-2" id="classificacao_ae"></div>
+                                    <input type="hidden" id="analise_ae">
                                 </td>
                             </tr>
                             <tr>
                                 <td>Ventrículo Esquerdo - Diâmetro Diastólico</td>
                                 <td>
                                     <div class="mb-2" id="classificacao_ve_diast"></div>
+                                    <input type="hidden" id="analise_ve_diast">
                                 </td>
                             </tr>
                             <tr>
                                 <td>Ventrículo Esquerdo - Diâmetro Sistólico</td>
                                 <td>
-                                    <div class="mb-2" id="classificacao_ve_sist"></div>
+                                    <div id="classificacao_ve_sist" class="mb-2"></div>
+                                    <div class="alert alert-info py-1" id="analise_ve_sist"></div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>Fração de Ejeção</td>
                                 <td>
-                                    <div id="classificacao_fe" class="mb-2"></div>
+                                    <div id="print_fracao_ejecao" class="mb-2"></div>
+                                    <div id="classificacao_fe" class="alert alert-info py-1"></div>
+                                    <input type="hidden" id="analise_fracao_ejecao">
                                 </td>
                             </tr>
                         </tbody>
