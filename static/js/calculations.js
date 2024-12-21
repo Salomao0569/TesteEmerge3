@@ -76,9 +76,41 @@ function calcularResultados() {
     }
 }
 
+function classificarAtrioEsquerdo() {
+    const atrio = parseFloat(document.getElementById('atrio').value) || 0;
+    const sexo = document.getElementById('sexo').value;
+    const classificacaoDiv = document.getElementById('classificacao_ae');
+    
+    if (atrio === 0 || !sexo) {
+        classificacaoDiv.textContent = '';
+        return;
+    }
+
+    let classificacao = '';
+    if (sexo === 'M') {
+        if (atrio <= 40) classificacao = 'Normal';
+        else if (atrio <= 46) classificacao = 'Aumento discreto';
+        else if (atrio <= 52) classificacao = 'Aumento moderado';
+        else classificacao = 'Aumento importante';
+    } else if (sexo === 'F') {
+        if (atrio <= 38) classificacao = 'Normal';
+        else if (atrio <= 42) classificacao = 'Aumento discreto';
+        else if (atrio <= 46) classificacao = 'Aumento moderado';
+        else classificacao = 'Aumento importante';
+    }
+
+    classificacaoDiv.textContent = `Classificação: ${classificacao}`;
+    classificacaoDiv.className = 'alert alert-info py-1';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('input[type="number"]');
     inputs.forEach(input => {
-        input.addEventListener('input', calcularResultados);
+        input.addEventListener('input', () => {
+            calcularResultados();
+            classificarAtrioEsquerdo();
+        });
     });
+
+    document.getElementById('sexo').addEventListener('change', classificarAtrioEsquerdo);
 });
