@@ -1,0 +1,14 @@
+
+.changed-value {
+  background-color: #fff3f3;
+  border-color: #ff4040 !important;
+  color: #ff4040;
+}
+
+.input-group {
+  margin-bottom: 1rem;
+}
+
+.form-container {
+  padding: 1rem;
+}
