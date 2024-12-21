@@ -107,10 +107,16 @@ function classificarVentriculoEsquerdo() {
     const diamDiast = parseFloat(document.getElementById('diam_diast_final').value) || 0;
     const diamSist = parseFloat(document.getElementById('diam_sist_final').value) || 0;
     const sexo = document.getElementById('sexo').value;
-    const classificacaoVEDiv = document.getElementById('analise_ve');
+    const classificacaoVEDiastDiv = document.getElementById('classificacao_ve_diast');
+    const classificacaoVESistDiv = document.getElementById('classificacao_ve_sist');
+    const analiseDiastDiv = document.getElementById('analise_ve_diast');
+    const analiseSistDiv = document.getElementById('analise_ve_sist');
     
     if (diamDiast === 0 || diamSist === 0 || !sexo) {
-        classificacaoVEDiv.value = '';
+        classificacaoVEDiastDiv.textContent = '';
+        classificacaoVESistDiv.textContent = '';
+        analiseDiastDiv.value = '';
+        analiseSistDiv.value = '';
         return;
     }
 
@@ -119,31 +125,37 @@ function classificarVentriculoEsquerdo() {
 
     if (sexo === 'M') {
         // Classificação do diâmetro diastólico para homens
-        if (diamDiast <= 59) classificacaoDiast = 'normal';
-        else if (diamDiast <= 63) classificacaoDiast = 'discretamente aumentado';
-        else if (diamDiast <= 68) classificacaoDiast = 'moderadamente aumentado';
-        else classificacaoDiast = 'acentuadamente aumentado';
+        if (diamDiast <= 59) classificacaoDiast = 'Normal';
+        else if (diamDiast <= 63) classificacaoDiast = 'Discretamente aumentado';
+        else if (diamDiast <= 68) classificacaoDiast = 'Moderadamente aumentado';
+        else classificacaoDiast = 'Acentuadamente aumentado';
 
         // Classificação do diâmetro sistólico para homens
-        if (diamSist <= 40) classificacaoSist = 'normal';
-        else if (diamSist <= 45) classificacaoSist = 'discretamente aumentado';
-        else if (diamSist <= 50) classificacaoSist = 'moderadamente aumentado';
-        else classificacaoSist = 'acentuadamente aumentado';
+        if (diamSist <= 40) classificacaoSist = 'Normal';
+        else if (diamSist <= 45) classificacaoSist = 'Discretamente aumentado';
+        else if (diamSist <= 50) classificacaoSist = 'Moderadamente aumentado';
+        else classificacaoSist = 'Acentuadamente aumentado';
     } else if (sexo === 'F') {
         // Classificação do diâmetro diastólico para mulheres
-        if (diamDiast <= 53) classificacaoDiast = 'normal';
-        else if (diamDiast <= 57) classificacaoDiast = 'discretamente aumentado';
-        else if (diamDiast <= 62) classificacaoDiast = 'moderadamente aumentado';
-        else classificacaoDiast = 'acentuadamente aumentado';
+        if (diamDiast <= 53) classificacaoDiast = 'Normal';
+        else if (diamDiast <= 57) classificacaoDiast = 'Discretamente aumentado';
+        else if (diamDiast <= 62) classificacaoDiast = 'Moderadamente aumentado';
+        else classificacaoDiast = 'Acentuadamente aumentado';
 
         // Classificação do diâmetro sistólico para mulheres
-        if (diamSist <= 35) classificacaoSist = 'normal';
-        else if (diamSist <= 40) classificacaoSist = 'discretamente aumentado';
-        else if (diamSist <= 45) classificacaoSist = 'moderadamente aumentado';
-        else classificacaoSist = 'acentuadamente aumentado';
+        if (diamSist <= 35) classificacaoSist = 'Normal';
+        else if (diamSist <= 40) classificacaoSist = 'Discretamente aumentado';
+        else if (diamSist <= 45) classificacaoSist = 'Moderadamente aumentado';
+        else classificacaoSist = 'Acentuadamente aumentado';
     }
 
-    classificacaoVEDiv.value = `Ventrículo esquerdo com diâmetro diastólico ${classificacaoDiast} e diâmetro sistólico ${classificacaoSist}.`;
+    classificacaoVEDiastDiv.textContent = `Classificação: ${classificacaoDiast}`;
+    classificacaoVEDiastDiv.className = 'alert alert-info py-1';
+    analiseDiastDiv.value = `Diâmetro diastólico do ventrículo esquerdo ${classificacaoDiast.toLowerCase()}.`;
+
+    classificacaoVESistDiv.textContent = `Classificação: ${classificacaoSist}`;
+    classificacaoVESistDiv.className = 'alert alert-info py-1';
+    analiseSistDiv.value = `Diâmetro sistólico do ventrículo esquerdo ${classificacaoSist.toLowerCase()}.`;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
