@@ -6,30 +6,40 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from models import db, Doctor, Template, Report
 
-# Configurar logging
-logging.basicConfig(level=logging.INFO)
+# Configurar logging detalhado
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+# Configuração detalhada do banco de dados
+database_url = os.environ.get('DATABASE_URL')
+if not database_url:
+    logger.error("DATABASE_URL não está definida nas variáveis de ambiente")
+    raise ValueError("DATABASE_URL é obrigatória")
+
+logger.info("Inicializando aplicação com configurações...")
+logger.info(f"Database URL: {database_url}")
+
 # Configuração básica
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(32))
 app.config['WTF_CSRF_ENABLED'] = True
-app.config['WTF_CSRF_CHECK_DEFAULT'] = False  # Don't check CSRF for all routes by default
+app.config['WTF_CSRF_CHECK_DEFAULT'] = False
 
-logger.info("Inicializando aplicação com configurações...")
-logger.info(f"Database URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
-
-# Inicializar extensões
+# Inicializar extensões com tratamento de erro detalhado
 try:
+    logger.info("Inicializando extensões do Flask...")
     db.init_app(app)
     csrf = CSRFProtect()
     csrf.init_app(app)
     logger.info("Extensões inicializadas com sucesso")
 except Exception as e:
-    logger.error(f"Erro ao inicializar extensões: {e}")
+    logger.error(f"Erro crítico ao inicializar extensões: {str(e)}", exc_info=True)
     raise
 
 @app.route('/')
@@ -41,7 +51,7 @@ def index():
         logger.info(f"Encontrados {len(doctors)} médicos e {len(templates)} templates")
         return render_template('index.html', doctors=doctors, templates=templates)
     except Exception as e:
-        logger.error(f"Erro ao carregar página inicial: {e}")
+        logger.error(f"Erro ao carregar página inicial: {str(e)}", exc_info=True)
         return "Erro ao conectar ao banco de dados", 500
 
 @app.route('/doctors')
@@ -187,9 +197,10 @@ def add_csrf_header(response):
 if __name__ == '__main__':
     with app.app_context():
         try:
+            logger.info("Tentando criar tabelas do banco de dados...")
             db.create_all()
             logger.info("Tabelas do banco de dados criadas com sucesso")
         except Exception as e:
-            logger.error(f"Erro ao criar tabelas do banco de dados: {e}")
+            logger.error(f"Erro ao criar tabelas do banco de dados: {e}", exc_info=True)
             raise
     app.run(host='0.0.0.0', port=3000, debug=True)
