@@ -105,10 +105,17 @@ function classificarAtrioEsquerdo() {
 
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('input[type="number"]');
+    const atrioInput = document.getElementById('atrio');
+    let originalValue = atrioInput.value;
+    
     inputs.forEach(input => {
         input.addEventListener('input', () => {
             calcularResultados();
             classificarAtrioEsquerdo();
+            
+            if (input.id === 'atrio' && input.value !== originalValue) {
+                input.style.color = 'red';
+            }
         });
     });
 
