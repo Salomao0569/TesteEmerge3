@@ -1,4 +1,3 @@
-
 function calcularMassaVE() {
     const DDVE = Number(document.getElementById('diam_diast_final').value);
     const PPVE = Number(document.getElementById('esp_diast_ppve').value);
@@ -46,10 +45,29 @@ function calcularResultados() {
     if (volumeDiastFinal > 0 && volumeSistFinal > 0) {
         const volumeEjetado = volumeDiastFinal - volumeSistFinal;
         document.getElementById('print_volume_ejetado').textContent = volumeEjetado + ' mL';
-        
-        // Fração de Ejeção
-        const fracaoEjecao = Math.round((volumeEjetado / volumeDiastFinal) * 100);
+    
+        const fracaoEjecao = Math.round((volumeEjetado/volumeDiastFinal) * 100);
         document.getElementById('print_fracao_ejecao').textContent = fracaoEjecao + ' %';
+    
+        const sexo = document.getElementById('sexo').value;
+        const analiseDiv = document.getElementById('analise_fracao_ejecao');
+    
+        let classificacao = '';
+        if (sexo === 'M') {
+            if (fracaoEjecao >= 52 && fracaoEjecao <= 72) classificacao = 'normal';
+            else if (fracaoEjecao >= 41 && fracaoEjecao < 52) classificacao = 'disfunção discreta';
+            else if (fracaoEjecao >= 30 && fracaoEjecao < 41) classificacao = 'disfunção moderada';
+            else if (fracaoEjecao < 30) classificacao = 'disfunção grave';
+        } else if (sexo === 'F') {
+            if (fracaoEjecao >= 54 && fracaoEjecao <= 74) classificacao = 'normal';
+            else if (fracaoEjecao >= 41 && fracaoEjecao < 54) classificacao = 'disfunção discreta';
+            else if (fracaoEjecao >= 30 && fracaoEjecao < 41) classificacao = 'disfunção moderada';
+            else if (fracaoEjecao < 30) classificacao = 'disfunção grave';
+        }
+    
+        if (classificacao) {
+            analiseDiv.value = `Fração de ejeção do ventrículo esquerdo com ${classificacao}.`;
+        }
     }
 
     // Percentual de Encurtamento
