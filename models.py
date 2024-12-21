@@ -1,16 +1,17 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
 from datetime import datetime
 
 db = SQLAlchemy()
 
 class Doctor(db.Model):
+    __tablename__ = 'doctor'
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(100), nullable=False)
     crm = db.Column(db.String(20), nullable=False, unique=True)
     rqe = db.Column(db.String(20))
 
     reports = db.relationship('Report', backref='doctor', lazy=True)
+    templates = db.relationship('Template', backref='doctor', lazy=True)
 
     def __repr__(self):
         return f'<Doctor {self.full_name}>'
@@ -24,13 +25,13 @@ class Doctor(db.Model):
         }
 
 class Template(db.Model):
+    __tablename__ = 'template'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50), nullable=False)  # 'laudo', 'normal', 'alterado', 'conclusao'
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'))
     order = db.Column(db.Integer, default=0)  # Para ordenação das frases
-    doctor = db.relationship('Doctor', backref='templates')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -38,23 +39,16 @@ class Template(db.Model):
         return f'<Template {self.name}>'
 
     def to_dict(self):
-        doctor_data = None
-        if self.doctor:
-            doctor_data = {
-                'id': self.doctor.id,
-                'full_name': self.doctor.full_name,
-                'crm': self.doctor.crm,
-                'rqe': self.doctor.rqe
-            }
         return {
             'id': self.id,
             'name': self.name,
             'content': self.content,
             'category': self.category,
-            'doctor': doctor_data
+            'doctor': self.doctor.to_dict() if self.doctor else None
         }
 
 class Report(db.Model):
+    __tablename__ = 'report'
     id = db.Column(db.Integer, primary_key=True)
     patient_name = db.Column(db.String(100), nullable=False)
     patient_birthdate = db.Column(db.Date)

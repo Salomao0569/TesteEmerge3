@@ -1,9 +1,14 @@
 import os
+import logging
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from models import db, Doctor, Template, Report
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -14,19 +19,29 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(32))
 app.config['WTF_CSRF_ENABLED'] = True
 app.config['WTF_CSRF_CHECK_DEFAULT'] = False  # Don't check CSRF for all routes by default
 
+logger.info("Inicializando aplicação com configurações...")
+logger.info(f"Database URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
+
 # Inicializar extensões
-db.init_app(app)
-csrf = CSRFProtect()
-csrf.init_app(app)
+try:
+    db.init_app(app)
+    csrf = CSRFProtect()
+    csrf.init_app(app)
+    logger.info("Extensões inicializadas com sucesso")
+except Exception as e:
+    logger.error(f"Erro ao inicializar extensões: {e}")
+    raise
 
 @app.route('/')
 def index():
     try:
+        logger.info("Acessando rota principal")
         doctors = Doctor.query.all()
         templates = Template.query.all()
+        logger.info(f"Encontrados {len(doctors)} médicos e {len(templates)} templates")
         return render_template('index.html', doctors=doctors, templates=templates)
     except Exception as e:
-        print(f"Erro ao carregar página inicial: {e}")
+        logger.error(f"Erro ao carregar página inicial: {e}")
         return "Erro ao conectar ao banco de dados", 500
 
 @app.route('/doctors')
@@ -171,5 +186,10 @@ def add_csrf_header(response):
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
+            logger.info("Tabelas do banco de dados criadas com sucesso")
+        except Exception as e:
+            logger.error(f"Erro ao criar tabelas do banco de dados: {e}")
+            raise
     app.run(host='0.0.0.0', port=3000, debug=True)
