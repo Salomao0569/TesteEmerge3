@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medidas da Aorta</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 10px;
+            background-color: #f5f7fa;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: #2c5282;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 2px;
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .tables-wrapper {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .table-section {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .gender-header {
+            background: #4a5568;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: #edf2f7;
+            padding: 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        td {
+            padding: 8px 4px;
+            text-align: center;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .segment-name {
+            text-align: left;
+            padding-left: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .normal-value { background: #ebf8ff; }
+        .discreto-value { background: #f0fff4; }
+        .moderado-value { background: #fffff0; }
+        .importante-value { background: #fff5f5; }
+
+        @media screen and (max-width: 768px) {
+            .tables-wrapper {
+                flex-direction: column;
+            }
+            
+            .table-section {
+                margin-bottom: 10px;
+            }
+            
+            td, th {
+                padding: 6px 4px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Medidas da Aorta</h1>
+        </div>
+        
+        <div class="tables-wrapper">
+            <!-- Tabela Homens -->
+            <div class="table-section">
+                <div class="gender-header">Valores para Homens</div>
+                <table>
+                    <tr>
+                        <th class="segment-name">Segmento</th>
+                        <th>Normal</th>
+                        <th>Discreto</th>
+                        <th>Moderado</th>
+                        <th>Import.</th>
+                    </tr>
+                    <tr>
+                        <td class="segment-name">Anel aórtico</td>
+                        <td class="normal-value">23-29</td>
+                        <td class="discreto-value">30-33</td>
+                        <td class="moderado-value">34-37</td>
+                        <td class="importante-value">>37</td>
+                    </tr>
+                    <tr>
+                        <td class="segment-name">Raiz da aorta</td>
+                        <td class="normal-value">31-37</td>
+                        <td class="discreto-value">37-40</td>
+                        <td class="moderado-value">40-43</td>
+                        <td class="importante-value">>44</td>
+                    </tr>
+                    <tr>
+                        <td class="segment-name">Junção sinotubular</td>
+                        <td class="normal-value">26-32</td>
+                        <td class="discreto-value">33-36</td>
+                        <td class="moderado-value">36-39</td>
+                        <td class="importante-value">>40</td>
+                    </tr>
+                    <tr>
+                        <td class="segment-name">Aorta ascendente</td>
+                        <td class="normal-value">26-34</td>
+                        <td class="discreto-value">35-39</td>
+                        <td class="moderado-value">40-43</td>
+                        <td class="importante-value">>44</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Tabela Mulheres -->
+            <div class="table-section">
+                <div class="gender-header">Valores para Mulheres</div>
+                <table>
+                    <tr>
+                        <th class="segment-name">Segmento</th>
+                        <th>Normal</th>
+                        <th>Discreto</th>
+                        <th>Moderado</th>
+                        <th>Import.</th>
+                    </tr>
+                    <tr>
+                        <td class="segment-name">Anel aórtico</td>
+                        <td class="normal-value">21-25</td>
+                        <td class="discreto-value">26-29</td>
+                        <td class="moderado-value">29-32</td>
+                        <td class="importante-value">>32</td>
+                    </tr>
+                    <tr>
+                        <td class="segment-name">Raiz da aorta</td>
+                        <td class="normal-value">27-33</td>
+                        <td class="discreto-value">34-37</td>
+                        <td class="moderado-value">37-40</td>
+                        <td class="importante-value">>40</td>
+                    </tr>
+                    <tr>
+                        <td class="segment-name">Junção sinotubular</td>
+                        <td class="normal-value">23-29</td>
+                        <td class="discreto-value">30-33</td>
+                        <td class="moderado-value">34-37</td>
+                        <td class="importante-value">>38</td>
+                    </tr>
+                    <tr>
+                        <td class="segment-name">Aorta ascendente</td>
+                        <td class="normal-value">23-31</td>
+                        <td class="discreto-value">32-36</td>
+                        <td class="moderado-value">37-41</td>
+                        <td class="importante-value">>42</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

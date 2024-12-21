@@ -68,6 +68,88 @@ function calcularVolumeSistolicoFinal(diametro) {
     return Math.round((7 / (2.4 + diametroCm)) * Math.pow(diametroCm, 3));
 }
 
+function classificarAorta(valor, sexo, segmento) {
+    if (!valor || !sexo || !segmento) return '';
+
+    const referencias = {
+        'M': {
+            'anel': {
+                normal: [23, 29],
+                discreto: [30, 33],
+                moderado: [34, 37],
+                importante: 37
+            },
+            'raiz': {
+                normal: [31, 37],
+                discreto: [37, 40],
+                moderado: [40, 43],
+                importante: 44
+            },
+            'juncao': {
+                normal: [26, 32],
+                discreto: [33, 36],
+                moderado: [36, 39],
+                importante: 40
+            },
+            'ascendente': {
+                normal: [26, 34],
+                discreto: [35, 39],
+                moderado: [40, 43],
+                importante: 44
+            }
+        },
+        'F': {
+            'anel': {
+                normal: [21, 25],
+                discreto: [26, 29],
+                moderado: [29, 32],
+                importante: 32
+            },
+            'raiz': {
+                normal: [27, 33],
+                discreto: [34, 37],
+                moderado: [37, 40],
+                importante: 40
+            },
+            'juncao': {
+                normal: [23, 29],
+                discreto: [30, 33],
+                moderado: [34, 37],
+                importante: 38
+            },
+            'ascendente': {
+                normal: [23, 31],
+                discreto: [32, 36],
+                moderado: [37, 41],
+                importante: 42
+            }
+        }
+    };
+
+    const ref = referencias[sexo][segmento];
+    if (!ref) return '';
+
+    let classificacao = '';
+    if (valor <= ref.normal[1]) {
+        classificacao = 'normal';
+    } else if (valor <= ref.discreto[1]) {
+        classificacao = 'discretamente dilatada';
+    } else if (valor <= ref.moderado[1]) {
+        classificacao = 'moderadamente dilatada';
+    } else if (valor > ref.importante) {
+        classificacao = 'importante dilatação';
+    }
+
+    const segmentoNomes = {
+        'anel': 'Anel aórtico',
+        'raiz': 'Raiz da aorta',
+        'juncao': 'Junção sinotubular',
+        'ascendente': 'Aorta ascendente'
+    };
+
+    return classificacao ? `${segmentoNomes[segmento]} ${classificacao}.` : '';
+}
+
 function calcularResultados() {
     // Obter elementos do DOM
     const elementos = {
@@ -89,7 +171,12 @@ function calcularResultados() {
         printIndiceMassa: document.getElementById('print_indice_massa'),
         classificacaoFe: document.getElementById('classificacao_fe'),
         classificacaoAe: document.getElementById('classificacao_ae'),
-        sexo: document.getElementById('sexo')
+        sexo: document.getElementById('sexo'),
+        aorta: document.getElementById('aorta'), // Added
+        aortaAsc: document.getElementById('aorta_ascendente'), // Added
+        classificacaoAorta: document.getElementById('classificacao_aorta'), // Added
+        classificacaoAortaAsc: document.getElementById('classificacao_aorta_ascendente') // Added
+
     };
 
     // Verificar elementos essenciais
@@ -106,6 +193,9 @@ function calcularResultados() {
     const diamSistFinal = getElementValue(elementos.diamSistFinal);
     const espDiastSepto = getElementValue(elementos.espDiastSepto);
     const espDiastPPVE = getElementValue(elementos.espDiastPPVE);
+    const aorta = getElementValue(elementos.aorta); // Added
+    const aortaAsc = getElementValue(elementos.aortaAsc); // Added
+
 
     // Classificação do Átrio Esquerdo
     if (atrio > 0 && elementos.classificacaoAe && elementos.sexo) {
@@ -190,6 +280,19 @@ function calcularResultados() {
             const indiceMassa = Math.round((massaVE / superficie) * 10) / 10;
             setElementText(elementos.printIndiceMassa, `${indiceMassa} g/m²`);
         }
+    }
+
+    // Classificação da Aorta
+    if (aorta > 0 && elementos.classificacaoAorta && elementos.sexo) {
+        const sexo = elementos.sexo.value;
+        const classificacaoRaiz = classificarAorta(aorta, sexo, 'raiz');
+        setElementText(elementos.classificacaoAorta, classificacaoRaiz);
+    }
+
+    if (aortaAsc > 0 && elementos.classificacaoAortaAsc && elementos.sexo) {
+        const sexo = elementos.sexo.value;
+        const classificacaoAsc = classificarAorta(aortaAsc, sexo, 'ascendente');
+        setElementText(elementos.classificacaoAortaAsc, classificacaoAsc);
     }
 }
 
