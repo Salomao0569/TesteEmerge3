@@ -36,6 +36,26 @@ function calcularSuperficieCorporea(peso, altura) {
     return Math.round((0.007184 * Math.pow(peso, 0.425) * Math.pow(altura, 0.725)) * 100) / 100;
 }
 
+function classificarAtrioEsquerdo(valor, sexo) {
+    if (!valor || !sexo) return '';
+
+    let classificacao = '';
+
+    if (sexo === 'M') {
+        if (valor <= 40) classificacao = 'normal';
+        else if (valor > 40 && valor <= 44) classificacao = 'levemente aumentado';
+        else if (valor > 44 && valor <= 48) classificacao = 'moderadamente aumentado';
+        else classificacao = 'gravemente aumentado';
+    } else if (sexo === 'F') {
+        if (valor <= 38) classificacao = 'normal';
+        else if (valor > 38 && valor <= 42) classificacao = 'levemente aumentado';
+        else if (valor > 42 && valor <= 46) classificacao = 'moderadamente aumentado';
+        else classificacao = 'gravemente aumentado';
+    }
+
+    return classificacao ? `Átrio esquerdo ${classificacao}.` : '';
+}
+
 function calcularVolumeDiastolicoFinal(diametro) {
     // Fórmula de Teichholz modificada
     const diametroCm = diametro / 10;
@@ -53,6 +73,7 @@ function calcularResultados() {
     const elementos = {
         peso: document.getElementById('peso'),
         altura: document.getElementById('altura'),
+        atrio: document.getElementById('atrio'),
         diamDiastFinal: document.getElementById('diam_diast_final'),
         diamSistFinal: document.getElementById('diam_sist_final'),
         espDiastSepto: document.getElementById('esp_diast_septo'),
@@ -67,6 +88,7 @@ function calcularResultados() {
         printMassaVE: document.getElementById('print_massa_ve'),
         printIndiceMassa: document.getElementById('print_indice_massa'),
         classificacaoFe: document.getElementById('classificacao_fe'),
+        classificacaoAe: document.getElementById('classificacao_ae'),
         sexo: document.getElementById('sexo')
     };
 
@@ -79,10 +101,17 @@ function calcularResultados() {
     // Obter valores
     const peso = getElementValue(elementos.peso);
     const altura = getElementValue(elementos.altura);
+    const atrio = getElementValue(elementos.atrio);
     const diamDiastFinal = getElementValue(elementos.diamDiastFinal);
     const diamSistFinal = getElementValue(elementos.diamSistFinal);
     const espDiastSepto = getElementValue(elementos.espDiastSepto);
     const espDiastPPVE = getElementValue(elementos.espDiastPPVE);
+
+    // Classificação do Átrio Esquerdo
+    if (atrio > 0 && elementos.classificacaoAe && elementos.sexo) {
+        const classificacaoAe = classificarAtrioEsquerdo(atrio, elementos.sexo.value);
+        setElementText(elementos.classificacaoAe, classificacaoAe);
+    }
 
     // Superfície corpórea (DuBois)
     if (peso > 0 && altura > 0) {
