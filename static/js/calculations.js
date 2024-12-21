@@ -2,7 +2,7 @@ function calcularMassaVE() {
     const DDVE = Number(document.getElementById('diam_diast_final').value);
     const PPVE = Number(document.getElementById('esp_diast_ppve').value);
     const SIV = Number(document.getElementById('esp_diast_septo').value);
-    
+
     if (DDVE > 0 && PPVE > 0 && SIV > 0) {
         const DDVEcm = DDVE / 10;
         const PPVEcm = PPVE / 10;
@@ -41,17 +41,17 @@ function calcularResultados() {
         document.getElementById('print_volume_sist_final').textContent = volumeSistFinal + ' mL';
     }
 
-    // Volume Ejetado
+    // Volume Ejetado e Fração de Ejeção
     if (volumeDiastFinal > 0 && volumeSistFinal > 0) {
         const volumeEjetado = volumeDiastFinal - volumeSistFinal;
         document.getElementById('print_volume_ejetado').textContent = volumeEjetado + ' mL';
-    
+
         const fracaoEjecao = Math.round((volumeEjetado/volumeDiastFinal) * 100);
         document.getElementById('print_fracao_ejecao').textContent = fracaoEjecao + ' %';
-    
+
         const sexo = document.getElementById('sexo').value;
         const analiseDiv = document.getElementById('analise_fracao_ejecao');
-    
+
         let classificacao = '';
         if (sexo === 'M') {
             if (fracaoEjecao >= 52 && fracaoEjecao <= 72) classificacao = 'normal';
@@ -64,7 +64,7 @@ function calcularResultados() {
             else if (fracaoEjecao >= 30 && fracaoEjecao < 41) classificacao = 'disfunção moderada';
             else if (fracaoEjecao < 30) classificacao = 'disfunção grave';
         }
-    
+
         if (classificacao) {
             analiseDiv.value = `Fração de ejeção do ventrículo esquerdo com ${classificacao}.`;
         }
@@ -98,7 +98,7 @@ function classificarAtrioEsquerdo() {
     const atrio = parseFloat(document.getElementById('atrio').value) || 0;
     const sexo = document.getElementById('sexo').value;
     const classificacaoDiv = document.getElementById('classificacao_ae');
-    
+
     if (atrio === 0 || !sexo) {
         classificacaoDiv.textContent = '';
         return;
@@ -129,7 +129,7 @@ function classificarVentriculoEsquerdo() {
     const classificacaoVESistDiv = document.getElementById('classificacao_ve_sist');
     const analiseDiastDiv = document.getElementById('analise_ve_diast');
     const analiseSistDiv = document.getElementById('analise_ve_sist');
-    
+
     if (diamDiast === 0 || diamSist === 0 || !sexo) {
         classificacaoVEDiastDiv.textContent = '';
         classificacaoVESistDiv.textContent = '';
@@ -142,25 +142,21 @@ function classificarVentriculoEsquerdo() {
     let classificacaoSist = '';
 
     if (sexo === 'M') {
-        // Classificação do diâmetro diastólico para homens
         if (diamDiast <= 59) classificacaoDiast = 'Normal';
         else if (diamDiast <= 63) classificacaoDiast = 'Discretamente aumentado';
         else if (diamDiast <= 68) classificacaoDiast = 'Moderadamente aumentado';
         else classificacaoDiast = 'Acentuadamente aumentado';
 
-        // Classificação do diâmetro sistólico para homens
         if (diamSist <= 40) classificacaoSist = 'Normal';
         else if (diamSist <= 45) classificacaoSist = 'Discretamente aumentado';
         else if (diamSist <= 50) classificacaoSist = 'Moderadamente aumentado';
         else classificacaoSist = 'Acentuadamente aumentado';
     } else if (sexo === 'F') {
-        // Classificação do diâmetro diastólico para mulheres
         if (diamDiast <= 53) classificacaoDiast = 'Normal';
         else if (diamDiast <= 57) classificacaoDiast = 'Discretamente aumentado';
         else if (diamDiast <= 62) classificacaoDiast = 'Moderadamente aumentado';
         else classificacaoDiast = 'Acentuadamente aumentado';
 
-        // Classificação do diâmetro sistólico para mulheres
         if (diamSist <= 35) classificacaoSist = 'Normal';
         else if (diamSist <= 40) classificacaoSist = 'Discretamente aumentado';
         else if (diamSist <= 45) classificacaoSist = 'Moderadamente aumentado';
@@ -176,18 +172,15 @@ function classificarVentriculoEsquerdo() {
     analiseSistDiv.value = `Diâmetro sistólico do ventrículo esquerdo ${classificacaoSist.toLowerCase()}.`;
 }
 
+// Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('input[type="number"]');
-    
+
     inputs.forEach(input => {
         input.addEventListener('input', () => {
             calcularResultados();
             classificarAtrioEsquerdo();
             classificarVentriculoEsquerdo();
-            
-            if (input.id === 'atrio' && input.value !== originalValue) {
-                input.style.color = 'red';
-            }
         });
     });
 
@@ -195,23 +188,4 @@ document.addEventListener('DOMContentLoaded', function() {
         classificarAtrioEsquerdo();
         classificarVentriculoEsquerdo();
     });
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    const inputs = document.querySelectorAll('input[type="number"]');
-    const atrioInput = document.getElementById('atrio');
-    let originalValue = atrioInput.value;
-    
-    inputs.forEach(input => {
-        input.addEventListener('input', () => {
-            calcularResultados();
-            classificarAtrioEsquerdo();
-            
-            if (input.id === 'atrio' && input.value !== originalValue) {
-                input.style.color = 'red';
-            }
-        });
-    });
-
-    document.getElementById('sexo').addEventListener('change', classificarAtrioEsquerdo);
 });
