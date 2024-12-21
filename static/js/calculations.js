@@ -1,12 +1,15 @@
 function calcularMassaVE() {
-    const DDVE = parseFloat(document.getElementById('diam_diast_final')?.value) || 0;
-    const PPVE = parseFloat(document.getElementById('esp_diast_ppve')?.value) || 0;
-    const SIV = parseFloat(document.getElementById('esp_diast_septo')?.value) || 0;
+    const DDVE = Number(document.getElementById('diam_diast_final').value);
+    const PPVE = Number(document.getElementById('esp_diast_ppve').value);
+    const SIV = Number(document.getElementById('esp_diast_septo').value);
 
     if (DDVE > 0 && PPVE > 0 && SIV > 0) {
+        // Conversão para centímetros
         const DDVEcm = DDVE / 10;
         const PPVEcm = PPVE / 10;
         const SIVcm = SIV / 10;
+
+        // Fórmula de Devereux modificada
         return Math.round(0.8 * (1.04 * Math.pow((DDVEcm + PPVEcm + SIVcm), 3) - Math.pow(DDVEcm, 3)) + 0.6);
     }
     return 0;
@@ -26,6 +29,23 @@ function setElementValue(element, value) {
 
 function getElementValue(element) {
     return element ? (parseFloat(element.value) || 0) : 0;
+}
+
+function calcularSuperficieCorporea(peso, altura) {
+    // Fórmula de DuBois
+    return Math.round((0.007184 * Math.pow(peso, 0.425) * Math.pow(altura, 0.725)) * 100) / 100;
+}
+
+function calcularVolumeDiastolicoFinal(diametro) {
+    // Fórmula de Teichholz modificada
+    const diametroCm = diametro / 10;
+    return Math.round((7 / (2.4 + diametroCm)) * Math.pow(diametroCm, 3));
+}
+
+function calcularVolumeSistolicoFinal(diametro) {
+    // Fórmula de Teichholz modificada
+    const diametroCm = diametro / 10;
+    return Math.round((7 / (2.4 + diametroCm)) * Math.pow(diametroCm, 3));
 }
 
 function calcularResultados() {
@@ -66,32 +86,34 @@ function calcularResultados() {
 
     // Superfície corpórea (DuBois)
     if (peso > 0 && altura > 0) {
-        const superficie = Math.round((0.007184 * Math.pow(peso, 0.425) * Math.pow(altura, 0.725)) * 100) / 100;
+        const superficie = calcularSuperficieCorporea(peso, altura);
         setElementValue(elementos.superficie, superficie.toFixed(2));
     }
 
     // Volume Diastólico Final (Teichholz)
     let volumeDiastFinal = 0;
     if (diamDiastFinal > 0) {
-        volumeDiastFinal = Math.round(7 * Math.pow(diamDiastFinal / 10, 3) / (2.4 + diamDiastFinal / 10));
+        volumeDiastFinal = calcularVolumeDiastolicoFinal(diamDiastFinal);
         setElementText(elementos.printVolumeDiastFinal, `${volumeDiastFinal} mL`);
     }
 
-    // Volume Sistólico Final
+    // Volume Sistólico Final (Teichholz)
     let volumeSistFinal = 0;
     if (diamSistFinal > 0) {
-        volumeSistFinal = Math.round(7 * Math.pow(diamSistFinal / 10, 3) / (2.4 + diamSistFinal / 10));
+        volumeSistFinal = calcularVolumeSistolicoFinal(diamSistFinal);
         setElementText(elementos.printVolumeSistFinal, `${volumeSistFinal} mL`);
     }
 
-    // Cálculos da fração de ejeção
+    // Cálculos da fração de ejeção e volume ejetado
     if (volumeDiastFinal > 0 && volumeSistFinal > 0) {
         const volumeEjetado = volumeDiastFinal - volumeSistFinal;
         setElementText(elementos.printVolumeEjetado, `${volumeEjetado} mL`);
 
+        // Fração de Ejeção (%)
         const fracaoEjecao = Math.round((volumeEjetado / volumeDiastFinal) * 100);
         setElementText(elementos.printFracaoEjecao, `${fracaoEjecao} %`);
 
+        // Classificação da Fração de Ejeção
         if (elementos.classificacaoFe && elementos.sexo) {
             const sexo = elementos.sexo.value;
             let classificacao = '';
@@ -116,20 +138,24 @@ function calcularResultados() {
         }
     }
 
-    // Outros cálculos
+    // Percentual de Encurtamento
     if (diamDiastFinal > 0 && diamSistFinal > 0) {
         const percentEncurt = Math.round(((diamDiastFinal - diamSistFinal) / diamDiastFinal) * 100);
         setElementText(elementos.printPercentEncurt, `${percentEncurt} %`);
     }
 
+    // Espessura Relativa
     if (diamDiastFinal > 0 && espDiastPPVE > 0) {
+        // Fórmula corrigida: (2 × PPVE) / DDVE
         const espessuraRelativa = Math.round((2 * espDiastPPVE / diamDiastFinal) * 100) / 100;
         setElementText(elementos.printEspRelativa, espessuraRelativa.toFixed(2));
     }
 
+    // Massa do VE e Índice de Massa
     const massaVE = calcularMassaVE();
     if (massaVE > 0) {
         setElementText(elementos.printMassaVE, `${massaVE} g`);
+
         const superficie = parseFloat(elementos.superficie?.value || 0);
         if (superficie > 0) {
             const indiceMassa = Math.round((massaVE / superficie) * 10) / 10;
