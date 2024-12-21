@@ -1,4 +1,3 @@
-
 function calcularMassaVE() {
     const DDVE = parseFloat(document.getElementById('diam_diast_final')?.value) || 0;
     const PPVE = parseFloat(document.getElementById('esp_diast_ppve')?.value) || 0;
@@ -13,69 +12,90 @@ function calcularMassaVE() {
     return 0;
 }
 
-function calcularResultados() {
-    const getElement = (id) => document.getElementById(id);
-    const getValue = (element) => element ? parseFloat(element.value) || 0 : 0;
-    const setText = (element, text) => { if (element) element.textContent = text };
+function setElementText(element, text) {
+    if (element) {
+        element.textContent = text;
+    }
+}
 
+function setElementValue(element, value) {
+    if (element) {
+        element.value = value;
+    }
+}
+
+function getElementValue(element) {
+    return element ? (parseFloat(element.value) || 0) : 0;
+}
+
+function calcularResultados() {
+    // Obter elementos do DOM
     const elementos = {
-        peso: getElement('peso'),
-        altura: getElement('altura'),
-        diamDiastFinal: getElement('diam_diast_final'),
-        diamSistFinal: getElement('diam_sist_final'),
-        espDiastSepto: getElement('esp_diast_septo'),
-        espDiastPPVE: getElement('esp_diast_ppve'),
-        superficie: getElement('superficie'),
-        printVolumeDiastFinal: getElement('print_volume_diast_final'),
-        printVolumeSistFinal: getElement('print_volume_sist_final'),
-        printVolumeEjetado: getElement('print_volume_ejetado'),
-        printFracaoEjecao: getElement('print_fracao_ejecao'),
-        printPercentEncurt: getElement('print_percent_encurt'),
-        printEspRelativa: getElement('print_esp_relativa'),
-        printMassaVE: getElement('print_massa_ve'),
-        printIndiceMassa: getElement('print_indice_massa'),
-        analiseFeDiv: getElement('analise_fracao_ejecao'),
-        sexo: getElement('sexo')
+        peso: document.getElementById('peso'),
+        altura: document.getElementById('altura'),
+        diamDiastFinal: document.getElementById('diam_diast_final'),
+        diamSistFinal: document.getElementById('diam_sist_final'),
+        espDiastSepto: document.getElementById('esp_diast_septo'),
+        espDiastPPVE: document.getElementById('esp_diast_ppve'),
+        superficie: document.getElementById('superficie'),
+        printVolumeDiastFinal: document.getElementById('print_volume_diast_final'),
+        printVolumeSistFinal: document.getElementById('print_volume_sist_final'),
+        printVolumeEjetado: document.getElementById('print_volume_ejetado'),
+        printFracaoEjecao: document.getElementById('print_fracao_ejecao'),
+        printPercentEncurt: document.getElementById('print_percent_encurt'),
+        printEspRelativa: document.getElementById('print_esp_relativa'),
+        printMassaVE: document.getElementById('print_massa_ve'),
+        printIndiceMassa: document.getElementById('print_indice_massa'),
+        classificacaoFe: document.getElementById('classificacao_fe'),
+        sexo: document.getElementById('sexo')
     };
 
-    const peso = getValue(elementos.peso);
-    const altura = getValue(elementos.altura);
-    const diamDiastFinal = getValue(elementos.diamDiastFinal);
-    const diamSistFinal = getValue(elementos.diamSistFinal);
-    const espDiastSepto = getValue(elementos.espDiastSepto);
-    const espDiastPPVE = getValue(elementos.espDiastPPVE);
+    // Verificar elementos essenciais
+    if (!elementos.diamDiastFinal || !elementos.diamSistFinal) {
+        console.error('Elementos essenciais não encontrados');
+        return;
+    }
+
+    // Obter valores
+    const peso = getElementValue(elementos.peso);
+    const altura = getElementValue(elementos.altura);
+    const diamDiastFinal = getElementValue(elementos.diamDiastFinal);
+    const diamSistFinal = getElementValue(elementos.diamSistFinal);
+    const espDiastSepto = getElementValue(elementos.espDiastSepto);
+    const espDiastPPVE = getElementValue(elementos.espDiastPPVE);
 
     // Superfície corpórea (DuBois)
     if (peso > 0 && altura > 0) {
         const superficie = Math.round((0.007184 * Math.pow(peso, 0.425) * Math.pow(altura, 0.725)) * 100) / 100;
-        if (elementos.superficie) elementos.superficie.value = superficie.toFixed(2);
+        setElementValue(elementos.superficie, superficie.toFixed(2));
     }
 
     // Volume Diastólico Final (Teichholz)
     let volumeDiastFinal = 0;
     if (diamDiastFinal > 0) {
         volumeDiastFinal = Math.round(7 * Math.pow(diamDiastFinal / 10, 3) / (2.4 + diamDiastFinal / 10));
-        setText(elementos.printVolumeDiastFinal, volumeDiastFinal + ' mL');
+        setElementText(elementos.printVolumeDiastFinal, `${volumeDiastFinal} mL`);
     }
 
     // Volume Sistólico Final
     let volumeSistFinal = 0;
     if (diamSistFinal > 0) {
         volumeSistFinal = Math.round(7 * Math.pow(diamSistFinal / 10, 3) / (2.4 + diamSistFinal / 10));
-        setText(elementos.printVolumeSistFinal, volumeSistFinal + ' mL');
+        setElementText(elementos.printVolumeSistFinal, `${volumeSistFinal} mL`);
     }
 
-    // Cálculos da análise
-    if (volumeDiastFinal > 0 && volumeSistFinal > 0 && elementos.analiseFeDiv) {
+    // Cálculos da fração de ejeção
+    if (volumeDiastFinal > 0 && volumeSistFinal > 0) {
         const volumeEjetado = volumeDiastFinal - volumeSistFinal;
-        setText(elementos.printVolumeEjetado, volumeEjetado + ' mL');
+        setElementText(elementos.printVolumeEjetado, `${volumeEjetado} mL`);
 
         const fracaoEjecao = Math.round((volumeEjetado / volumeDiastFinal) * 100);
-        setText(elementos.printFracaoEjecao, fracaoEjecao + ' %');
+        setElementText(elementos.printFracaoEjecao, `${fracaoEjecao} %`);
 
-        const sexo = elementos.sexo?.value;
-        if (sexo) {
+        if (elementos.classificacaoFe && elementos.sexo) {
+            const sexo = elementos.sexo.value;
             let classificacao = '';
+
             if (sexo === 'M') {
                 if (fracaoEjecao >= 52 && fracaoEjecao <= 72) classificacao = 'normal';
                 else if (fracaoEjecao > 72) classificacao = 'aumentada';
@@ -91,28 +111,29 @@ function calcularResultados() {
             }
 
             if (classificacao) {
-                elementos.analiseFeDiv.value = `Fração de ejeção do ventrículo esquerdo ${classificacao}.`;
-                elementos.analiseFeDiv.className = 'alert alert-info py-1';
+                setElementText(elementos.classificacaoFe, `Fração de ejeção do ventrículo esquerdo ${classificacao}.`);
             }
         }
     }
 
+    // Outros cálculos
     if (diamDiastFinal > 0 && diamSistFinal > 0) {
         const percentEncurt = Math.round(((diamDiastFinal - diamSistFinal) / diamDiastFinal) * 100);
-        setText(elementos.printPercentEncurt, percentEncurt + ' %');
+        setElementText(elementos.printPercentEncurt, `${percentEncurt} %`);
     }
 
     if (diamDiastFinal > 0 && espDiastPPVE > 0) {
         const espessuraRelativa = Math.round((2 * espDiastPPVE / diamDiastFinal) * 100) / 100;
-        setText(elementos.printEspRelativa, espessuraRelativa.toFixed(2));
+        setElementText(elementos.printEspRelativa, espessuraRelativa.toFixed(2));
     }
 
     const massaVE = calcularMassaVE();
     if (massaVE > 0) {
-        setText(elementos.printMassaVE, massaVE + ' g');
-        if (elementos.superficie?.value > 0) {
-            const indiceMassa = Math.round((massaVE / parseFloat(elementos.superficie.value)) * 10) / 10;
-            setText(elementos.printIndiceMassa, indiceMassa + ' g/m²');
+        setElementText(elementos.printMassaVE, `${massaVE} g`);
+        const superficie = parseFloat(elementos.superficie?.value || 0);
+        if (superficie > 0) {
+            const indiceMassa = Math.round((massaVE / superficie) * 10) / 10;
+            setElementText(elementos.printIndiceMassa, `${indiceMassa} g/m²`);
         }
     }
 }
@@ -122,23 +143,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('input[type="number"]');
     const sexoSelect = document.getElementById('sexo');
 
-    if (inputs && sexoSelect) {
+    if (inputs.length > 0 && sexoSelect) {
         inputs.forEach(input => {
-            input.addEventListener('input', () => {
-                calcularResultados();
-                if (input.id === 'atrio') {
-                    classificarAtrioEsquerdo();
-                }
-                if (input.id === 'diam_diast_final' || input.id === 'diam_sist_final') {
-                    classificarVentriculoEsquerdo();
-                }
-            });
+            input.addEventListener('input', calcularResultados);
         });
 
-        sexoSelect.addEventListener('change', () => {
-            classificarAtrioEsquerdo();
-            classificarVentriculoEsquerdo();
-            calcularResultados();
-        });
+        sexoSelect.addEventListener('change', calcularResultados);
+    } else {
+        console.error('Elementos necessários não encontrados durante a inicialização');
     }
 });
