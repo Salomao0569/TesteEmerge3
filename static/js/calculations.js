@@ -54,19 +54,34 @@ function calcularResultados() {
 
         let classificacao = '';
         if (sexo === 'M') {
-            if (fracaoEjecao >= 52 && fracaoEjecao <= 72) classificacao = 'normal';
-            else if (fracaoEjecao >= 41 && fracaoEjecao < 52) classificacao = 'disfunção discreta';
-            else if (fracaoEjecao >= 30 && fracaoEjecao < 41) classificacao = 'disfunção moderada';
-            else if (fracaoEjecao < 30) classificacao = 'disfunção grave';
+            if (fracaoEjecao >= 52 && fracaoEjecao <= 72) {
+                classificacao = 'normal';
+            } else if (fracaoEjecao > 72) {
+                classificacao = 'aumentada';
+            } else if (fracaoEjecao >= 41 && fracaoEjecao < 52) {
+                classificacao = 'disfunção discreta';
+            } else if (fracaoEjecao >= 30 && fracaoEjecao < 41) {
+                classificacao = 'disfunção moderada';
+            } else if (fracaoEjecao < 30) {
+                classificacao = 'disfunção grave';
+            }
         } else if (sexo === 'F') {
-            if (fracaoEjecao >= 54 && fracaoEjecao <= 74) classificacao = 'normal';
-            else if (fracaoEjecao >= 41 && fracaoEjecao < 54) classificacao = 'disfunção discreta';
-            else if (fracaoEjecao >= 30 && fracaoEjecao < 41) classificacao = 'disfunção moderada';
-            else if (fracaoEjecao < 30) classificacao = 'disfunção grave';
+            if (fracaoEjecao >= 54 && fracaoEjecao <= 74) {
+                classificacao = 'normal';
+            } else if (fracaoEjecao > 74) {
+                classificacao = 'aumentada';
+            } else if (fracaoEjecao >= 41 && fracaoEjecao < 54) {
+                classificacao = 'disfunção discreta';
+            } else if (fracaoEjecao >= 30 && fracaoEjecao < 41) {
+                classificacao = 'disfunção moderada';
+            } else if (fracaoEjecao < 30) {
+                classificacao = 'disfunção grave';
+            }
         }
 
         if (classificacao) {
-            analiseDiv.value = `Fração de ejeção do ventrículo esquerdo com ${classificacao}.`;
+            analiseDiv.value = `Fração de ejeção do ventrículo esquerdo ${classificacao}.`;
+            analiseDiv.className = 'alert alert-info py-1';
         }
     }
 
