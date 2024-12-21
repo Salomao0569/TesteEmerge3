@@ -1,4 +1,140 @@
-/* Print styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 15px;
+}
+
+.card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border: none;
+}
+
+.card-header {
+    background-color: #007BFF !important;
+    color: white !important;
+    padding: 15px;
+    border-radius: 8px 8px 0 0 !important;
+    border: none;
+}
+
+.card-header h5 {
+    margin: 0;
+    font-size: 1.25em;
+    font-weight: bold;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Tabela de medidas */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.table th, 
+.table td {
+    border: none;
+    padding: 12px;
+    text-align: left;
+}
+
+.table th {
+    background-color: #007BFF;
+    color: white;
+    font-weight: bold;
+    padding: 12px;
+}
+
+.table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Campos de entrada */
+.input-field,
+.form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+    background-color: white;
+    transition: border-color 0.2s ease;
+}
+
+.input-field:focus,
+.form-control:focus {
+    border-color: #007BFF;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Resultados */
+.result,
+div[id^="print_"],
+.form-control-static {
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    background-color: #f8f9fa;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+    min-height: 37px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Classificações e alertas */
+.alert {
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 5px;
+    font-size: 0.9em;
+}
+
+.alert-info {
+    background-color: #e3f2fd;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .table th, 
+    .table td {
+        padding: 8px;
+    }
+
+    .input-field,
+    .form-control {
+        font-size: 16px; /* Melhor para dispositivos móveis */
+    }
+}
+
+/* Estilos de impressão */
 @media print {
     body {
         margin: 10mm;
@@ -42,84 +178,22 @@
         word-wrap: break-word;
         overflow: hidden;
     }
-}
+    .card {
+        box-shadow: none;
+    }
 
-/* Reset de estilos para tabelas */
-.table {
-    width: 100%;
-    margin-bottom: 0;
-    border: none !important;
-    border-collapse: collapse;
-}
-
-.table th,
-.table td,
-.table thead th,
-.table tbody td,
-.table tr {
-    border: none !important;
-    padding: 0.75rem;
-    background: none !important;
-}
-
-/* Remove qualquer linha ou borda */
-.table * {
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* Células de resultado */
-.table div[id^="print_"],
-.form-control-static {
-    min-height: 38px;
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    background-color: #f8f9fa;
-    border: 1px solid #ced4da !important;
-    border-radius: 0.25rem;
-    margin: 0;
-}
-
-/* Estilos para inputs */
-.table input.form-control {
-    width: 100%;
-    height: 38px;
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: #495057;
-    background-color: #fff;
-    border: 1px solid #ced4da !important;
-    border-radius: 0.25rem;
-}
-
-/* Espaçamento entre linhas */
-.table tr:not(:last-child) td {
-    padding-bottom: 1rem;
-}
-
-.table tr:not(:first-child) td {
-    padding-top: 1rem;
-}
-
-/* Container da tabela */
-.table-responsive {
-    margin: 0;
-    padding: 0;
-}
-
-/* Remover bordas no modo impressão */
-@media print {
-    .table,
-    .table th,
-    .table td,
-    .table tr {
-        border: none !important;
+    .table th {
+        background-color: #f8f9fa !important;
+        color: #333 !important;
     }
 }
 
-/* Ajuste para célula de fração de ejeção */
+.table input.form-control {
+    padding: 0.5rem 0.375rem;
+    height: auto;
+    min-height: 36px;
+}
+
 #print_fracao_ejecao {
     margin-bottom: 0.5rem;
 }
@@ -128,41 +202,125 @@
     margin: 0;
     padding: 0.5rem;
     font-size: 0.875rem;
-    border-radius: 0.25rem;
+    line-height: 1.4;
 }
 
-/* Estilos do card */
-.card {
-    border-radius: 0.5rem;
-    border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+.dark-theme {
+    background-color: #1a1a1a !important;
+    color: #e0e0e0 !important;
 }
 
-.card-header {
-    background-color: #0d6efd;
-    border-bottom: none;
+.dark-theme .editor-area {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #404040;
+}
+
+.dark-theme .card {
+    background-color: #2d2d2d;
+    border-color: #404040;
+}
+
+.dark-theme .card-header {
+    background-color: #404040;
+    border-bottom-color: #505050;
+}
+
+.dark-theme .form-control {
+    background-color: #333;
+    border-color: #404040;
+    color: #e0e0e0;
+}
+
+.dark-theme .btn-outline-secondary {
+    color: #e0e0e0;
+    border-color: #505050;
+}
+
+.backup-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #28a745;
     color: white;
-    border-radius: calc(0.5rem - 1px) calc(0.5rem - 1px) 0 0 !important;
+    padding: 8px 16px;
+    border-radius: 4px;
+    z-index: 1000;
+    animation: fadeInOut 2s ease;
 }
 
-.card-body {
-    padding: 1.25rem;
+.calculation-feedback {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    animation: fadeInOut 1s ease;
+    z-index: 1000;
 }
 
-/* Container responsivo da tabela */
-.table-responsive {
-    margin: 0;
-    padding: 0;
+.search-highlight {
+    background-color: yellow;
 }
 
-/* Ajustes para espaçamento vertical */
-.table tr:not(:last-child) td {
-    padding-bottom: 1rem;
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(20px); }
+    50% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
 }
 
-.table tr:not(:first-child) td {
-    padding-top: 1rem;
+.save-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    animation: fadeInOut 2s ease;
+    z-index: 1000;
 }
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(20px); }
+    20% { opacity: 1; transform: translateY(0); }
+    80% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+}
+
+.calculation-cell {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.calculation-cell:hover {
+    background-color: #f8f9fa;
+}
+
+.calculation-cell::after {
+    content: attr(data-formula);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+.calculation-cell:hover::after {
+    opacity: 1;
+}
+
 
 .editor-toolbar {
     padding: 0.5rem;
@@ -294,7 +452,6 @@
     box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
 
-
 .card-body .table-responsive table {
     margin-bottom: 2rem;
     border: none; 
@@ -305,140 +462,48 @@
     height: 60px;
     border: none; 
 }
-
-.container {
-    max-width: 1200px;
-}
-
-.calculation-cell {
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.calculation-cell:hover {
-    background-color: #f8f9fa;
-}
-
-.calculation-cell::after {
-    content: attr(data-formula);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-    white-space: nowrap;
-    z-index: 1000;
-}
-
-.calculation-cell:hover::after {
-    opacity: 1;
-}
-
-.calculation-feedback {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #28a745;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 4px;
-    animation: fadeInOut 1s ease;
-    z-index: 1000;
-}
-
-.search-highlight {
-    background-color: yellow;
-}
-
-@keyframes fadeInOut {
-    0% { opacity: 0; transform: translateY(20px); }
-    50% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-20px); }
-}
-
-.save-indicator {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #28a745;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 4px;
-    animation: fadeInOut 2s ease;
-    z-index: 1000;
-}
-
-@keyframes fadeInOut {
-    0% { opacity: 0; transform: translateY(20px); }
-    20% { opacity: 1; transform: translateY(0); }
-    80% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-20px); }
-}
-
-.dark-theme {
-    background-color: #1a1a1a !important;
-    color: #e0e0e0 !important;
-}
-
-.dark-theme .editor-area {
-    background-color: #2d2d2d;
-    color: #e0e0e0;
-    border-color: #404040;
-}
-
-.dark-theme .card {
-    background-color: #2d2d2d;
-    border-color: #404040;
-}
-
-.dark-theme .card-header {
-    background-color: #404040;
-    border-bottom-color: #505050;
-}
-
-.dark-theme .form-control {
-    background-color: #333;
-    border-color: #404040;
-    color: #e0e0e0;
-}
-
-.dark-theme .btn-outline-secondary {
-    color: #e0e0e0;
-    border-color: #505050;
-}
-
-.backup-indicator {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background: #28a745;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 4px;
-    z-index: 1000;
-    animation: fadeInOut 2s ease;
-}
-
-.table input.form-control {
-    padding: 0.5rem 0.375rem;
-    height: auto;
-    min-height: 36px;
-}
-
-#print_fracao_ejecao {
-    margin-bottom: 0.5rem;
-}
-
-#classificacao_fe.alert {
-    margin: 0;
-    padding: 0.5rem;
-    font-size: 0.875rem;
-    line-height: 1.4;
+/* Print styles */
+@media print {
+    body {
+        margin: 10mm;
+        font-size: 10pt;
+        line-height: 1.3;
+        background-color: white;
+    }
+    
+    .container {
+        width: 100%;
+        max-width: 210mm;
+        margin: auto;
+        padding: 0;
+    }
+    
+    .d-print-none, 
+    .btn {
+        display: none !important;
+    }
+    
+    .card {
+        border: none;
+        margin-bottom: 15mm;
+    }
+    
+    .card-header {
+        background-color: white !important;
+        border-bottom: 2px solid #000;
+        color: #000 !important;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9pt;
+        table-layout: fixed;
+    }
+    
+    th, td {
+        padding: 3px;
+        word-wrap: break-word;
+        overflow: hidden;
+    }
 }

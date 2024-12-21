@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela de Medidas e Cálculos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .header {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        table th {
+            background-color: #007BFF;
+            color: white;
+            font-weight: bold;
+        }
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
+        .input-field {
+            width: 80%;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: center;
+            margin: 0 auto;
+            display: block;
+        }
+        .result {
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Medidas e Cálculos</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Medida</th>
+                    <th>Valor</th>
+                    <th>Cálculo</th>
+                    <th>Resultado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Átrio Esquerdo</td>
+                    <td><input type="number" class="input-field"></td>
+                    <td>Volume Diastólico Final</td>
+                    <td><span class="result"></span></td>
+                </tr>
+                <tr>
+                    <td>Aorta</td>
+                    <td><input type="number" class="input-field"></td>
+                    <td>Volume Sistólico Final</td>
+                    <td><span class="result"></span></td>
+                </tr>
+                <tr>
+                    <td>Aorta Ascendente</td>
+                    <td><input type="number" class="input-field"></td>
+                    <td>Volume Ejetado</td>
+                    <td><span class="result"></span></td>
+                </tr>
+                <tr>
+                    <td>Diâmetro Diastólico</td>
+                    <td><input type="number" class="input-field"></td>
+                    <td>Fração de Ejeção</td>
+                    <td><span class="result"></span></td>
+                </tr>
+                <tr>
+                    <td>Diâmetro Sistólico</td>
+                    <td><input type="number" class="input-field"></td>
+                    <td>Percentual de Encurtamento</td>
+                    <td><span class="result"></span></td>
+                </tr>
+                <tr>
+                    <td>Espessura do Septo</td>
+                    <td><input type="number" class="input-field"></td>
+                    <td>Espessura Relativa</td>
+                    <td><span class="result"></span></td>
+                </tr>
+                <tr>
+                    <td>Espessura PPVE</td>
+                    <td><input type="number" class="input-field"></td>
+                    <td>Massa do VE</td>
+                    <td><span class="result"></span></td>
+                </tr>
+                <tr>
+                    <td>Ventrículo Direito</td>
+                    <td><input type="number" class="input-field"></td>
+                    <td>Índice de Massa</td>
+                    <td><span class="result"></span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
