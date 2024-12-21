@@ -372,10 +372,18 @@
 .table tbody {
     border: none !important;
     border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
     padding: 0.5rem;
     vertical-align: middle;
     min-height: 60px;
     height: 60px;
+    background-image: none !important;
+}
+
+.table tr {
+    border-bottom: none !important;
 }
 
 
