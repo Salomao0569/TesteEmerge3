@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cálculos Cardíacos</title>
+    <title>Laudo de Ecocardiograma</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/css/styles.css" rel="stylesheet">
 </head>
@@ -16,14 +15,34 @@
                 <h5 class="mb-0">Identificação</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-5">
-                        <label for="peso" class="form-label">Peso (kg)</label>
-                        <input type="number" id="peso" class="form-control" step="0.1">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="nome" class="form-label">Nome do Paciente</label>
+                        <input type="text" id="nome" class="form-control" required>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <label for="dataNascimento" class="form-label">Data de Nascimento</label>
+                        <input type="date" id="dataNascimento" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sexo" class="form-label">Sexo</label>
+                        <select id="sexo" class="form-select" required>
+                            <option value="">Selecione...</option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Feminino</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dataExame" class="form-label">Data do Exame</label>
+                        <input type="date" id="dataExame" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="peso" class="form-label">Peso (kg)</label>
+                        <input type="number" id="peso" class="form-control" step="0.1" min="0" required>
+                    </div>
+                    <div class="col-md-3">
                         <label for="altura" class="form-label">Altura (cm)</label>
-                        <input type="number" id="altura" class="form-control">
+                        <input type="number" id="altura" class="form-control" min="0" required>
                     </div>
                     <div class="col-md-3">
                         <label for="superficie" class="form-label">Superfície Corpórea (m²)</label>
@@ -36,35 +55,67 @@
         <!-- Measurements Card -->
         <div class="card mb-4 shadow-sm">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Cálculos e Medidas</h5>
+                <h5 class="mb-0">Medidas e Cálculos</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Medida</th>
+                                <th>Valor</th>
+                                <th>Cálculo</th>
+                                <th>Resultado</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             <tr>
-                                <td>Diâmetro Diastólico</td>
-                                <td><input type="number" id="diam_diast_final" class="form-control" step="0.1"></td>
+                                <td>Átrio Esquerdo</td>
+                                <td><input type="number" id="atrio" class="form-control" step="0.1"></td>
                                 <td>Volume Diastólico Final</td>
                                 <td id="print_volume_diast_final"></td>
                             </tr>
                             <tr>
-                                <td>Diâmetro Sistólico</td>
-                                <td><input type="number" id="diam_sist_final" class="form-control" step="0.1"></td>
+                                <td>Aorta</td>
+                                <td><input type="number" id="aorta" class="form-control" step="0.1"></td>
                                 <td>Volume Sistólico Final</td>
                                 <td id="print_volume_sist_final"></td>
                             </tr>
                             <tr>
-                                <td>Espessura do Septo</td>
-                                <td><input type="number" id="esp_diast_septo" class="form-control" step="0.1"></td>
+                                <td>Aorta Ascendente</td>
+                                <td><input type="number" id="aorta_asc" class="form-control" step="0.1"></td>
                                 <td>Volume Ejetado</td>
                                 <td id="print_volume_ejetado"></td>
                             </tr>
                             <tr>
-                                <td>Espessura PPVE</td>
-                                <td><input type="number" id="esp_diast_ppve" class="form-control" step="0.1"></td>
+                                <td>Diâmetro Diastólico</td>
+                                <td><input type="number" id="diam_diast_final" class="form-control" step="0.1"></td>
                                 <td>Fração de Ejeção</td>
                                 <td id="print_fracao_ejecao"></td>
+                            </tr>
+                            <tr>
+                                <td>Diâmetro Sistólico</td>
+                                <td><input type="number" id="diam_sist_final" class="form-control" step="0.1"></td>
+                                <td>Percentual de Encurtamento</td>
+                                <td id="print_percent_encurt"></td>
+                            </tr>
+                            <tr>
+                                <td>Espessura do Septo</td>
+                                <td><input type="number" id="esp_diast_septo" class="form-control" step="0.1"></td>
+                                <td>Espessura Relativa</td>
+                                <td id="print_esp_relativa"></td>
+                            </tr>
+                            <tr>
+                                <td>Espessura PPVE</td>
+                                <td><input type="number" id="esp_diast_ppve" class="form-control" step="0.1"></td>
+                                <td>Massa do VE</td>
+                                <td id="print_massa_ve"></td>
+                            </tr>
+                            <tr>
+                                <td>Ventrículo Direito</td>
+                                <td><input type="number" id="vd" class="form-control" step="0.1"></td>
+                                <td>Índice de Massa</td>
+                                <td id="print_indice_massa"></td>
                             </tr>
                         </tbody>
                     </table>
