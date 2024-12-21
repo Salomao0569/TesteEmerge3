@@ -103,6 +103,70 @@ function classificarAtrioEsquerdo() {
     classificacaoDiv.className = 'alert alert-info py-1';
 }
 
+function classificarVentriculoEsquerdo() {
+    const diamDiast = parseFloat(document.getElementById('diam_diast_final').value) || 0;
+    const diamSist = parseFloat(document.getElementById('diam_sist_final').value) || 0;
+    const sexo = document.getElementById('sexo').value;
+    const classificacaoVEDiv = document.getElementById('analise_ve');
+    
+    if (diamDiast === 0 || diamSist === 0 || !sexo) {
+        classificacaoVEDiv.value = '';
+        return;
+    }
+
+    let classificacaoDiast = '';
+    let classificacaoSist = '';
+
+    if (sexo === 'M') {
+        // Classificação do diâmetro diastólico para homens
+        if (diamDiast <= 59) classificacaoDiast = 'normal';
+        else if (diamDiast <= 63) classificacaoDiast = 'discretamente aumentado';
+        else if (diamDiast <= 68) classificacaoDiast = 'moderadamente aumentado';
+        else classificacaoDiast = 'acentuadamente aumentado';
+
+        // Classificação do diâmetro sistólico para homens
+        if (diamSist <= 40) classificacaoSist = 'normal';
+        else if (diamSist <= 45) classificacaoSist = 'discretamente aumentado';
+        else if (diamSist <= 50) classificacaoSist = 'moderadamente aumentado';
+        else classificacaoSist = 'acentuadamente aumentado';
+    } else if (sexo === 'F') {
+        // Classificação do diâmetro diastólico para mulheres
+        if (diamDiast <= 53) classificacaoDiast = 'normal';
+        else if (diamDiast <= 57) classificacaoDiast = 'discretamente aumentado';
+        else if (diamDiast <= 62) classificacaoDiast = 'moderadamente aumentado';
+        else classificacaoDiast = 'acentuadamente aumentado';
+
+        // Classificação do diâmetro sistólico para mulheres
+        if (diamSist <= 35) classificacaoSist = 'normal';
+        else if (diamSist <= 40) classificacaoSist = 'discretamente aumentado';
+        else if (diamSist <= 45) classificacaoSist = 'moderadamente aumentado';
+        else classificacaoSist = 'acentuadamente aumentado';
+    }
+
+    classificacaoVEDiv.value = `Ventrículo esquerdo com diâmetro diastólico ${classificacaoDiast} e diâmetro sistólico ${classificacaoSist}.`;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input[type="number"]');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            calcularResultados();
+            classificarAtrioEsquerdo();
+            classificarVentriculoEsquerdo();
+            
+            if (input.id === 'atrio' && input.value !== originalValue) {
+                input.style.color = 'red';
+            }
+        });
+    });
+
+    document.getElementById('sexo').addEventListener('change', () => {
+        classificarAtrioEsquerdo();
+        classificarVentriculoEsquerdo();
+    });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('input[type="number"]');
     const atrioInput = document.getElementById('atrio');
