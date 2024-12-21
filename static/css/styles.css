@@ -364,12 +364,18 @@
     line-height: 1.4;
 }
 
-.table td {
+.table,
+.table th,
+.table td,
+.table tr,
+.table thead,
+.table tbody {
+    border: none !important;
+    border-collapse: collapse !important;
     padding: 0.5rem;
     vertical-align: middle;
     min-height: 60px;
     height: 60px;
-    border: none; /* Added to remove td border */
 }
 
 
