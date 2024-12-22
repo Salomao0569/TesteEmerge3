@@ -1,0 +1,62 @@
+Recarregar a página:
+
+Muitas vezes, esse erro ocorre quando a sessão expira ou o CSRF token não é carregado corretamente. Recarregue a página e tente novamente.
+Adicionar o CSRF Token na requisição:
+
+Certifique-se de que o CSRF token está sendo enviado junto com a solicitação para o backend.
+Em frameworks como Django ou Flask, o token deve ser incluído no cabeçalho ou no corpo da requisição.
+Exemplo de inclusão no JavaScript:
+
+javascript
+Copy code
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+fetch('URL_DO_BACKEND', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken // Incluindo o token
+    },
+    body: JSON.stringify({ prompt: "laudo de ecocardiograma de estenose aórtica" })
+})
+.then(response => response.json())
+.then(data => {
+    console.log(data);
+})
+.catch(error => console.error(error));
+Verificar o backend:
+
+No backend, verifique se o middleware de CSRF está habilitado.
+Para Django, você pode usar o decorador @csrf_exempt para desativar temporariamente a verificação (não recomendado em produção):
+python
+Copy code
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def gerar_texto(request):
+    # Lógica da API
+Configurar o frontend:
+
+No frontend, se você estiver usando Axios ou Fetch, insira o token no cabeçalho da requisição.
+Verifique se o CSRF token está presente no HTML da página. Normalmente, ele é inserido em um campo <meta> ou <input>.
+Certifique-se de que o servidor da API está respondendo corretamente:
+
+Faça um teste isolado da integração com a API do ChatGPT, enviando uma requisição diretamente (por exemplo, com Postman ou cURL) para verificar se o problema está relacionado ao CSRF ou a outro ponto.
+Teste rápido para a API do ChatGPT:
+Se o problema não for o CSRF, você pode testar a API separadamente para garantir que está funcionando. Use o seguinte exemplo de teste no Python:
+
+python
+Copy code
+import openai
+
+openai.api_key = "SUA_API_KEY"
+
+response = openai.Completion.create(
+    engine="text-davinci-003",
+    prompt="laudo de ecocardiograma de estenose aórtica",
+    max_tokens=100,
+    temperature=0.7
+)
+
+print(response.choices[0].text.strip())
+Isso ajudará a determinar se a integração com o ChatGPT está funcionando corretamente.

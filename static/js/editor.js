@@ -110,20 +110,19 @@ async function gerarTextoIA() {
     }
 
     try {
-        // Get CSRF token from meta tag or from cookie
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
-                         document.cookie.split('; ').find(row => row.startsWith('csrf_token='))?.split('=')[1];
-
-        if (!csrfToken) {
+        const token = getCSRFToken();
+        if (!token) {
             throw new Error('CSRF token não encontrado. Por favor, recarregue a página.');
         }
 
+        const previewArea = document.getElementById('previewTextoIA');
+        previewArea.innerHTML = '<div class="alert alert-info">Gerando texto, por favor aguarde...</div>';
+
         const response = await fetch('/api/gerar_texto', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
+            headers: addCSRFToken({
+                'Content-Type': 'application/json'
+            }),
             body: JSON.stringify({ prompt })
         });
 
@@ -139,7 +138,6 @@ async function gerarTextoIA() {
 
         if (data.texto) {
             // Mostrar o texto gerado na área de preview
-            const previewArea = document.getElementById('previewTextoIA');
             previewArea.innerHTML = data.texto;
         } else {
             throw new Error('Resposta inválida do servidor');
@@ -281,3 +279,16 @@ function showBackupIndicator() {
 // Adicionar event listeners aos selects
 document.getElementById('templateSelect').addEventListener('change', insertSelectedTemplate);
 document.getElementById('phraseSelect').addEventListener('change', insertSelectedPhrase);
+
+//Assumed functions from other files
+function getCSRFToken(){
+    //Implementation to get CSRF token
+    return "token"; //replace with actual implementation
+}
+
+function addCSRFToken(headers){
+    //Implementation to add CSRF token to headers
+    headers["X-CSRFToken"] = getCSRFToken();
+    return headers; //replace with actual implementation
+
+}
