@@ -105,7 +105,7 @@ function calcularVolumeSistolicoFinal(diametro) {
 }
 
 function classificarAorta(valor, sexo, segmento) {
-    if (!valor || !sexo || !segmento) return '';
+    if (!valor || !sexo || !segmento) return { texto: '', nivel: 'normal' };
 
     const referencias = {
         'M': {
@@ -163,17 +163,25 @@ function classificarAorta(valor, sexo, segmento) {
     };
 
     const ref = referencias[sexo][segmento];
-    if (!ref) return '';
+    if (!ref) return { texto: '', nivel: 'normal' };
 
-    let classificacao = '';
+    let classificacao = {
+        texto: '',
+        nivel: 'normal'
+    };
+
     if (valor <= ref.normal[1]) {
-        classificacao = 'normal';
+        classificacao.texto = 'normal';
+        classificacao.nivel = 'normal';
     } else if (valor <= ref.discreto[1]) {
-        classificacao = 'discretamente dilatada';
+        classificacao.texto = 'discretamente dilatada';
+        classificacao.nivel = 'mild';
     } else if (valor <= ref.moderado[1]) {
-        classificacao = 'moderadamente dilatada';
+        classificacao.texto = 'moderadamente dilatada';
+        classificacao.nivel = 'moderate';
     } else if (valor > ref.importante) {
-        classificacao = 'importante dilatação';
+        classificacao.texto = 'importante dilatação';
+        classificacao.nivel = 'severe';
     }
 
     const segmentoNomes = {
@@ -183,31 +191,54 @@ function classificarAorta(valor, sexo, segmento) {
         'ascendente': 'Aorta ascendente'
     };
 
-    return classificacao ? `${segmentoNomes[segmento]} ${classificacao}.` : '';
+    return classificacao.texto ? 
+        { texto: `${segmentoNomes[segmento]} ${classificacao.texto}.`, nivel: classificacao.nivel } : 
+        { texto: '', nivel: 'normal' };
 }
 
 function classificarSeptoEParede(valor, sexo) {
-    if (!valor || !sexo) return '';
+    if (!valor || !sexo) return { texto: '', nivel: 'normal' };
 
-    let classificacao = '';
+    let classificacao = {
+        texto: '',
+        nivel: 'normal'
+    };
 
     if (sexo === 'F') {
-        if (valor >= 6 && valor <= 10) classificacao = 'normal';
-        else if (valor >= 11 && valor <= 13) classificacao = 'discretamente aumentado';
-        else if (valor >= 14 && valor <= 16) classificacao = 'moderadamente aumentado';
-        else if (valor > 16) classificacao = 'gravemente aumentado';
+        if (valor >= 6 && valor <= 10) {
+            classificacao.texto = 'normal';
+            classificacao.nivel = 'normal';
+        } else if (valor >= 11 && valor <= 13) {
+            classificacao.texto = 'discretamente aumentado';
+            classificacao.nivel = 'mild';
+        } else if (valor >= 14 && valor <= 16) {
+            classificacao.texto = 'moderadamente aumentado';
+            classificacao.nivel = 'moderate';
+        } else if (valor > 16) {
+            classificacao.texto = 'gravemente aumentado';
+            classificacao.nivel = 'severe';
+        }
     } else if (sexo === 'M') {
-        if (valor >= 6 && valor <= 11) classificacao = 'normal';
-        else if (valor >= 12 && valor <= 14) classificacao = 'discretamente aumentado';
-        else if (valor >= 15 && valor <= 17) classificacao = 'moderadamente aumentado';
-        else if (valor > 17) classificacao = 'gravemente aumentado';
+        if (valor >= 6 && valor <= 11) {
+            classificacao.texto = 'normal';
+            classificacao.nivel = 'normal';
+        } else if (valor >= 12 && valor <= 14) {
+            classificacao.texto = 'discretamente aumentado';
+            classificacao.nivel = 'mild';
+        } else if (valor >= 15 && valor <= 17) {
+            classificacao.texto = 'moderadamente aumentado';
+            classificacao.nivel = 'moderate';
+        } else if (valor > 17) {
+            classificacao.texto = 'gravemente aumentado';
+            classificacao.nivel = 'severe';
+        }
     }
 
-    return classificacao ? classificacao : '';
+    return classificacao;
 }
 
 function classificarDiametroVE(valor, sexo, tipo) {
-    if (!valor || !sexo || !tipo) return '';
+    if (!valor || !sexo || !tipo) return { texto: '', nivel: 'normal' };
 
     const referencias = {
         'M': {
@@ -241,23 +272,35 @@ function classificarDiametroVE(valor, sexo, tipo) {
     };
 
     const ref = referencias[sexo][tipo];
-    if (!ref) return '';
+    if (!ref) return { texto: '', nivel: 'normal' };
 
-    let classificacao = '';
+    let classificacao = {
+        texto: '',
+        nivel: 'normal'
+    };
+
     if (valor >= ref.normal[0] && valor <= ref.normal[1]) {
-        classificacao = 'normal';
+        classificacao.texto = 'normal';
+        classificacao.nivel = 'normal';
     } else if (valor >= ref.discreto[0] && valor <= ref.discreto[1]) {
-        classificacao = 'discretamente aumentado';
+        classificacao.texto = 'discretamente aumentado';
+        classificacao.nivel = 'mild';
     } else if (valor >= ref.moderado[0] && valor <= ref.moderado[1]) {
-        classificacao = 'moderadamente aumentado';
+        classificacao.texto = 'moderadamente aumentado';
+        classificacao.nivel = 'moderate';
     } else if (valor > ref.importante) {
-        classificacao = 'importante aumento';
+        classificacao.texto = 'importante aumento';
+        classificacao.nivel = 'severe';
     } else if (valor < ref.normal[0]) {
-        classificacao = 'reduzido';
+        classificacao.texto = 'reduzido';
+        classificacao.nivel = 'severe';
     }
 
     const tipoNome = tipo === 'diastolico' ? 'diastólico' : 'sistólico';
-    return classificacao ? `Diâmetro ${tipoNome} do VE ${classificacao}.` : '';
+    return {
+        texto: classificacao.texto ? `Diâmetro ${tipoNome} do VE ${classificacao.texto}.` : '',
+        nivel: classificacao.nivel
+    };
 }
 
 function classificarEspessuraRelativa(espessuraRelativa, massaVE, sexo) {
@@ -440,39 +483,45 @@ function calcularResultados() {
 
     // Classificação da Aorta
     if (aorta > 0 && elementos.classificacaoAorta && elementos.sexo) {
-        const sexo = elementos.sexo.value;
-        const classificacaoRaiz = classificarAorta(aorta, sexo, 'raiz');
-        setElementText(elementos.classificacaoAorta, classificacaoRaiz);
+        const resultado = classificarAorta(aorta, elementos.sexo.value, 'raiz');
+        atualizarClassificacao(elementos.classificacaoAorta, resultado.texto, resultado.nivel);
     }
 
     if (aortaAsc > 0 && elementos.classificacaoAortaAsc && elementos.sexo) {
-        const sexo = elementos.sexo.value;
-        const classificacaoAsc = classificarAorta(aortaAsc, sexo, 'ascendente');
-        setElementText(elementos.classificacaoAortaAsc, classificacaoAsc);
+        const resultado = classificarAorta(aortaAsc, elementos.sexo.value, 'ascendente');
+        atualizarClassificacao(elementos.classificacaoAortaAsc, resultado.texto, resultado.nivel);
     }
 
     // Classificação do Septo
     if (espDiastSepto > 0 && elementos.classificacaoSepto && elementos.sexo) {
-        const classificacaoSepto = classificarSeptoEParede(espDiastSepto, elementos.sexo.value);
-        setElementText(elementos.classificacaoSepto, `Septo interventricular ${classificacaoSepto}.`);
+        const resultado = classificarSeptoEParede(espDiastSepto, elementos.sexo.value);
+        atualizarClassificacao(
+            elementos.classificacaoSepto, 
+            `Septo interventricular ${resultado.texto}.`,
+            resultado.nivel
+        );
     }
 
     // Classificação da PPVE
     if (espDiastPPVE > 0 && elementos.classificacaoPPVE && elementos.sexo) {
-        const classificacaoPPVE = classificarSeptoEParede(espDiastPPVE, elementos.sexo.value);
-        setElementText(elementos.classificacaoPPVE, `Parede posterior do VE ${classificacaoPPVE}.`);
+        const resultado = classificarSeptoEParede(espDiastPPVE, elementos.sexo.value);
+        atualizarClassificacao(
+            elementos.classificacaoPPVE, 
+            `Parede posterior do VE ${resultado.texto}.`,
+            resultado.nivel
+        );
     }
 
     // Classificação do Diâmetro Diastólico
     if (diamDiastFinal > 0 && elementos.classificacaoDiastolico && elementos.sexo) {
-        const classificacaoDiastolico = classificarDiametroVE(diamDiastFinal, elementos.sexo.value, 'diastolico');
-        setElementText(elementos.classificacaoDiastolico, classificacaoDiastolico);
+        const resultado = classificarDiametroVE(diamDiastFinal, elementos.sexo.value, 'diastolico');
+        atualizarClassificacao(elementos.classificacaoDiastolico, resultado.texto, resultado.nivel);
     }
 
     // Classificação do Diâmetro Sistólico
     if (diamSistFinal > 0 && elementos.classificacaoSistolico && elementos.sexo) {
-        const classificacaoSistolico = classificarDiametroVE(diamSistFinal, elementos.sexo.value, 'sistolico');
-        setElementText(elementos.classificacaoSistolico, classificacaoSistolico);
+        const resultado = classificarDiametroVE(diamSistFinal, elementos.sexo.value, 'sistolico');
+        atualizarClassificacao(elementos.classificacaoSistolico, resultado.texto, resultado.nivel);
     }
 }
 
