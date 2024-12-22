@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Medidas e Cálculos Ecocardiográficos</title>
     <link href="/static/css/styles.css" rel="stylesheet">
+    <script src="https://cdn.ckeditor.com/ckeditor5/40.1.0/classic/ckeditor.js"></script>
 </head>
 <body>
     <div class="container">
@@ -136,8 +137,17 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Editor de Texto -->
+        <div class="editor-section mt-4">
+            <h3>Laudo</h3>
+            <div class="editor-container">
+                <div id="editor"></div>
+            </div>
+        </div>
     </div>
 
     <script src="/static/js/calculations.js"></script>
+    <script src="/static/js/editor.js"></script>
 </body>
 </html>
