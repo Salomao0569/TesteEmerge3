@@ -49,30 +49,31 @@ body {
 }
 
 /* Classes de classificação */
-.normal {
+.normal { 
     background-color: #cce5ff;
     color: #004085;
 }
 
-.mild {
+.mild { 
     background-color: #ffeeba;
     color: #856404;
 }
 
-.moderate {
+.moderate { 
     background-color: #ffe5d0;
     color: #c2410c;
 }
 
-.severe {
+.severe { 
     background-color: #f5c6cb;
     color: #721c24;
 }
 
-.alert-info {
-    background-color: #cce5ff;
-    color: #004085;
-    border: 1px solid #b8daff;
+.alert {
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 5px;
+    font-size: 0.9em;
 }
 
 /* Estilos para valores alterados */
@@ -189,7 +190,6 @@ div[id^="print_"],
     align-items: center;
     justify-content: center;
 }
-
 
 /* Estilos de impressão */
 @media print {

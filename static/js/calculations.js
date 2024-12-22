@@ -37,7 +37,7 @@ function calcularSuperficieCorporea(peso, altura) {
 }
 
 function classificarAtrioEsquerdo(valor, sexo) {
-    if (!valor || !sexo) return '';
+    if (!valor || !sexo) return { texto: '', nivel: 'normal' };
 
     let classificacao = {
         texto: '',
@@ -74,14 +74,14 @@ function classificarAtrioEsquerdo(valor, sexo) {
         }
     }
 
-    return classificacao.texto ? `Átrio esquerdo ${classificacao.texto}.` : '';
+    return classificacao;
 }
 
 function atualizarClassificacao(elemento, texto, nivel) {
     if (!elemento) return;
 
     elemento.textContent = texto;
-    elemento.className = 'alert alert-info ' + nivel;
+    elemento.className = 'alert ' + nivel;
 }
 
 function obterNivelClassificacao(texto) {
@@ -337,9 +337,12 @@ function calcularResultados() {
 
     // Classificação do Átrio Esquerdo
     if (atrio > 0 && elementos.classificacaoAe && elementos.sexo) {
-        const classificacaoAe = classificarAtrioEsquerdo(atrio, elementos.sexo.value);
-        const nivel = obterNivelClassificacao(classificacaoAe);
-        atualizarClassificacao(elementos.classificacaoAe, classificacaoAe, nivel);
+        const resultado = classificarAtrioEsquerdo(atrio, elementos.sexo.value);
+        atualizarClassificacao(
+            elementos.classificacaoAe, 
+            `Átrio esquerdo ${resultado.texto}.`,
+            resultado.nivel
+        );
     }
 
     // Superfície corpórea (DuBois)
