@@ -120,8 +120,13 @@ async function gerarTextoIA() {
         });
 
         const data = await response.json();
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao gerar texto');
+            throw new Error('Erro ao gerar texto');
         }
 
         if (data.texto) {
@@ -134,11 +139,13 @@ async function gerarTextoIA() {
     } catch (error) {
         console.error('Erro ao gerar texto:', error);
         const errorMessage = error.message || 'Erro desconhecido. Por favor, tente novamente.';
-        alert(`Erro ao gerar texto: ${errorMessage}`);
 
-        // Limpar a área de preview em caso de erro
+        // Mostrar erro no preview
         const previewArea = document.getElementById('previewTextoIA');
-        previewArea.innerHTML = '<div class="alert alert-danger">Erro ao gerar texto. Por favor, tente novamente.</div>';
+        previewArea.innerHTML = `<div class="alert alert-danger">
+            <strong>Erro ao gerar texto:</strong><br>
+            ${errorMessage}
+        </div>`;
     }
 }
 

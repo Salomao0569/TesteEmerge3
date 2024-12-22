@@ -283,10 +283,12 @@ def gerar_texto():
     try:
         data = request.get_json()
         if not data or 'prompt' not in data:
+            logger.error("Erro: Prompt não fornecido na requisição")
             return jsonify({"error": "Prompt é obrigatório"}), 400
 
         api_key = os.environ.get('OPENAI_API_KEY')
         if not api_key:
+            logger.error("Erro: OPENAI_API_KEY não está configurada")
             return jsonify({"error": "API key não configurada. Por favor, configure a chave da API OpenAI."}), 500
 
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
@@ -303,6 +305,7 @@ def gerar_texto():
         """.format(data['prompt'])
 
         try:
+            logger.info(f"Fazendo chamada para API OpenAI com prompt: {data['prompt'][:50]}...")
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
@@ -310,15 +313,15 @@ def gerar_texto():
                 max_tokens=1000
             )
             texto_gerado = response.choices[0].message.content
+            logger.info("Texto gerado com sucesso pela API OpenAI")
             return jsonify({"texto": texto_gerado})
         except Exception as api_error:
             logger.error(f"Erro na chamada da API OpenAI: {str(api_error)}")
-            return jsonify({"error": "Erro ao gerar texto com a API OpenAI. Por favor, tente novamente."}), 500
+            return jsonify({"error": f"Erro ao gerar texto com a API OpenAI: {str(api_error)}"}), 500
 
     except Exception as e:
         logger.error(f"Erro ao gerar texto com OpenAI: {str(e)}", exc_info=True)
-        return jsonify({"error": "Erro interno do servidor. Por favor, tente novamente mais tarde."}), 500
-
+        return jsonify({"error": f"Erro interno do servidor: {str(e)}"}), 500
 
 @app.after_request
 def add_csrf_header(response):
