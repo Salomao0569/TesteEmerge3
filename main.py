@@ -285,9 +285,13 @@ def gerar_texto():
         if not data or 'prompt' not in data:
             return jsonify({"error": "Prompt é obrigatório"}), 400
 
+        api_key = os.environ.get('OPENAI_API_KEY')
+        if not api_key:
+            return jsonify({"error": "API key não configurada. Por favor, configure a chave da API OpenAI."}), 500
+
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
-        client = OpenAI()
+        client = OpenAI(api_key=api_key)
 
         prompt = """
         Você é um assistente especializado em laudos médicos ecocardiográficos.
@@ -298,19 +302,22 @@ def gerar_texto():
         O texto deve ser técnico, preciso e seguir as melhores práticas médicas.
         """.format(data['prompt'])
 
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7,
-            max_tokens=1000
-        )
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=1000
+            )
+            texto_gerado = response.choices[0].message.content
+            return jsonify({"texto": texto_gerado})
+        except Exception as api_error:
+            logger.error(f"Erro na chamada da API OpenAI: {str(api_error)}")
+            return jsonify({"error": "Erro ao gerar texto com a API OpenAI. Por favor, tente novamente."}), 500
 
-        texto_gerado = response.choices[0].message.content
-
-        return jsonify({"texto": texto_gerado})
     except Exception as e:
         logger.error(f"Erro ao gerar texto com OpenAI: {str(e)}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Erro interno do servidor. Por favor, tente novamente mais tarde."}), 500
 
 
 @app.after_request

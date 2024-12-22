@@ -119,19 +119,26 @@ async function gerarTextoIA() {
             body: JSON.stringify({ prompt })
         });
 
+        const data = await response.json();
         if (!response.ok) {
-            throw new Error('Erro ao gerar texto');
+            throw new Error(data.error || 'Erro ao gerar texto');
         }
 
-        const data = await response.json();
         if (data.texto) {
             // Mostrar o texto gerado na área de preview
             const previewArea = document.getElementById('previewTextoIA');
             previewArea.innerHTML = data.texto;
+        } else {
+            throw new Error('Resposta inválida do servidor');
         }
     } catch (error) {
         console.error('Erro ao gerar texto:', error);
-        alert('Erro ao gerar texto. Por favor, tente novamente.');
+        const errorMessage = error.message || 'Erro desconhecido. Por favor, tente novamente.';
+        alert(`Erro ao gerar texto: ${errorMessage}`);
+
+        // Limpar a área de preview em caso de erro
+        const previewArea = document.getElementById('previewTextoIA');
+        previewArea.innerHTML = '<div class="alert alert-danger">Erro ao gerar texto. Por favor, tente novamente.</div>';
     }
 }
 
