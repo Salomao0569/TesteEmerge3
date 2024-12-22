@@ -21,23 +21,69 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://unpkg.com/jspdf-autotable"></script>
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-
     <!-- Summernote Editor -->
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-pt-BR.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <!-- Hidden input for CSRF token -->
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+    <!-- Modal para Simplifica IA -->
+    <div class="modal fade" id="modalGerarTexto" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Simplifica IA</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label for="promptIA">Descreva o que você deseja gerar:</label>
+                                <textarea class="form-control" id="promptIA" rows="3" 
+                                    placeholder="Ex: Gere um laudo normal para um paciente com fração de ejeção preservada"></textarea>
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-primary" onclick="gerarTextoIA()">
+                                        <i class="fas fa-robot"></i> Gerar Texto
+                                    </button>
+                                    <button type="button" class="btn btn-info ms-2" onclick="avaliarLaudoAtual()">
+                                        <i class="fas fa-check-circle"></i> Avaliar Laudo Atual
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="preview-area">
+                                <label>Preview do texto gerado:</label>
+                                <div id="previewTextoIA" class="preview-content" contenteditable="true"></div>
+                                <div class="btn-group mt-2">
+                                    <button class="btn btn-success btn-sm" onclick="inserirTextoGerado()">
+                                        <i class="fas fa-paste"></i> Inserir no Editor
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="copiarTextoGerado()">
+                                        <i class="fas fa-copy"></i> Copiar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {% block content %}{% endblock %}
 
     <!-- Application Scripts -->
-    <script src="{{ url_for('static', filename='js/calculations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/csrf_utils.js') }}"></script>
     <script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/calculations.js') }}"></script>
     <script src="{{ url_for('static', filename='js/pdf_generator.js') }}"></script>
     <script src="{{ url_for('static', filename='js/doc_generator.js') }}"></script>
 </body>

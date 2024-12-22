@@ -24,6 +24,37 @@ $(document).ready(function() {
                 onChange: function(contents) {
                     localStorage.setItem('reportContent', contents);
                     showBackupIndicator();
+                },
+                onInit: function() {
+                    console.log('Editor inicializado com sucesso');
+                    const savedContent = localStorage.getItem('reportContent');
+                    if (savedContent) {
+                        $('#editor').summernote('code', savedContent);
+                    }
+                }
+            },
+            buttons: {
+                gerarTextoIA: function (context) {
+                    var ui = $.summernote.ui;
+                    var button = ui.button({
+                        contents: '<i class="fas fa-robot"></i> Simplifica IA',
+                        tooltip: 'Gerar Texto com IA',
+                        click: function () {
+                            $('#modalGerarTexto').modal('show');
+                        }
+                    });
+                    return button.render();
+                },
+                avaliarLaudo: function (context) {
+                    var ui = $.summernote.ui;
+                    var button = ui.button({
+                        contents: '<i class="fas fa-check-circle"></i> Avaliar',
+                        tooltip: 'Avaliar Laudo Atual',
+                        click: function () {
+                            avaliarLaudoAtual();
+                        }
+                    });
+                    return button.render();
                 }
             }
         });
