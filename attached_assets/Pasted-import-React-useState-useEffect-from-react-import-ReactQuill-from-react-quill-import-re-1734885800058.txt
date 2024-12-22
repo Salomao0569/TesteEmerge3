@@ -1,0 +1,150 @@
+import React, { useState, useEffect } from 'react';
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+
+const Editor = ({ onContentChange, initialContent }) => {
+  const [content, setContent] = useState(initialContent || '');
+
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'align': [] }],
+      ['clean'],
+      [{ 'font': [] }],
+      [{ 'size': ['small', false, 'large', 'huge'] }],
+    ]
+  };
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet',
+    'align',
+    'font', 'size'
+  ];
+
+  useEffect(() => {
+    // Save to localStorage whenever content changes
+    if (content) {
+      localStorage.setItem('reportContent', content);
+    }
+  }, [content]);
+
+  useEffect(() => {
+    // Load from localStorage on component mount
+    const savedContent = localStorage.getItem('reportContent');
+    if (savedContent) {
+      setContent(savedContent);
+    }
+  }, []);
+
+  const handleChange = (newContent) => {
+    setContent(newContent);
+    if (onContentChange) {
+      onContentChange(newContent);
+    }
+  };
+
+  return (
+    <div className="editor-container">
+      <ReactQuill 
+        theme="snow" 
+        modules={modules}
+        formats={formats}
+        value={content}
+        onChange={handleChange}
+        placeholder="Digite o conteúdo do laudo aqui..."
+      />
+      <style jsx>{`
+        .editor-container {
+          min-height: 400px;
+          margin-bottom: 2rem;
+        }
+        .ql-editor {
+          min-height: 350px;
+          font-size: 14px;
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default Editor;
+import React, { useState, useEffect } from 'react';
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+
+const Editor = ({ onContentChange, initialContent }) => {
+  const [content, setContent] = useState(initialContent || '');
+
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'align': [] }],
+      ['clean'],
+      [{ 'font': [] }],
+      [{ 'size': ['small', false, 'large', 'huge'] }],
+    ]
+  };
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet',
+    'align',
+    'font', 'size'
+  ];
+
+  useEffect(() => {
+    if (content) {
+      localStorage.setItem('reportContent', content);
+    }
+  }, [content]);
+
+  useEffect(() => {
+    const savedContent = localStorage.getItem('reportContent');
+    if (savedContent) {
+      setContent(savedContent);
+    }
+  }, []);
+
+  const handleChange = (newContent) => {
+    setContent(newContent);
+    if (onContentChange) {
+      onContentChange(newContent);
+    }
+  };
+
+  return (
+    <div className="editor-container">
+      <ReactQuill 
+        theme="snow" 
+        modules={modules}
+        formats={formats}
+        value={content}
+        onChange={handleChange}
+        placeholder="Digite o conteúdo do laudo aqui..."
+      />
+      <style jsx>{`
+        .editor-container {
+          min-height: 400px;
+          margin-bottom: 2rem;
+        }
+        .ql-editor {
+          min-height: 350px;
+          font-size: 14px;
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default Editor;

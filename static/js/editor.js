@@ -1,7 +1,8 @@
 $(document).ready(function() {
-    console.log('Iniciando configuração do Summernote...');
-    
+    console.log('Iniciando configuração do editor...');
+
     try {
+        // Configurar Summernote
         $('#editor').summernote({
             height: 500,
             lang: 'pt-BR',
@@ -22,9 +23,10 @@ $(document).ready(function() {
                 onChange: function(contents) {
                     // Armazenar conteúdo no localStorage para backup
                     localStorage.setItem('reportContent', contents);
+                    showBackupIndicator();
                 },
                 onInit: function() {
-                    console.log('Summernote inicializado com sucesso');
+                    console.log('Editor inicializado com sucesso');
                     // Restaurar conteúdo do backup se existir
                     const savedContent = localStorage.getItem('reportContent');
                     if (savedContent) {
@@ -33,10 +35,68 @@ $(document).ready(function() {
                 }
             }
         });
+
+        // Carregar templates e frases
+        loadTemplatesAndPhrases();
+        loadDoctors();
+
     } catch (error) {
-        console.error('Erro ao configurar Summernote:', error);
+        console.error('Erro ao configurar editor:', error);
     }
 });
+
+// Função para carregar templates e frases do servidor
+async function loadTemplatesAndPhrases() {
+    try {
+        const response = await fetch('/api/templates');
+        const templates = await response.json();
+
+        const templateSelect = document.getElementById('templateSelect');
+        const phraseSelect = document.getElementById('phraseSelect');
+
+        // Limpar opções existentes
+        templateSelect.innerHTML = '<option value="">Selecione um modelo...</option>';
+        phraseSelect.innerHTML = '<option value="">Selecione uma frase...</option>';
+
+        // Adicionar templates
+        templates.filter(t => t.category === 'laudo').forEach(template => {
+            const option = new Option(template.name, template.id);
+            option.title = template.content;
+            templateSelect.add(option);
+        });
+
+        // Adicionar frases
+        templates.filter(t => ['normal', 'alterado', 'conclusao'].includes(t.category)).forEach(phrase => {
+            const option = new Option(phrase.name, phrase.id);
+            option.title = phrase.content;
+            phraseSelect.add(option);
+        });
+
+    } catch (error) {
+        console.error('Erro ao carregar templates:', error);
+    }
+}
+
+// Função para carregar médicos do servidor
+async function loadDoctors() {
+    try {
+        const response = await fetch('/api/doctors');
+        const doctors = await response.json();
+
+        const doctorSelect = document.getElementById('selectedDoctor');
+        doctorSelect.innerHTML = '<option value="">Selecione o médico...</option>';
+
+        doctors.forEach(doctor => {
+            const option = new Option(doctor.full_name, doctor.id);
+            option.dataset.crm = doctor.crm;
+            option.dataset.rqe = doctor.rqe || '';
+            doctorSelect.add(option);
+        });
+
+    } catch (error) {
+        console.error('Erro ao carregar médicos:', error);
+    }
+}
 
 // Função para inserir template selecionado
 function insertSelectedTemplate() {
@@ -53,7 +113,7 @@ function insertSelectedPhrase() {
     const selectedOption = phraseSelect.options[phraseSelect.selectedIndex];
     if (selectedOption && selectedOption.value) {
         const currentContent = $('#editor').summernote('code');
-        $('#editor').summernote('pasteHTML', selectedOption.title);
+        $('#editor').summernote('pasteHTML', currentContent + '\n' + selectedOption.title);
     }
 }
 
@@ -61,7 +121,7 @@ function insertSelectedPhrase() {
 function inserirAssinaturaMedico() {
     const select = document.getElementById('selectedDoctor');
     if (!select) return;
-    
+
     const option = select.options[select.selectedIndex];
     if (!option || !option.value) {
         alert('Por favor, selecione um médico responsável');
@@ -79,5 +139,21 @@ function inserirAssinaturaMedico() {
 
     // Get current content and add doctor info at the end
     const currentContent = $('#editor').summernote('code');
-    $('#editor').summernote('code', currentContent + '\n\n' + dadosMedico);
+    $('#editor').summernote('code', currentContent + dadosMedico);
 }
+
+// Função para mostrar indicador de backup
+function showBackupIndicator() {
+    const indicator = document.createElement('div');
+    indicator.className = 'backup-indicator';
+    indicator.textContent = 'Conteúdo salvo localmente';
+    document.body.appendChild(indicator);
+
+    setTimeout(() => {
+        indicator.remove();
+    }, 2000);
+}
+
+// Adicionar event listeners aos selects
+document.getElementById('templateSelect').addEventListener('change', insertSelectedTemplate);
+document.getElementById('phraseSelect').addEventListener('change', insertSelectedPhrase);

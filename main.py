@@ -6,6 +6,7 @@ from flask_wtf.csrf import CSRFProtect, generate_csrf
 from models import db, Doctor, Template, Report
 from dotenv import load_dotenv
 from datetime import datetime
+from assets import init_assets
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -44,6 +45,7 @@ def create_app():
         db.init_app(app)
         csrf = CSRFProtect()
         csrf.init_app(app)
+        init_assets(app)  # Inicializa o gerenciamento de assets
         logger.info("Extensões inicializadas com sucesso")
     except Exception as e:
         logger.error(f"Erro crítico ao inicializar extensões: {str(e)}", exc_info=True)
@@ -64,46 +66,6 @@ def index():
     except Exception as e:
         logger.error(f"Erro ao carregar página inicial: {str(e)}", exc_info=True)
         return "Erro ao conectar ao banco de dados", 500
-
-@app.route('/doctors')
-def doctors():
-    doctors = Doctor.query.all()
-    return render_template('doctors.html', doctors=doctors)
-
-@app.route('/api/doctors', methods=['GET'])
-def get_doctors():
-    try:
-        doctors = Doctor.query.all()
-        return jsonify([doctor.to_dict() for doctor in doctors])
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/doctors', methods=['POST'])
-def create_doctor():
-    try:
-        data = request.get_json()
-        new_doctor = Doctor(
-            full_name=data['full_name'],
-            crm=data['crm'],
-            rqe=data.get('rqe', '')
-        )
-        db.session.add(new_doctor)
-        db.session.commit()
-        return jsonify(new_doctor.to_dict()), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
-
-@app.route('/api/doctors/<int:doctor_id>', methods=['DELETE'])
-def delete_doctor(doctor_id):
-    try:
-        doctor = Doctor.query.get_or_404(doctor_id)
-        db.session.delete(doctor)
-        db.session.commit()
-        return '', 204
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
 
 @app.route('/templates')
 def templates():
@@ -144,13 +106,26 @@ def create_template():
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
-@app.route('/api/templates/<int:template_id>', methods=['DELETE'])
-def delete_template(template_id):
+@app.route('/api/doctors', methods=['GET'])
+def get_doctors():
     try:
-        template = Template.query.get_or_404(template_id)
-        db.session.delete(template)
+        doctors = Doctor.query.all()
+        return jsonify([doctor.to_dict() for doctor in doctors])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/doctors', methods=['POST'])
+def create_doctor():
+    try:
+        data = request.get_json()
+        new_doctor = Doctor(
+            full_name=data['full_name'],
+            crm=data['crm'],
+            rqe=data.get('rqe', '')
+        )
+        db.session.add(new_doctor)
         db.session.commit()
-        return '', 204
+        return jsonify(new_doctor.to_dict()), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
@@ -190,14 +165,6 @@ def create_report():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
-
-@app.route('/api/reports/<int:report_id>', methods=['GET'])
-def get_report(report_id):
-    try:
-        report = Report.query.get_or_404(report_id)
-        return jsonify(report.to_dict())
-    except Exception as e:
-        return jsonify({"error": str(e)}), 404
 
 @app.after_request
 def add_csrf_header(response):
