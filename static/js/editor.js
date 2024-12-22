@@ -15,7 +15,7 @@ $(document).ready(function() {
                 ['table', ['table']],
                 ['insert', ['link', 'picture']],
                 ['view', ['fullscreen', 'codeview']],
-                ['custom', ['gerarTextoIA']] // Novo botão para IA
+                ['custom', ['gerarTextoIA', 'avaliarLaudo']] // Adicionado botão de avaliação
             ],
             fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '24', '36'],
             styleTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
@@ -24,30 +24,6 @@ $(document).ready(function() {
                 onChange: function(contents) {
                     localStorage.setItem('reportContent', contents);
                     showBackupIndicator();
-                },
-                onInit: function() {
-                    console.log('Editor inicializado com sucesso');
-                    const savedContent = localStorage.getItem('reportContent');
-                    if (savedContent) {
-                        $('#editor').summernote('code', savedContent);
-                    }
-                    // Adicionar botão personalizado
-                    var gerarTextoButton = '<button type="button" class="btn btn-default btn-sm btn-gerarTexto" title="Gerar texto com IA" data-toggle="modal" data-target="#modalGerarTexto">' +
-                        '<i class="fas fa-robot"></i> Gerar Texto com IA</button>';
-                    $('.note-toolbar').append(gerarTextoButton);
-                }
-            },
-            buttons: {
-                gerarTextoIA: function(context) {
-                    var ui = $.summernote.ui;
-                    var button = ui.button({
-                        contents: '<i class="fas fa-robot"></i>',
-                        tooltip: 'Gerar Texto com IA',
-                        click: function() {
-                            $('#modalGerarTexto').modal('show');
-                        }
-                    });
-                    return button.render();
                 }
             }
         });
@@ -56,40 +32,47 @@ $(document).ready(function() {
         loadTemplatesAndPhrases();
         loadDoctors();
 
-        // Adicionar modal para geração de texto
+        // Layout com dois painéis
         $('body').append(`
             <div class="modal fade" id="modalGerarTexto" tabindex="-1">
-                <div class="modal-dialog modal-lg">
+                <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Gerar Texto com IA</h5>
+                            <h5 class="modal-title">Simplifica IA</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-5">
                                     <div class="form-group">
                                         <label for="promptIA">Descreva o que você deseja gerar:</label>
                                         <textarea class="form-control" id="promptIA" rows="3" 
                                             placeholder="Ex: Gere um laudo normal para um paciente com fração de ejeção preservada"></textarea>
-                                        <button type="button" class="btn btn-primary mt-3" onclick="gerarTextoIA()">
-                                            Gerar Texto
-                                        </button>
+                                        <div class="mt-3">
+                                            <button type="button" class="btn btn-primary" onclick="gerarTextoIA()">
+                                                <i class="fas fa-robot"></i> Gerar Texto
+                                            </button>
+                                            <button type="button" class="btn btn-info ms-2" onclick="avaliarLaudoAtual()">
+                                                <i class="fas fa-check-circle"></i> Avaliar Laudo Atual
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-7">
                                     <div class="preview-area">
                                         <label>Preview do texto gerado:</label>
                                         <div id="previewTextoIA" class="form-control preview-content" contenteditable="true"></div>
+                                        <div class="btn-group mt-2">
+                                            <button class="btn btn-success btn-sm" onclick="inserirTextoGerado()">
+                                                <i class="fas fa-paste"></i> Inserir no Editor
+                                            </button>
+                                            <button class="btn btn-outline-secondary btn-sm" onclick="copiarTextoGerado()">
+                                                <i class="fas fa-copy"></i> Copiar
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="button" class="btn btn-success" onclick="inserirTextoGerado()">
-                                Inserir no Editor
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -100,6 +83,74 @@ $(document).ready(function() {
         console.error('Erro ao configurar editor:', error);
     }
 });
+
+// Função para avaliar o laudo atual
+async function avaliarLaudoAtual() {
+    const laudoAtual = $('#editor').summernote('code');
+    if (!laudoAtual) {
+        alert('Por favor, insira algum texto no editor para avaliar.');
+        return;
+    }
+
+    try {
+        const token = getCSRFToken();
+        if (!token) {
+            throw new Error('CSRF token não encontrado. Por favor, recarregue a página.');
+        }
+
+        const previewArea = document.getElementById('previewTextoIA');
+        previewArea.innerHTML = '<div class="alert alert-info">Analisando laudo, por favor aguarde...</div>';
+
+        const response = await fetch('/api/gerar_texto', {
+            method: 'POST',
+            headers: addCSRFToken({
+                'Content-Type': 'application/json'
+            }),
+            body: JSON.stringify({ 
+                prompt: `Por favor, analise este laudo ecocardiográfico e forneça feedback sobre sua completude, 
+                        clareza e possíveis melhorias:\n\n${laudoAtual}` 
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        if (data.texto) {
+            previewArea.innerHTML = data.texto;
+        } else {
+            throw new Error('Resposta inválida do servidor');
+        }
+    } catch (error) {
+        console.error('Erro ao avaliar laudo:', error);
+        const previewArea = document.getElementById('previewTextoIA');
+        previewArea.innerHTML = `<div class="alert alert-danger">
+            <strong>Erro ao avaliar laudo:</strong><br>
+            ${error.message || 'Erro desconhecido'}
+        </div>`;
+    }
+}
+
+// Função para copiar texto gerado
+function copiarTextoGerado() {
+    const texto = document.getElementById('previewTextoIA').innerText;
+    if (texto) {
+        navigator.clipboard.writeText(texto)
+            .then(() => {
+                const btn = document.querySelector('.btn-outline-secondary');
+                btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
+                }, 2000);
+            })
+            .catch(err => {
+                console.error('Erro ao copiar texto:', err);
+                alert('Não foi possível copiar o texto automaticamente.');
+            });
+    }
+}
 
 // Função para gerar texto usando IA
 async function gerarTextoIA() {

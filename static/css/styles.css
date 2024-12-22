@@ -558,7 +558,7 @@ div[id^="print_"],
     100% { opacity: 0.8; }
 }
 
-/* Modal de Geração de Texto IA */
+/* Estilos do modal de IA */
 #modalGerarTexto .modal-dialog {
     max-width: 90%;
     margin: 1.75rem auto;
