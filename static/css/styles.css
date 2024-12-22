@@ -49,10 +49,31 @@ body {
 }
 
 /* Classes de classificação */
-.normal-value { background: #ebf8ff; }
-.discreto-value { background: #f0fff4; }
-.moderado-value { background: #fffff0; }
-.importante-value { background: #fff5f5; }
+.normal {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.mild {
+    background-color: #ffeeba;
+    color: #856404;
+}
+
+.moderate {
+    background-color: #ffe5d0;
+    color: #c2410c;
+}
+
+.severe {
+    background-color: #f5c6cb;
+    color: #721c24;
+}
+
+.alert-info {
+    background-color: #cce5ff;
+    color: #004085;
+    border: 1px solid #b8daff;
+}
 
 /* Estilos para valores alterados */
 .alert-value {
@@ -96,11 +117,6 @@ body {
     font-size: 0.9em;
 }
 
-.alert-info {
-    background-color: #ebf8ff;
-    color: #2c5282;
-    border: 1px solid #bee3f8;
-}
 
 /* Responsividade */
 @media screen and (max-width: 768px) {
@@ -538,7 +554,7 @@ div[id^="print_"],
 }
 
 @keyframes fadeHighlight {
-    0% { color: #dc3545; }
-    80% { color: #dc3545; }
-    100% { color: inherit; }
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0.8; }
 }

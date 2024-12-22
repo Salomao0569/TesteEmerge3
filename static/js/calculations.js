@@ -39,21 +39,57 @@ function calcularSuperficieCorporea(peso, altura) {
 function classificarAtrioEsquerdo(valor, sexo) {
     if (!valor || !sexo) return '';
 
-    let classificacao = '';
+    let classificacao = {
+        texto: '',
+        nivel: 'normal'
+    };
 
     if (sexo === 'M') {
-        if (valor <= 40) classificacao = 'normal';
-        else if (valor > 40 && valor <= 44) classificacao = 'levemente aumentado';
-        else if (valor > 44 && valor <= 48) classificacao = 'moderadamente aumentado';
-        else classificacao = 'gravemente aumentado';
+        if (valor <= 40) {
+            classificacao.texto = 'normal';
+            classificacao.nivel = 'normal';
+        } else if (valor > 40 && valor <= 44) {
+            classificacao.texto = 'levemente aumentado';
+            classificacao.nivel = 'mild';
+        } else if (valor > 44 && valor <= 48) {
+            classificacao.texto = 'moderadamente aumentado';
+            classificacao.nivel = 'moderate';
+        } else {
+            classificacao.texto = 'gravemente aumentado';
+            classificacao.nivel = 'severe';
+        }
     } else if (sexo === 'F') {
-        if (valor <= 38) classificacao = 'normal';
-        else if (valor > 38 && valor <= 42) classificacao = 'levemente aumentado';
-        else if (valor > 42 && valor <= 46) classificacao = 'moderadamente aumentado';
-        else classificacao = 'gravemente aumentado';
+        if (valor <= 38) {
+            classificacao.texto = 'normal';
+            classificacao.nivel = 'normal';
+        } else if (valor > 38 && valor <= 42) {
+            classificacao.texto = 'levemente aumentado';
+            classificacao.nivel = 'mild';
+        } else if (valor > 42 && valor <= 46) {
+            classificacao.texto = 'moderadamente aumentado';
+            classificacao.nivel = 'moderate';
+        } else {
+            classificacao.texto = 'gravemente aumentado';
+            classificacao.nivel = 'severe';
+        }
     }
 
-    return classificacao ? `Átrio esquerdo ${classificacao}.` : '';
+    return classificacao.texto ? `Átrio esquerdo ${classificacao.texto}.` : '';
+}
+
+function atualizarClassificacao(elemento, texto, nivel) {
+    if (!elemento) return;
+
+    elemento.textContent = texto;
+    elemento.className = 'alert alert-info ' + nivel;
+}
+
+function obterNivelClassificacao(texto) {
+    if (texto.includes('normal')) return 'normal';
+    if (texto.includes('levemente') || texto.includes('discretamente')) return 'mild';
+    if (texto.includes('moderadamente')) return 'moderate';
+    if (texto.includes('gravemente') || texto.includes('importante')) return 'severe';
+    return 'normal';
 }
 
 function calcularVolumeDiastolicoFinal(diametro) {
@@ -302,7 +338,8 @@ function calcularResultados() {
     // Classificação do Átrio Esquerdo
     if (atrio > 0 && elementos.classificacaoAe && elementos.sexo) {
         const classificacaoAe = classificarAtrioEsquerdo(atrio, elementos.sexo.value);
-        setElementText(elementos.classificacaoAe, classificacaoAe);
+        const nivel = obterNivelClassificacao(classificacaoAe);
+        atualizarClassificacao(elementos.classificacaoAe, classificacaoAe, nivel);
     }
 
     // Superfície corpórea (DuBois)
