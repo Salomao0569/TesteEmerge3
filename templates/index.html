@@ -6,11 +6,12 @@
     <title>Laudo de Ecocardiograma</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/css/styles.css" rel="stylesheet">
+    <link href="/static/css/aorta.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <!-- Card de Identificação -->
-        <div class="card">
+        <!-- Card de Identificação permanece o mesmo -->
+        <div class="card mb-4">
             <div class="card-header">
                 <h5>Identificação do Paciente</h5>
             </div>
@@ -52,7 +53,101 @@
             </div>
         </div>
 
-        <!-- Card de Medidas e Cálculos -->
+        <!-- Novo Card de Referência da Aorta -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Valores de Referência da Aorta</h5>
+            </div>
+            <div class="card-body">
+                <div class="tables-wrapper">
+                    <!-- Tabela Homens -->
+                    <div class="table-section">
+                        <div class="gender-header">Valores para Homens</div>
+                        <table class="aorta-table">
+                            <tr>
+                                <th class="segment-name">Segmento</th>
+                                <th>Normal</th>
+                                <th>Discreto</th>
+                                <th>Moderado</th>
+                                <th>Import.</th>
+                            </tr>
+                            <tr>
+                                <td class="segment-name">Anel aórtico</td>
+                                <td class="normal-value">23-29</td>
+                                <td class="discreto-value">30-33</td>
+                                <td class="moderado-value">34-37</td>
+                                <td class="importante-value">>37</td>
+                            </tr>
+                            <tr>
+                                <td class="segment-name">Raiz da aorta</td>
+                                <td class="normal-value">31-37</td>
+                                <td class="discreto-value">37-40</td>
+                                <td class="moderado-value">40-43</td>
+                                <td class="importante-value">>44</td>
+                            </tr>
+                            <tr>
+                                <td class="segment-name">Junção sinotubular</td>
+                                <td class="normal-value">26-32</td>
+                                <td class="discreto-value">33-36</td>
+                                <td class="moderado-value">36-39</td>
+                                <td class="importante-value">>40</td>
+                            </tr>
+                            <tr>
+                                <td class="segment-name">Aorta ascendente</td>
+                                <td class="normal-value">26-34</td>
+                                <td class="discreto-value">35-39</td>
+                                <td class="moderado-value">40-43</td>
+                                <td class="importante-value">>44</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Tabela Mulheres -->
+                    <div class="table-section">
+                        <div class="gender-header">Valores para Mulheres</div>
+                        <table class="aorta-table">
+                            <tr>
+                                <th class="segment-name">Segmento</th>
+                                <th>Normal</th>
+                                <th>Discreto</th>
+                                <th>Moderado</th>
+                                <th>Import.</th>
+                            </tr>
+                            <tr>
+                                <td class="segment-name">Anel aórtico</td>
+                                <td class="normal-value">21-25</td>
+                                <td class="discreto-value">26-29</td>
+                                <td class="moderado-value">29-32</td>
+                                <td class="importante-value">>32</td>
+                            </tr>
+                            <tr>
+                                <td class="segment-name">Raiz da aorta</td>
+                                <td class="normal-value">27-33</td>
+                                <td class="discreto-value">34-37</td>
+                                <td class="moderado-value">37-40</td>
+                                <td class="importante-value">>40</td>
+                            </tr>
+                            <tr>
+                                <td class="segment-name">Junção sinotubular</td>
+                                <td class="normal-value">23-29</td>
+                                <td class="discreto-value">30-33</td>
+                                <td class="moderado-value">34-37</td>
+                                <td class="importante-value">>38</td>
+                            </tr>
+                            <tr>
+                                <td class="segment-name">Aorta ascendente</td>
+                                <td class="normal-value">23-31</td>
+                                <td class="discreto-value">32-36</td>
+                                <td class="moderado-value">37-41</td>
+                                <td class="importante-value">>42</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card de Medidas e Cálculos permanece o mesmo -->
         <div class="card">
             <div class="card-header">
                 <h5>Medidas e Cálculos</h5>
