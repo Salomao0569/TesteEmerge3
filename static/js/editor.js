@@ -59,22 +59,37 @@ $(document).ready(function() {
         // Adicionar modal para geração de texto
         $('body').append(`
             <div class="modal fade" id="modalGerarTexto" tabindex="-1">
-                <div class="modal-dialog">
+                <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Gerar Texto com IA</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="form-group">
-                                <label for="promptIA">Descreva o que você deseja gerar:</label>
-                                <textarea class="form-control" id="promptIA" rows="3" 
-                                    placeholder="Ex: Gere um laudo normal para um paciente com fração de ejeção preservada"></textarea>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="promptIA">Descreva o que você deseja gerar:</label>
+                                        <textarea class="form-control" id="promptIA" rows="3" 
+                                            placeholder="Ex: Gere um laudo normal para um paciente com fração de ejeção preservada"></textarea>
+                                        <button type="button" class="btn btn-primary mt-3" onclick="gerarTextoIA()">
+                                            Gerar Texto
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="preview-area">
+                                        <label>Preview do texto gerado:</label>
+                                        <div id="previewTextoIA" class="form-control preview-content" contenteditable="true"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="button" class="btn btn-primary" onclick="gerarTextoIA()">Gerar</button>
+                            <button type="button" class="btn btn-success" onclick="inserirTextoGerado()">
+                                Inserir no Editor
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -110,16 +125,25 @@ async function gerarTextoIA() {
 
         const data = await response.json();
         if (data.texto) {
-            // Inserir o texto gerado no editor
-            $('#editor').summernote('pasteHTML', data.texto);
-            // Fechar o modal
-            $('#modalGerarTexto').modal('hide');
-            // Limpar o prompt
-            document.getElementById('promptIA').value = '';
+            // Mostrar o texto gerado na área de preview
+            const previewArea = document.getElementById('previewTextoIA');
+            previewArea.innerHTML = data.texto;
         }
     } catch (error) {
         console.error('Erro ao gerar texto:', error);
         alert('Erro ao gerar texto. Por favor, tente novamente.');
+    }
+}
+
+// Função para inserir o texto do preview no editor
+function inserirTextoGerado() {
+    const textoGerado = document.getElementById('previewTextoIA').innerHTML;
+    if (textoGerado) {
+        $('#editor').summernote('pasteHTML', textoGerado);
+        $('#modalGerarTexto').modal('hide');
+        // Limpar preview e prompt
+        document.getElementById('previewTextoIA').innerHTML = '';
+        document.getElementById('promptIA').value = '';
     }
 }
 
