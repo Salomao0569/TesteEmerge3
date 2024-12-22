@@ -150,6 +150,26 @@ function classificarAorta(valor, sexo, segmento) {
     return classificacao ? `${segmentoNomes[segmento]} ${classificacao}.` : '';
 }
 
+function classificarSeptoEParede(valor, sexo) {
+    if (!valor || !sexo) return '';
+
+    let classificacao = '';
+
+    if (sexo === 'F') {
+        if (valor >= 6 && valor <= 10) classificacao = 'normal';
+        else if (valor >= 11 && valor <= 13) classificacao = 'discretamente aumentado';
+        else if (valor >= 14 && valor <= 16) classificacao = 'moderadamente aumentado';
+        else if (valor > 16) classificacao = 'gravemente aumentado';
+    } else if (sexo === 'M') {
+        if (valor >= 6 && valor <= 11) classificacao = 'normal';
+        else if (valor >= 12 && valor <= 14) classificacao = 'discretamente aumentado';
+        else if (valor >= 15 && valor <= 17) classificacao = 'moderadamente aumentado';
+        else if (valor > 17) classificacao = 'gravemente aumentado';
+    }
+
+    return classificacao ? classificacao : '';
+}
+
 function calcularResultados() {
     // Obter elementos do DOM
     const elementos = {
@@ -172,11 +192,12 @@ function calcularResultados() {
         classificacaoFe: document.getElementById('classificacao_fe'),
         classificacaoAe: document.getElementById('classificacao_ae'),
         sexo: document.getElementById('sexo'),
-        aorta: document.getElementById('aorta'), // Added
-        aortaAsc: document.getElementById('aorta_ascendente'), // Added
-        classificacaoAorta: document.getElementById('classificacao_aorta'), // Added
-        classificacaoAortaAsc: document.getElementById('classificacao_aorta_ascendente') // Added
-
+        aorta: document.getElementById('aorta'),
+        aortaAsc: document.getElementById('aorta_ascendente'),
+        classificacaoAorta: document.getElementById('classificacao_aorta'),
+        classificacaoAortaAsc: document.getElementById('classificacao_aorta_ascendente'),
+        classificacaoSepto: document.getElementById('classificacao_septo'),
+        classificacaoPPVE: document.getElementById('classificacao_ppve')
     };
 
     // Verificar elementos essenciais
@@ -193,8 +214,8 @@ function calcularResultados() {
     const diamSistFinal = getElementValue(elementos.diamSistFinal);
     const espDiastSepto = getElementValue(elementos.espDiastSepto);
     const espDiastPPVE = getElementValue(elementos.espDiastPPVE);
-    const aorta = getElementValue(elementos.aorta); // Added
-    const aortaAsc = getElementValue(elementos.aortaAsc); // Added
+    const aorta = getElementValue(elementos.aorta);
+    const aortaAsc = getElementValue(elementos.aortaAsc);
 
 
     // Classificação do Átrio Esquerdo
@@ -293,6 +314,18 @@ function calcularResultados() {
         const sexo = elementos.sexo.value;
         const classificacaoAsc = classificarAorta(aortaAsc, sexo, 'ascendente');
         setElementText(elementos.classificacaoAortaAsc, classificacaoAsc);
+    }
+
+    // Classificação do Septo
+    if (espDiastSepto > 0 && elementos.classificacaoSepto && elementos.sexo) {
+        const classificacaoSepto = classificarSeptoEParede(espDiastSepto, elementos.sexo.value);
+        setElementText(elementos.classificacaoSepto, `Septo interventricular ${classificacaoSepto}.`);
+    }
+
+    // Classificação da PPVE
+    if (espDiastPPVE > 0 && elementos.classificacaoPPVE && elementos.sexo) {
+        const classificacaoPPVE = classificarSeptoEParede(espDiastPPVE, elementos.sexo.value);
+        setElementText(elementos.classificacaoPPVE, `Parede posterior do VE ${classificacaoPPVE}.`);
     }
 }
 
