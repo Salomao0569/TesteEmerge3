@@ -304,7 +304,7 @@ function classificarDiametroVE(valor, sexo, tipo) {
 }
 
 function classificarEspessuraRelativa(espessuraRelativa, massaVE, sexo) {
-    if (!espessuraRelativa || !massaVE || !sexo) return '';
+    if (!espessuraRelativa || !massaVE || !sexo) return { texto: '', nivel: 'normal' };
 
     // Limites de massa do VE por sexo
     const limiteMassa = {
@@ -314,17 +314,27 @@ function classificarEspessuraRelativa(espessuraRelativa, massaVE, sexo) {
 
     const massaAumentada = massaVE > limiteMassa[sexo];
 
+    let classificacao = {
+        texto: '',
+        nivel: 'moderate' // Por padrão, todos os casos alterados serão laranja
+    };
+
     if (espessuraRelativa < 0.42) {
         if (massaAumentada) {
-            return 'Hipertrofia excêntrica do VE.';
+            classificacao.texto = 'Hipertrofia excêntrica do VE.';
+        } else {
+            classificacao.texto = 'Geometria normal do VE.';
+            classificacao.nivel = 'normal'; // Apenas geometria normal será azul
         }
-        return 'Geometria normal do VE.';
     } else {
         if (massaAumentada) {
-            return 'Hipertrofia concêntrica do VE.';
+            classificacao.texto = 'Hipertrofia concêntrica do VE.';
+        } else {
+            classificacao.texto = 'Remodelamento concêntrico do VE.';
         }
-        return 'Remodelamento concêntrico do VE.';
     }
+
+    return classificacao;
 }
 
 function calcularResultados() {
@@ -489,12 +499,12 @@ function calcularResultados() {
             const massaVE = calcularMassaVE();
             const indiceMassa = superficie > 0 ? Math.round((massaVE / superficie) * 10) / 10 : 0;
 
-            const classificacaoEspessura = classificarEspessuraRelativa(
+            const resultado = classificarEspessuraRelativa(
                 espessuraRelativa,
                 indiceMassa,
                 elementos.sexo.value
             );
-            setElementText(elementos.classificacaoEspessura, classificacaoEspessura);
+            atualizarClassificacao(elementos.classificacaoEspessura, resultado.texto, resultado.nivel);
         }
     }
 
