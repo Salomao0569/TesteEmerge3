@@ -191,8 +191,8 @@ function classificarAorta(valor, sexo, segmento) {
         'ascendente': 'Aorta ascendente'
     };
 
-    return classificacao.texto ? 
-        { texto: `${segmentoNomes[segmento]} ${classificacao.texto}.`, nivel: classificacao.nivel } : 
+    return classificacao.texto ?
+        { texto: `${segmentoNomes[segmento]} ${classificacao.texto}.`, nivel: classificacao.nivel } :
         { texto: '', nivel: 'normal' };
 }
 
@@ -382,7 +382,7 @@ function calcularResultados() {
     if (atrio > 0 && elementos.classificacaoAe && elementos.sexo) {
         const resultado = classificarAtrioEsquerdo(atrio, elementos.sexo.value);
         atualizarClassificacao(
-            elementos.classificacaoAe, 
+            elementos.classificacaoAe,
             `Átrio esquerdo ${resultado.texto}.`,
             resultado.nivel
         );
@@ -420,24 +420,53 @@ function calcularResultados() {
         // Classificação da Fração de Ejeção
         if (elementos.classificacaoFe && elementos.sexo) {
             const sexo = elementos.sexo.value;
-            let classificacao = '';
+            let classificacao = {
+                texto: '',
+                nivel: 'normal'
+            };
 
             if (sexo === 'M') {
-                if (fracaoEjecao >= 52 && fracaoEjecao <= 72) classificacao = 'normal';
-                else if (fracaoEjecao > 72) classificacao = 'aumentada';
-                else if (fracaoEjecao >= 41 && fracaoEjecao < 52) classificacao = 'disfunção discreta';
-                else if (fracaoEjecao >= 30 && fracaoEjecao < 41) classificacao = 'disfunção moderada';
-                else if (fracaoEjecao < 30) classificacao = 'disfunção grave';
+                if (fracaoEjecao >= 52 && fracaoEjecao <= 72) {
+                    classificacao.texto = 'normal';
+                    classificacao.nivel = 'normal';
+                } else if (fracaoEjecao > 72) {
+                    classificacao.texto = 'aumentada';
+                    classificacao.nivel = 'normal';
+                } else if (fracaoEjecao >= 41 && fracaoEjecao < 52) {
+                    classificacao.texto = 'disfunção discreta';
+                    classificacao.nivel = 'mild';
+                } else if (fracaoEjecao >= 30 && fracaoEjecao < 41) {
+                    classificacao.texto = 'disfunção moderada';
+                    classificacao.nivel = 'moderate';
+                } else if (fracaoEjecao < 30) {
+                    classificacao.texto = 'disfunção grave';
+                    classificacao.nivel = 'severe';
+                }
             } else if (sexo === 'F') {
-                if (fracaoEjecao >= 54 && fracaoEjecao <= 74) classificacao = 'normal';
-                else if (fracaoEjecao > 74) classificacao = 'aumentada';
-                else if (fracaoEjecao >= 41 && fracaoEjecao < 54) classificacao = 'disfunção discreta';
-                else if (fracaoEjecao >= 30 && fracaoEjecao < 41) classificacao = 'disfunção moderada';
-                else if (fracaoEjecao < 30) classificacao = 'disfunção grave';
+                if (fracaoEjecao >= 54 && fracaoEjecao <= 74) {
+                    classificacao.texto = 'normal';
+                    classificacao.nivel = 'normal';
+                } else if (fracaoEjecao > 74) {
+                    classificacao.texto = 'aumentada';
+                    classificacao.nivel = 'normal';
+                } else if (fracaoEjecao >= 41 && fracaoEjecao < 54) {
+                    classificacao.texto = 'disfunção discreta';
+                    classificacao.nivel = 'mild';
+                } else if (fracaoEjecao >= 30 && fracaoEjecao < 41) {
+                    classificacao.texto = 'disfunção moderada';
+                    classificacao.nivel = 'moderate';
+                } else if (fracaoEjecao < 30) {
+                    classificacao.texto = 'disfunção grave';
+                    classificacao.nivel = 'severe';
+                }
             }
 
-            if (classificacao) {
-                setElementText(elementos.classificacaoFe, `Fração de ejeção do ventrículo esquerdo ${classificacao}.`);
+            if (classificacao.texto) {
+                atualizarClassificacao(
+                    elementos.classificacaoFe,
+                    `Fração de ejeção do ventrículo esquerdo ${classificacao.texto}.`,
+                    classificacao.nivel
+                );
             }
         }
     }
@@ -496,7 +525,7 @@ function calcularResultados() {
     if (espDiastSepto > 0 && elementos.classificacaoSepto && elementos.sexo) {
         const resultado = classificarSeptoEParede(espDiastSepto, elementos.sexo.value);
         atualizarClassificacao(
-            elementos.classificacaoSepto, 
+            elementos.classificacaoSepto,
             `Septo interventricular ${resultado.texto}.`,
             resultado.nivel
         );
@@ -506,7 +535,7 @@ function calcularResultados() {
     if (espDiastPPVE > 0 && elementos.classificacaoPPVE && elementos.sexo) {
         const resultado = classificarSeptoEParede(espDiastPPVE, elementos.sexo.value);
         atualizarClassificacao(
-            elementos.classificacaoPPVE, 
+            elementos.classificacaoPPVE,
             `Parede posterior do VE ${resultado.texto}.`,
             resultado.nivel
         );
