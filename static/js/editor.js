@@ -110,11 +110,19 @@ async function gerarTextoIA() {
     }
 
     try {
+        // Get CSRF token from meta tag or from cookie
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                         document.cookie.split('; ').find(row => row.startsWith('csrf_token='))?.split('=')[1];
+
+        if (!csrfToken) {
+            throw new Error('CSRF token não encontrado. Por favor, recarregue a página.');
+        }
+
         const response = await fetch('/api/gerar_texto', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRFToken': csrfToken
             },
             body: JSON.stringify({ prompt })
         });

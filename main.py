@@ -295,6 +295,9 @@ def gerar_texto():
         # do not change this unless explicitly requested by the user
         client = OpenAI(api_key=api_key)
 
+        logger.info("CSRF Token recebido: %s", request.headers.get('X-CSRFToken'))
+        logger.info("Headers da requisição: %s", dict(request.headers))
+
         prompt = """
         Você é um assistente especializado em laudos médicos ecocardiográficos.
         Por favor, gere um texto profissional e detalhado baseado no seguinte prompt:
