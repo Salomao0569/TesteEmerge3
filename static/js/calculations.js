@@ -397,6 +397,22 @@ function calcularResultados() {
     }
 }
 
+// Função para destacar valores alterados
+function destacarValorAlterado(elemento) {
+    if (!elemento) return;
+
+    const parentCell = elemento.parentElement;
+    const alertDiv = parentCell.querySelector('.alert');
+
+    if (alertDiv) {
+        alertDiv.classList.add('alert-value');
+        // Remove a classe após 2 segundos
+        setTimeout(() => {
+            alertDiv.classList.remove('alert-value');
+        }, 2000);
+    }
+}
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('input[type="number"]');
@@ -404,7 +420,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (inputs.length > 0 && sexoSelect) {
         inputs.forEach(input => {
-            input.addEventListener('input', calcularResultados);
+            input.addEventListener('input', function(event) {
+                destacarValorAlterado(event.target);
+                calcularResultados();
+            });
         });
 
         sexoSelect.addEventListener('change', calcularResultados);

@@ -54,6 +54,19 @@ body {
 .moderado-value { background: #fffff0; }
 .importante-value { background: #fff5f5; }
 
+/* Estilos para valores alterados */
+.alert-value {
+    background-color: #f8d7da;
+    color: #721c24;
+    transition: all 0.3s ease;
+}
+
+.normal-value {
+    background-color: #d4edda;
+    color: #155724;
+    transition: all 0.3s ease;
+}
+
 /* Campos de entrada e resultados */
 .input-field,
 .form-control {
@@ -348,7 +361,6 @@ div[id^="print_"],
 .calculation-cell:hover::after {
     opacity: 1;
 }
-
 
 .editor-toolbar {
     padding: 0.5rem;
