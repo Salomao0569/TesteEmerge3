@@ -224,6 +224,30 @@ function classificarDiametroVE(valor, sexo, tipo) {
     return classificacao ? `Diâmetro ${tipoNome} do VE ${classificacao}.` : '';
 }
 
+function classificarEspessuraRelativa(espessuraRelativa, massaVE, sexo) {
+    if (!espessuraRelativa || !massaVE || !sexo) return '';
+
+    // Limites de massa do VE por sexo
+    const limiteMassa = {
+        'M': 115, // g/m²
+        'F': 95   // g/m²
+    };
+
+    const massaAumentada = massaVE > limiteMassa[sexo];
+
+    if (espessuraRelativa < 0.42) {
+        if (massaAumentada) {
+            return 'Hipertrofia excêntrica do VE.';
+        }
+        return 'Geometria normal do VE.';
+    } else {
+        if (massaAumentada) {
+            return 'Hipertrofia concêntrica do VE.';
+        }
+        return 'Remodelamento concêntrico do VE.';
+    }
+}
+
 function calcularResultados() {
     // Obter elementos do DOM
     const elementos = {
@@ -253,7 +277,8 @@ function calcularResultados() {
         classificacaoSepto: document.getElementById('classificacao_septo'),
         classificacaoPPVE: document.getElementById('classificacao_ppve'),
         classificacaoDiastolico: document.getElementById('classificacao_diastolico'),
-        classificacaoSistolico: document.getElementById('classificacao_sistolico')
+        classificacaoSistolico: document.getElementById('classificacao_sistolico'),
+        classificacaoEspessura: document.getElementById('classificacao_espessura')
     };
 
     // Verificar elementos essenciais
@@ -345,6 +370,20 @@ function calcularResultados() {
         // Fórmula corrigida: (2 × PPVE) / DDVE
         const espessuraRelativa = Math.round((2 * espDiastPPVE / diamDiastFinal) * 100) / 100;
         setElementText(elementos.printEspRelativa, espessuraRelativa.toFixed(2));
+
+        // Classificação da Espessura Relativa
+        if (elementos.classificacaoEspessura && elementos.sexo) {
+            const superficie = parseFloat(elementos.superficie?.value || 0);
+            const massaVE = calcularMassaVE();
+            const indiceMassa = superficie > 0 ? Math.round((massaVE / superficie) * 10) / 10 : 0;
+
+            const classificacaoEspessura = classificarEspessuraRelativa(
+                espessuraRelativa,
+                indiceMassa,
+                elementos.sexo.value
+            );
+            setElementText(elementos.classificacaoEspessura, classificacaoEspessura);
+        }
     }
 
     // Massa do VE e Índice de Massa
