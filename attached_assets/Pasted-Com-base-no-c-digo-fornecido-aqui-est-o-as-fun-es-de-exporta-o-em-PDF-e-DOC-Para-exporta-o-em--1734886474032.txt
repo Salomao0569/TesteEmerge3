@@ -1,0 +1,146 @@
+Com base no código fornecido, aqui estão as funções de exportação em PDF e DOC:
+
+Para exportação em PDF (de pdf_generator.js):
+
+async function gerarPDF() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const content = $('#editor').summernote('code');
+        const contentDiv = document.createElement('div');
+        contentDiv.innerHTML = content;
+        // Configurações do PDF
+        const pageWidth = 210; // Largura A4 em mm
+        const margin = 20;
+        const contentWidth = pageWidth - (2 * margin);
+        // Adicionar título
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Laudo Médico', pageWidth/2, margin, { align: 'center' });
+        let yPos = margin + 15;
+        // Converter conteúdo do editor para imagem
+        await html2canvas(content, {
+            scale: 3,
+            useCORS: true,
+            logging: false,
+            windowWidth: content.scrollWidth,
+            windowHeight: content.scrollHeight
+        }).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const imgWidth = pageWidth - (2 * margin);
+            const pageHeight = 297;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            // Adicionar conteúdo em páginas
+            let heightLeft = imgHeight;
+            let position = yPos;
+            let page = 1;
+            doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - position);
+            while (heightLeft > 0 && page < totalPages) {
+                doc.addPage();
+                doc.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - margin);
+                page++;
+            }
+            // Adicionar assinatura do médico
+            const doctorSelect = document.getElementById('selectedDoctor');
+            if (doctorSelect && doctorSelect.value) {
+                const selectedOption = doctorSelect.selectedOptions[0];
+                const doctorName = selectedOption.text;
+                const doctorCRM = selectedOption.dataset.crm;
+                const doctorRQE = selectedOption.dataset.rqe;
+                const assinaturaY = pageHeight - 40;
+                doc.line(pageWidth/2 - 40, assinaturaY, pageWidth/2 + 40, assinaturaY);
+                doc.text(doctorName, pageWidth/2, assinaturaY + 10, { align: 'center' });
+                doc.text(`CRM: ${doctorCRM}${doctorRQE ? ` / RQE: ${doctorRQE}` : ''}`, 
+                        pageWidth/2, assinaturaY + 15, { align: 'center' });
+            }
+        });
+        doc.save('laudo_medico.pdf');
+    } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+        alert('Erro ao gerar o PDF: ' + error.message);
+    }
+}
+Para exportação em DOC (de doc_generator.js):
+
+function gerarDOC() {
+    try {
+        // Obter dados do formulário
+        const paciente = {
+            nome: document.getElementById('nome').value || 'N/D',
+            dataNascimento: document.getElementById('dataNascimento').value || 'N/D',
+            sexo: document.getElementById('sexo').value || 'N/D',
+            peso: document.getElementById('peso').value ? `${document.getElementById('peso').value} kg` : 'N/D',
+            altura: document.getElementById('altura').value ? `${document.getElementById('altura').value} cm` : 'N/D',
+            dataExame: document.getElementById('dataExame').value || new Date().toLocaleDateString('pt-BR')
+        };
+        // Obter dados do médico
+        const doctorSelect = document.getElementById('selectedDoctor');
+        const doctorData = doctorSelect.value ? {
+            nome: doctorSelect.options[doctorSelect.selectedIndex].text,
+            crm: doctorSelect.options[doctorSelect.selectedIndex].dataset.crm,
+            rqe: doctorSelect.options[doctorSelect.selectedIndex].dataset.rqe
+        } : null;
+        // Obter conteúdo do editor
+        const laudoContent = $('#editor').summernote('code');
+        const cleanContent = laudoContent.replace(/<\/?[^>]+(>|$)/g, "");
+        // Preparar dados para envio
+        const data = {
+            paciente: paciente,
+            medidas: {
+                atrio: document.getElementById('atrio').value || 'N/D',
+                aorta: document.getElementById('aorta').value || 'N/D',
+                diamDiastFinal: document.getElementById('diam_diast_final').value || 'N/D',
+                diamSistFinal: document.getElementById('diam_sist_final').value || 'N/D',
+                espDiastSepto: document.getElementById('esp_diast_septo').value || 'N/D',
+                espDiastPPVE: document.getElementById('esp_diast_ppve').value || 'N/D',
+                vd: document.getElementById('vd').value || 'N/D'
+            },
+            calculos: {
+                volumeDiastFinal: document.getElementById('print_volume_diast_final').textContent,
+                volumeSistFinal: document.getElementById('print_volume_sist_final').textContent,
+                volumeEjetado: document.getElementById('print_volume_ejetado').textContent,
+                fracaoEjecao: document.getElementById('print_fracao_ejecao').textContent,
+                percentEncurt: document.getElementById('print_percent_encurt').textContent,
+                espRelativa: document.getElementById('print_esp_relativa').textContent,
+                massaVE: document.getElementById('print_massa_ve').textContent
+            },
+            laudo: laudoContent,
+            medico: doctorData
+        };
+        // Enviar requisição
+        fetch('/gerar_doc', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao gerar o documento');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Laudo_${paciente.nome.replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        })
+        .catch(error => {
+            console.error('Erro ao gerar DOC:', error);
+            alert('Erro ao gerar o documento DOC: ' + error.message);
+        });
+    } catch (error) {
+        console.error('Erro ao preparar dados:', error);
+        alert('Erro ao preparar dados para geração do documento: ' + error.message);
+    }
+}

@@ -1,12 +1,16 @@
 import os
 import logging
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from models import db, Doctor, Template, Report
 from dotenv import load_dotenv
 from datetime import datetime
 from assets import init_assets
+from docx import Document
+from docx.shared import Inches, Pt
+from io import BytesIO
+import html2text
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -165,6 +169,112 @@ def create_report():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
+
+@app.route('/gerar_doc', methods=['POST'])
+def gerar_doc():
+    try:
+        data = request.get_json()
+        doc = Document()
+
+        # Configuração inicial do documento
+        doc.add_heading('Laudo de Ecodopplercardiograma', 0)
+
+        # Dados do Paciente
+        doc.add_heading('Dados do Paciente', level=1)
+        table = doc.add_table(rows=1, cols=2)
+        table.style = 'Table Grid'
+
+        # Cabeçalhos da tabela
+        header_cells = table.rows[0].cells
+        header_cells[0].text = 'Campo'
+        header_cells[1].text = 'Valor'
+
+        # Adicionar dados do paciente
+        paciente = data.get('paciente', {})
+        dados_paciente = [
+            ('Nome', paciente.get('nome', 'N/D')),
+            ('Data de Nascimento', paciente.get('dataNascimento', 'N/D')),
+            ('Sexo', paciente.get('sexo', 'N/D')),
+            ('Peso', paciente.get('peso', 'N/D')),
+            ('Altura', paciente.get('altura', 'N/D')),
+            ('Data do Exame', paciente.get('dataExame', 'N/D'))
+        ]
+
+        for campo, valor in dados_paciente:
+            row_cells = table.add_row().cells
+            row_cells[0].text = campo
+            row_cells[1].text = str(valor)
+
+        # Medidas e Cálculos
+        doc.add_heading('Medidas e Cálculos', level=1)
+        table = doc.add_table(rows=1, cols=4)
+        table.style = 'Table Grid'
+
+        # Cabeçalhos
+        header_cells = table.rows[0].cells
+        header_cells[0].text = 'Medida'
+        header_cells[1].text = 'Valor'
+        header_cells[2].text = 'Cálculo'
+        header_cells[3].text = 'Resultado'
+
+        medidas = data.get('medidas', {})
+        calculos = data.get('calculos', {})
+
+        medidas_calculos = [
+            ('Átrio Esquerdo', medidas.get('atrio', 'N/D'), 
+             'Volume Diastólico Final', calculos.get('volumeDiastFinal', 'N/D')),
+            ('Aorta', medidas.get('aorta', 'N/D'), 
+             'Volume Sistólico Final', calculos.get('volumeSistFinal', 'N/D')),
+            ('Diâmetro Diastólico', medidas.get('diamDiastFinal', 'N/D'), 
+             'Volume Ejetado', calculos.get('volumeEjetado', 'N/D')),
+            ('Diâmetro Sistólico', medidas.get('diamSistFinal', 'N/D'), 
+             'Fração de Ejeção', calculos.get('fracaoEjecao', 'N/D')),
+            ('Espessura do Septo', medidas.get('espDiastSepto', 'N/D'),
+             'Percentual Enc. Cavidade', calculos.get('percentEncurt', 'N/D')),
+            ('Espessura PPVE', medidas.get('espDiastPPVE', 'N/D'),
+             'Espessura Relativa', calculos.get('espRelativa', 'N/D')),
+            ('Ventrículo Direito', medidas.get('vd', 'N/D'),
+             'Massa do VE', calculos.get('massaVE', 'N/D'))
+        ]
+
+        for medida, valor_medida, calculo, valor_calculo in medidas_calculos:
+            row_cells = table.add_row().cells
+            row_cells[0].text = medida
+            row_cells[1].text = str(valor_medida)
+            row_cells[2].text = calculo
+            row_cells[3].text = str(valor_calculo)
+
+        # Laudo
+        doc.add_heading('Laudo', level=1)
+        h = html2text.HTML2Text()
+        h.ignore_links = True
+        laudo_texto = h.handle(data.get('laudo', ''))
+        doc.add_paragraph(laudo_texto)
+
+        # Assinatura do Médico
+        if data.get('medico'):
+            doc.add_paragraph('\n\n')
+            medico = data['medico']
+            assinatura = f"{medico['nome']}\nCRM: {medico['crm']}"
+            if medico.get('rqe'):
+                assinatura += f"\nRQE: {medico['rqe']}"
+            doc.add_paragraph(assinatura).alignment = 1  # Centralizado
+
+        # Salvar documento
+        doc_io = BytesIO()
+        doc.save(doc_io)
+        doc_io.seek(0)
+
+        return send_file(
+            doc_io,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            as_attachment=True,
+            download_name='laudo_ecocardiograma.docx'
+        )
+
+    except Exception as e:
+        logger.error(f"Erro ao gerar documento DOC: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 @app.after_request
 def add_csrf_header(response):
