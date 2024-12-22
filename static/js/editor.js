@@ -14,24 +14,40 @@ $(document).ready(function() {
                 ['para', ['ul', 'ol', 'paragraph']],
                 ['table', ['table']],
                 ['insert', ['link', 'picture']],
-                ['view', ['fullscreen', 'codeview']]
+                ['view', ['fullscreen', 'codeview']],
+                ['custom', ['gerarTextoIA']] // Novo botão para IA
             ],
             fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '24', '36'],
             styleTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
             placeholder: 'Digite o conteúdo do laudo aqui...',
             callbacks: {
                 onChange: function(contents) {
-                    // Armazenar conteúdo no localStorage para backup
                     localStorage.setItem('reportContent', contents);
                     showBackupIndicator();
                 },
                 onInit: function() {
                     console.log('Editor inicializado com sucesso');
-                    // Restaurar conteúdo do backup se existir
                     const savedContent = localStorage.getItem('reportContent');
                     if (savedContent) {
                         $('#editor').summernote('code', savedContent);
                     }
+                    // Adicionar botão personalizado
+                    var gerarTextoButton = '<button type="button" class="btn btn-default btn-sm btn-gerarTexto" title="Gerar texto com IA" data-toggle="modal" data-target="#modalGerarTexto">' +
+                        '<i class="fas fa-robot"></i> Gerar Texto com IA</button>';
+                    $('.note-toolbar').append(gerarTextoButton);
+                }
+            },
+            buttons: {
+                gerarTextoIA: function(context) {
+                    var ui = $.summernote.ui;
+                    var button = ui.button({
+                        contents: '<i class="fas fa-robot"></i>',
+                        tooltip: 'Gerar Texto com IA',
+                        click: function() {
+                            $('#modalGerarTexto').modal('show');
+                        }
+                    });
+                    return button.render();
                 }
             }
         });
@@ -40,12 +56,74 @@ $(document).ready(function() {
         loadTemplatesAndPhrases();
         loadDoctors();
 
+        // Adicionar modal para geração de texto
+        $('body').append(`
+            <div class="modal fade" id="modalGerarTexto" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Gerar Texto com IA</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="promptIA">Descreva o que você deseja gerar:</label>
+                                <textarea class="form-control" id="promptIA" rows="3" 
+                                    placeholder="Ex: Gere um laudo normal para um paciente com fração de ejeção preservada"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" onclick="gerarTextoIA()">Gerar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+
     } catch (error) {
         console.error('Erro ao configurar editor:', error);
     }
 });
 
-// Função para carregar templates e frases do servidor
+// Função para gerar texto usando IA
+async function gerarTextoIA() {
+    const prompt = document.getElementById('promptIA').value;
+    if (!prompt) {
+        alert('Por favor, descreva o que você deseja gerar.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/gerar_texto', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ prompt })
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao gerar texto');
+        }
+
+        const data = await response.json();
+        if (data.texto) {
+            // Inserir o texto gerado no editor
+            $('#editor').summernote('pasteHTML', data.texto);
+            // Fechar o modal
+            $('#modalGerarTexto').modal('hide');
+            // Limpar o prompt
+            document.getElementById('promptIA').value = '';
+        }
+    } catch (error) {
+        console.error('Erro ao gerar texto:', error);
+        alert('Erro ao gerar texto. Por favor, tente novamente.');
+    }
+}
+
+// Função para carregar templates e frases
 async function loadTemplatesAndPhrases() {
     try {
         const response = await fetch('/api/templates');

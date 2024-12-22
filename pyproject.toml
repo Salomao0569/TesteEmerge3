@@ -31,4 +31,5 @@ dependencies = [
     "flask-limiter>=3.9.2",
     "redis",
     "oauthlib>=3.2.2",
+    "openai>=1.58.1",
 ]

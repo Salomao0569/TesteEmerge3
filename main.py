@@ -11,6 +11,8 @@ from docx import Document
 from docx.shared import Inches, Pt
 from io import BytesIO
 import html2text
+from openai import OpenAI
+import json
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -275,6 +277,41 @@ def gerar_doc():
     except Exception as e:
         logger.error(f"Erro ao gerar documento DOC: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/gerar_texto', methods=['POST'])
+def gerar_texto():
+    try:
+        data = request.get_json()
+        if not data or 'prompt' not in data:
+            return jsonify({"error": "Prompt é obrigatório"}), 400
+
+        # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
+        # do not change this unless explicitly requested by the user
+        client = OpenAI()
+
+        prompt = """
+        Você é um assistente especializado em laudos médicos ecocardiográficos.
+        Por favor, gere um texto profissional e detalhado baseado no seguinte prompt:
+
+        {}
+
+        O texto deve ser técnico, preciso e seguir as melhores práticas médicas.
+        """.format(data['prompt'])
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=1000
+        )
+
+        texto_gerado = response.choices[0].message.content
+
+        return jsonify({"texto": texto_gerado})
+    except Exception as e:
+        logger.error(f"Erro ao gerar texto com OpenAI: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
 
 @app.after_request
 def add_csrf_header(response):
