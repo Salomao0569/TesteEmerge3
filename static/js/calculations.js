@@ -170,6 +170,60 @@ function classificarSeptoEParede(valor, sexo) {
     return classificacao ? classificacao : '';
 }
 
+function classificarDiametroVE(valor, sexo, tipo) {
+    if (!valor || !sexo || !tipo) return '';
+
+    const referencias = {
+        'M': {
+            'diastolico': {
+                normal: [42, 58],
+                discreto: [59, 63],
+                moderado: [64, 68],
+                importante: 68
+            },
+            'sistolico': {
+                normal: [25, 40],
+                discreto: [41, 43],
+                moderado: [44, 45],
+                importante: 45
+            }
+        },
+        'F': {
+            'diastolico': {
+                normal: [38, 52],
+                discreto: [53, 56],
+                moderado: [57, 61],
+                importante: 61
+            },
+            'sistolico': {
+                normal: [22, 35],
+                discreto: [36, 38],
+                moderado: [39, 41],
+                importante: 41
+            }
+        }
+    };
+
+    const ref = referencias[sexo][tipo];
+    if (!ref) return '';
+
+    let classificacao = '';
+    if (valor >= ref.normal[0] && valor <= ref.normal[1]) {
+        classificacao = 'normal';
+    } else if (valor >= ref.discreto[0] && valor <= ref.discreto[1]) {
+        classificacao = 'discretamente aumentado';
+    } else if (valor >= ref.moderado[0] && valor <= ref.moderado[1]) {
+        classificacao = 'moderadamente aumentado';
+    } else if (valor > ref.importante) {
+        classificacao = 'importante aumento';
+    } else if (valor < ref.normal[0]) {
+        classificacao = 'reduzido';
+    }
+
+    const tipoNome = tipo === 'diastolico' ? 'diastólico' : 'sistólico';
+    return classificacao ? `Diâmetro ${tipoNome} do VE ${classificacao}.` : '';
+}
+
 function calcularResultados() {
     // Obter elementos do DOM
     const elementos = {
@@ -197,7 +251,9 @@ function calcularResultados() {
         classificacaoAorta: document.getElementById('classificacao_aorta'),
         classificacaoAortaAsc: document.getElementById('classificacao_aorta_ascendente'),
         classificacaoSepto: document.getElementById('classificacao_septo'),
-        classificacaoPPVE: document.getElementById('classificacao_ppve')
+        classificacaoPPVE: document.getElementById('classificacao_ppve'),
+        classificacaoDiastolico: document.getElementById('classificacao_diastolico'),
+        classificacaoSistolico: document.getElementById('classificacao_sistolico')
     };
 
     // Verificar elementos essenciais
@@ -326,6 +382,18 @@ function calcularResultados() {
     if (espDiastPPVE > 0 && elementos.classificacaoPPVE && elementos.sexo) {
         const classificacaoPPVE = classificarSeptoEParede(espDiastPPVE, elementos.sexo.value);
         setElementText(elementos.classificacaoPPVE, `Parede posterior do VE ${classificacaoPPVE}.`);
+    }
+
+    // Classificação do Diâmetro Diastólico
+    if (diamDiastFinal > 0 && elementos.classificacaoDiastolico && elementos.sexo) {
+        const classificacaoDiastolico = classificarDiametroVE(diamDiastFinal, elementos.sexo.value, 'diastolico');
+        setElementText(elementos.classificacaoDiastolico, classificacaoDiastolico);
+    }
+
+    // Classificação do Diâmetro Sistólico
+    if (diamSistFinal > 0 && elementos.classificacaoSistolico && elementos.sexo) {
+        const classificacaoSistolico = classificarDiametroVE(diamSistFinal, elementos.sexo.value, 'sistolico');
+        setElementText(elementos.classificacaoSistolico, classificacaoSistolico);
     }
 }
 
