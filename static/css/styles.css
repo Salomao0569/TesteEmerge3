@@ -529,3 +529,16 @@ div[id^="print_"],
 .card-body {
     padding: 20px;
 }
+
+/* Classes para destaque de valores alterados */
+.alert-value {
+    color: #dc3545 !important;
+    font-weight: bold;
+    animation: fadeHighlight 2s ease;
+}
+
+@keyframes fadeHighlight {
+    0% { color: #dc3545; }
+    80% { color: #dc3545; }
+    100% { color: inherit; }
+}
