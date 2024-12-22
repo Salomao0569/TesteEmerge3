@@ -1,0 +1,62 @@
+
+Para explicar ao Replit como utilizar este front-end e integrá-lo ao backend já configurado, você pode usar a seguinte mensagem de orientação:
+
+"Este é o código HTML do front-end para exibir a tabela de medidas e cálculos. Ele inclui campos para entrada de valores, resultados centralizados e classificações visuais. O backend já está configurado para realizar os cálculos com base nos valores fornecidos.
+
+Passos para integração:
+Endpoint do Backend: Certifique-se de que o backend esteja escutando no endpoint /calcular ou outro específico que receba os valores enviados pelo front-end.
+
+Comunicação Front-End ↔ Backend: Adicione o seguinte código JavaScript no final deste arquivo HTML para enviar os valores ao backend e atualizar os resultados:
+
+javascript
+Copy code
+<script>
+    async function calcular() {
+        const dados = {
+            atrioEsquerdo: document.querySelector('.input-field:nth-of-type(1)').value,
+            aorta: document.querySelector('.input-field:nth-of-type(2)').value,
+            aortaAscendente: document.querySelector('.input-field:nth-of-type(3)').value,
+            diametroDiastolico: document.querySelector('.input-field:nth-of-type(4)').value,
+            diametroSistolico: document.querySelector('.input-field:nth-of-type(5)').value,
+            espessuraSepto: document.querySelector('.input-field:nth-of-type(6)').value,
+            espessuraPPVE: document.querySelector('.input-field:nth-of-type(7)').value,
+            ventriculoDireito: document.querySelector('.input-field:nth-of-type(8)').value,
+        };
+
+        const resposta = await fetch('/calcular', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dados),
+        });
+
+        const resultados = await resposta.json();
+
+        document.querySelector('.result:nth-of-type(1)').textContent = resultados.volDiastolicoFinal + ' mL';
+        document.querySelector('.result:nth-of-type(2)').textContent = resultados.volSistolicoFinal + ' mL';
+        document.querySelector('.result:nth-of-type(3)').textContent = resultados.volEjetado + ' mL';
+        document.querySelector('.result:nth-of-type(4)').textContent = resultados.fracaoEjecao + '%';
+        document.querySelector('.result:nth-of-type(5)').textContent = resultados.percentualEncurtamento + '%';
+        document.querySelector('.result:nth-of-type(6)').textContent = resultados.espessuraRelativa;
+        document.querySelector('.result:nth-of-type(7)').textContent = resultados.massaVE + ' g';
+        document.querySelector('.result:nth-of-type(8)').textContent = resultados.indiceMassa + ' g/m²';
+
+        atualizarClassificacao('.classification:nth-of-type(1)', resultados.classificacaoAtrio);
+        atualizarClassificacao('.classification:nth-of-type(2)', resultados.classificacaoAorta);
+        atualizarClassificacao('.classification:nth-of-type(3)', resultados.classificacaoAortaAscendente);
+        atualizarClassificacao('.classification:nth-of-type(4)', resultados.classificacaoDiametroDiastolico);
+        atualizarClassificacao('.classification:nth-of-type(5)', resultados.classificacaoDiametroSistolico);
+        atualizarClassificacao('.classification:nth-of-type(6)', resultados.classificacaoEspessuraSepto);
+        atualizarClassificacao('.classification:nth-of-type(7)', resultados.classificacaoEspessuraPPVE);
+        atualizarClassificacao('.classification:nth-of-type(8)', resultados.classificacaoVentriculoDireito);
+    }
+
+    function atualizarClassificacao(selector, classificacao) {
+        const elemento = document.querySelector(selector);
+        elemento.textContent = classificacao.texto;
+        elemento.className = 'classification ' + classificacao.nivel;
+    }
+</script>
+Testes: Após implementar, teste a integração enviando valores do front-end ao backend e verificando se os resultados e classificações são exibidos corretamente.
+Se precisar de mais detalhes ou ajustes no código, posso ajudar!"
