@@ -239,6 +239,8 @@ async function confirmarSalvarMascara() {
             throw new Error('Token CSRF não encontrado');
         }
 
+        console.log('Enviando template:', { name: titulo, content: conteudo, category: tipo });
+
         const response = await fetch('/api/templates', {
             method: 'POST',
             headers: {
@@ -260,13 +262,14 @@ async function confirmarSalvarMascara() {
 
         const data = await response.json();
 
+        // Close modal and reset form
         const modalElement = document.getElementById('modalSalvarMascara');
         const modal = bootstrap.Modal.getInstance(modalElement);
         modal.hide();
         document.getElementById('salvarMascaraForm').reset();
         delete window.tempContent;
 
-        showFeedback('Template salvo com sucesso!', 'success');
+        showFeedback(`Template "${titulo}" salvo com sucesso como ${tipo}!`, 'success');
         await loadTemplatesAndPhrases();
 
     } catch (error) {
