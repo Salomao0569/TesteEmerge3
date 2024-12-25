@@ -154,16 +154,26 @@
                     <div class="templates-section mb-4">
                         <div class="row">
                             <div class="col-md-6">
-                                <label for="mascaraSelect" class="form-label">Máscaras:</label>
-                                <select id="mascaraSelect" class="form-select">
-                                    <option value="">Selecione uma máscara...</option>
-                                </select>
+                                <div id="mascaraContainer">
+                                    <label for="mascaraSelect" class="form-label">Máscaras:</label>
+                                    <div class="custom-select-wrapper">
+                                        <select id="mascaraSelect" class="form-select">
+                                            <option value="">Selecione uma máscara...</option>
+                                        </select>
+                                        <div class="template-list"></div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label for="fraseSelect" class="form-label">Frases Padrão:</label>
-                                <select id="fraseSelect" class="form-select mb-2">
-                                    <option value="">Selecione uma frase padrão...</option>
-                                </select>
+                                <div id="fraseContainer">
+                                    <label for="fraseSelect" class="form-label">Frases Padrão:</label>
+                                    <div class="custom-select-wrapper">
+                                        <select id="fraseSelect" class="form-select">
+                                            <option value="">Selecione uma frase padrão...</option>
+                                        </select>
+                                        <div class="template-list"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

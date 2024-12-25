@@ -623,3 +623,96 @@ div[id^="print_"],
 #modalGerarTexto .btn-success {
     min-width: 120px;
 }
+
+/* Template List Styling */
+.custom-select-wrapper {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.template-list {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.custom-select-wrapper:focus-within .template-list {
+    display: block;
+}
+
+.template-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.template-item:hover {
+    background-color: #f8f9fa;
+}
+
+.template-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 8px;
+}
+
+.delete-btn {
+    visibility: hidden;
+    padding: 4px 8px;
+    color: #dc3545;
+    background: none;
+    border: none;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.template-item:hover .delete-btn {
+    visibility: visible;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+}
+
+/* Form Select Override */
+.form-select {
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.form-select:focus {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* Custom Scrollbar for Template List */
+.template-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.template-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.template-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.template-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
