@@ -619,6 +619,99 @@ def delete_template(id):
 def phrases():
     return render_template('phrases.html')
 
+@app.route('/api/templates/<int:id>/pdf', methods=['GET'])
+def export_template_pdf(id):
+    """Export a template as PDF"""
+    try:
+        template = Template.query.get_or_404(id)
+        logger.info(f"Exporting template {id} as PDF")
+
+        # Create PDF in memory
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
+
+        # Title
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=16,
+            spaceAfter=30
+        )
+        story.append(Paragraph(template.name, title_style))
+        story.append(Spacer(1, 20))
+
+        # Content
+        h = html2text.HTML2Text()
+        h.ignore_links = True
+        content_text = h.handle(template.content)
+        story.append(Paragraph(content_text, styles['Normal']))
+
+        # Add metadata
+        story.append(Spacer(1, 30))
+        metadata = [
+            f"Categoria: {template.category}",
+            f"Criado em: {template.created_at.strftime('%d/%m/%Y %H:%M')}"
+        ]
+        for meta in metadata:
+            story.append(Paragraph(meta, styles['Normal']))
+
+        # Generate PDF
+        doc.build(story)
+        buffer.seek(0)
+        logger.info("PDF generated successfully")
+
+        return send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f"{template.name}.pdf"
+        )
+
+    except Exception as e:
+        logger.error(f"Error exporting template {id} to PDF: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/templates/<int:id>/doc', methods=['GET'])
+def export_template_doc(id):
+    """Export a template as DOCX"""
+    try:
+        template = Template.query.get_or_404(id)
+        logger.info(f"Exporting template {id} as DOCX")
+
+        # Create DOCX in memory
+        doc = Document()
+        doc.add_heading(template.name, 0)
+
+        # Add content
+        h = html2text.HTML2Text()
+        h.ignore_links = True
+        content_text = h.handle(template.content)
+        doc.add_paragraph(content_text)
+
+        # Add metadata
+        doc.add_paragraph()  # Add space
+        doc.add_paragraph(f"Categoria: {template.category}")
+        doc.add_paragraph(f"Criado em: {template.created_at.strftime('%d/%m/%Y %H:%M')}")
+
+        # Save to buffer
+        doc_io = BytesIO()
+        doc.save(doc_io)
+        doc_io.seek(0)
+        logger.info("DOCX generated successfully")
+
+        return send_file(
+            doc_io,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            as_attachment=True,
+            download_name=f"{template.name}.docx"
+        )
+
+    except Exception as e:
+        logger.error(f"Error exporting template {id} to DOCX: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
 @app.after_request
 def add_csrf_header(response):
     """Add CSRF token to response headers and cookies"""

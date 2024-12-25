@@ -65,12 +65,103 @@ async function saveTemplate() {
             throw new Error(errorData.error || 'Erro ao salvar template');
         }
 
-        await response.json();
+        const savedTemplate = await response.json();
         alert('Template salvo com sucesso!');
+
+        // Adicionar botões de exportação após salvar
+        addExportButtons(savedTemplate.id);
+
         location.reload();
     } catch (error) {
         console.error('Erro ao salvar template:', error);
         alert(error.message);
+    }
+}
+
+// Função para adicionar botões de exportação
+function addExportButtons(templateId) {
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'export-buttons mt-3';
+    buttonContainer.innerHTML = `
+        <button onclick="exportToPDF(${templateId})" class="btn btn-danger me-2">
+            <i class="fas fa-file-pdf"></i> Exportar PDF
+        </button>
+        <button onclick="exportToDOC(${templateId})" class="btn btn-primary">
+            <i class="fas fa-file-word"></i> Exportar DOC
+        </button>
+    `;
+
+    const editorContainer = document.querySelector('#editor').closest('.card-body');
+    editorContainer.appendChild(buttonContainer);
+}
+
+// Função para exportar para PDF
+async function exportToPDF(templateId) {
+    try {
+        const token = getCSRFToken();
+        if (!token) {
+            throw new Error('Token CSRF não disponível');
+        }
+
+        const response = await fetch(`/api/templates/${templateId}/pdf`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': token,
+                'Accept': 'application/pdf'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao gerar PDF');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'template.pdf';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    } catch (error) {
+        console.error('Erro ao exportar PDF:', error);
+        alert('Erro ao exportar PDF: ' + error.message);
+    }
+}
+
+// Função para exportar para DOC
+async function exportToDOC(templateId) {
+    try {
+        const token = getCSRFToken();
+        if (!token) {
+            throw new Error('Token CSRF não disponível');
+        }
+
+        const response = await fetch(`/api/templates/${templateId}/doc`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': token,
+                'Accept': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao gerar DOC');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'template.docx';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    } catch (error) {
+        console.error('Erro ao exportar DOC:', error);
+        alert('Erro ao exportar DOC: ' + error.message);
     }
 }
 
