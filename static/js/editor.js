@@ -390,17 +390,15 @@ async function salvarFraseModelo() {
                             <div class="modal-body">
                                 <form id="salvarFraseForm" onsubmit="return false;">
                                     <div class="mb-3">
-                                        <label for="tituloFrase" class="form-label">Título:</label>
+                                        <label for="tituloFrase" class="form-label">Nome:</label>
                                         <input type="text" class="form-control" id="tituloFrase" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="categoriaFrase" class="form-label">Categoria:</label>
+                                        <label for="categoriaFrase" class="form-label">Tipo:</label>
                                         <select class="form-select" id="categoriaFrase" required>
-                                            <option value="">Selecione uma categoria...</option>
-                                            <option value="normal">Normal</option>
-                                            <option value="alterado">Alterado</option>
-                                            <option value="conclusao">Conclusão</option>
-                                            <option value="laudo">Laudo Completo</option>
+                                            <option value="">Selecione um tipo...</option>
+                                            <option value="mascara">Máscara</option>
+                                            <option value="frase">Frase Padrão</option>
                                         </select>
                                     </div>
                                 </form>
