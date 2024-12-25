@@ -1,0 +1,113 @@
+Para simplificar ainda mais o processo e garantir que o botão "Salvar Frase/Modelo" funcione de maneira integrada e intuitiva, podemos realizar os seguintes ajustes:
+
+Backend
+Padronização:
+Garantir que o título seja opcional. Se não for fornecido, um título padrão como "Modelo sem título" será usado.
+Adicionar um endpoint simples para testar o funcionamento do backend.
+Aqui está a atualização no código:
+
+python
+Copy code
+@app.route('/api/phrases', methods=['POST'])
+def save_phrase():
+    data = request.json
+    title = data.get('title', 'Modelo sem título')  # Título padrão se não fornecido
+    content = data.get('content')
+    if not content:
+        return jsonify({'error': 'Content is required'}), 400
+
+    phrase = PhraseRepository(title=title, content=content)
+    db.session.add(phrase)
+    db.session.commit()
+    return jsonify({'message': 'Phrase saved successfully', 'phrase': {
+        'id': phrase.id,
+        'title': phrase.title,
+        'content': phrase.content
+    }}), 201
+Front-End Simplificado
+Aqui está o código para conectar o botão "Salvar Frase/Modelo" e exibir mensagens de feedback simples no React.
+
+javascript
+Copy code
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+function App() {
+  const [phrases, setPhrases] = useState([]);
+  const [content, setContent] = useState("");
+
+  // Fetch phrases on mount
+  useEffect(() => {
+    fetchPhrases();
+  }, []);
+
+  const fetchPhrases = async () => {
+    try {
+      const response = await axios.get("/api/phrases");
+      setPhrases(response.data);
+    } catch (error) {
+      console.error("Error fetching phrases:", error);
+    }
+  };
+
+  const savePhrase = async () => {
+    if (!content) {
+      alert("Você precisa digitar o conteúdo antes de salvar.");
+      return;
+    }
+
+    try {
+      await axios.post("/api/phrases", { content });
+      setContent(""); // Limpar o campo de texto
+      fetchPhrases(); // Atualizar lista
+      alert("Frase salva com sucesso!");
+    } catch (error) {
+      console.error("Erro ao salvar a frase:", error);
+    }
+  };
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <h1>Sistema de Laudos</h1>
+      <textarea
+        placeholder="Digite o modelo de laudo ou frase aqui..."
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        style={{ width: "100%", height: "100px", marginBottom: "10px" }}
+      ></textarea>
+      <button onClick={savePhrase} style={{ padding: "10px 20px" }}>
+        Salvar Frase/Modelo
+      </button>
+
+      <h2>Frases/Modelos Salvos</h2>
+      <ul>
+        {phrases.map((phrase) => (
+          <li key={phrase.id}>
+            <strong>{phrase.title}:</strong> {phrase.content}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+Resultado
+Interface Simples:
+
+O usuário digita no editor e clica no botão para salvar.
+As frases aparecem abaixo na lista.
+Mensagens de Feedback:
+
+Se o conteúdo for salvo com sucesso, aparece um alerta confirmando.
+Se não houver conteúdo, uma mensagem avisa o usuário.
+Flexibilidade:
+
+O título é gerado automaticamente como "Modelo sem título" se não for informado.
+Agora o processo está ainda mais simples e funcional. Teste o código no Replit e me avise se precisar de mais ajustes!
+
+
+
+
+
+
