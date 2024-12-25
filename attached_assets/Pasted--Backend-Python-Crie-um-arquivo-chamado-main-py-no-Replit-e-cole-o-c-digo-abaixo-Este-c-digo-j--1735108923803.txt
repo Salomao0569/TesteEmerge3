@@ -1,0 +1,267 @@
+. Backend (Python)
+Crie um arquivo chamado main.py no Replit e cole o código abaixo.
+Este código já está configurado no seu documento atual, mas aqui está a versão completa com suporte ao Replit:
+
+python
+Copy code
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///phrases.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+class PhraseRepository(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# Rota para salvar uma frase/máscara
+@app.route('/api/phrases', methods=['POST'])
+def save_phrase():
+    data = request.json
+    if not data.get('title') or not data.get('content'):
+        return jsonify({'error': 'Title and content are required'}), 400
+
+    phrase = PhraseRepository(title=data['title'], content=data['content'])
+    db.session.add(phrase)
+    db.session.commit()
+    return jsonify({'message': 'Phrase saved successfully', 'phrase': {
+        'id': phrase.id,
+        'title': phrase.title,
+        'content': phrase.content
+    }}), 201
+
+# Rota para listar todas as frases/máscaras
+@app.route('/api/phrases', methods=['GET'])
+def list_phrases():
+    phrases = PhraseRepository.query.all()
+    return jsonify([{'id': p.id, 'title': p.title, 'content': p.content} for p in phrases])
+
+# Rota para deletar uma frase/máscara
+@app.route('/api/phrases/<int:id>', methods=['DELETE'])
+def delete_phrase(id):
+    phrase = PhraseRepository.query.get_or_404(id)
+    db.session.delete(phrase)
+    db.session.commit()
+    return jsonify({'message': 'Phrase deleted successfully'})
+
+if __name__ == '__main__':
+    db.create_all()
+    app.run(host="0.0.0.0", port=5000, debug=True)
+2. Frontend (HTML + CSS + JavaScript)
+No Replit, crie um novo arquivo chamado index.html e cole o seguinte código:
+html
+Copy code
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Laudos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <h1>Sistema de Laudos</h1>
+    <textarea id="content" placeholder="Digite o conteúdo aqui..."></textarea>
+    <button id="openModalButton">Salvar Frase/Modelo</button>
+
+    <!-- Modal para salvar frase/modelo -->
+    <div id="modal" class="hidden">
+      <div class="modal-content">
+        <h2>Salvar Frase/Modelo</h2>
+        <label for="title">Nome:</label>
+        <input type="text" id="title" placeholder="Digite o nome" />
+        <label for="type">Tipo:</label>
+        <select id="type">
+          <option value="frase">Frase</option>
+          <option value="modelo">Modelo</option>
+        </select>
+        <button id="saveButton">Salvar</button>
+        <button id="closeModalButton">Cancelar</button>
+      </div>
+    </div>
+
+    <h2>Frases/Modelos Salvos</h2>
+    <ul id="phraseList"></ul>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
+Crie um arquivo chamado style.css e cole o seguinte:
+css
+Copy code
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+}
+
+#app {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+textarea {
+  width: 100%;
+  height: 100px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.hidden {
+  display: none;
+}
+
+#modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.modal-content input,
+.modal-content select {
+  display: block;
+  margin: 10px auto;
+  padding: 10px;
+  width: 80%;
+}
+
+.modal-content button {
+  margin: 5px;
+}
+Crie um arquivo chamado script.js e cole o seguinte:
+javascript
+Copy code
+const apiUrl = "http://127.0.0.1:5000/api/phrases"; // Backend Flask URL
+
+// Modal elements
+const modal = document.getElementById("modal");
+const openModalButton = document.getElementById("openModalButton");
+const closeModalButton = document.getElementById("closeModalButton");
+const saveButton = document.getElementById("saveButton");
+
+// Inputs
+const contentInput = document.getElementById("content");
+const titleInput = document.getElementById("title");
+const typeInput = document.getElementById("type");
+
+// List
+const phraseList = document.getElementById("phraseList");
+
+// Open modal
+openModalButton.addEventListener("click", () => {
+  modal.classList.remove("hidden");
+});
+
+// Close modal
+closeModalButton.addEventListener("click", () => {
+  modal.classList.add("hidden");
+});
+
+// Fetch phrases from the API
+async function fetchPhrases() {
+  try {
+    const response = await fetch(apiUrl);
+    const phrases = await response.json();
+    renderPhrases(phrases);
+  } catch (error) {
+    console.error("Error fetching phrases:", error);
+  }
+}
+
+// Render phrases in the list
+function renderPhrases(phrases) {
+  phraseList.innerHTML = "";
+  phrases.forEach((phrase) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <strong>${phrase.title} (${phrase.content.includes("modelo") ? "Modelo" : "Frase"})</strong>:
+      ${phrase.content}
+    `;
+    phraseList.appendChild(li);
+  });
+}
+
+// Save a new phrase or model
+saveButton.addEventListener("click", async () => {
+  const content = contentInput.value;
+  const title = titleInput.value || "Sem título";
+  const type = typeInput.value;
+
+  if (!content) {
+    alert("Digite o conteúdo antes de salvar.");
+    return;
+  }
+
+  try {
+    await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: `${title} (${type})`, content }),
+    });
+
+    modal.classList.add("hidden"); // Close modal
+    contentInput.value = ""; // Clear input
+    fetchPhrases(); // Refresh list
+    alert("Frase/Modelo salvo com sucesso!");
+  } catch (error) {
+    console.error("Error saving phrase:", error);
+  }
+});
+
+// Fetch phrases on page load
+fetchPhrases();
+Como Rodar
+Inicie o backend executando main.py.
+Certifique-se de que o backend está escutando na porta correta (http://127.0.0.1:5000).
+Abra o frontend no Replit.
+Teste salvando frases ou modelos.
+Se precisar de mais ajuda, avise!
+
+
+
+
+
+
+
+
+
+
+
+ChatGPT can make mistakes. Check important info.

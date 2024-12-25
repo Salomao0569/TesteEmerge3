@@ -460,22 +460,13 @@ async function confirmarSalvarFrase() {
         loadingBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
         loadingBtn.disabled = true;
 
-        // Obter o CSRF token do cookie
-        const csrfToken = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('csrf_token='))
-            ?.split('=')[1];
-
-        if (!csrfToken) {
-            throw new Error('CSRF token não encontrado. Por favor, recarregue a página.');
-        }
+        const headers = addCSRFToken({
+            'Content-Type': 'application/json'
+        });
 
         const response = await fetch('/api/phrases', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
+            headers,
             body: JSON.stringify({
                 title: titulo,
                 content: conteudo,
