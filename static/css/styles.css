@@ -385,19 +385,40 @@ div[id^="print_"],
     background-color: #f8f9fa;
 }
 
-#templateContent {
-    min-height: 800px; 
-    padding: 1.25rem;
-    transition: all 0.2s ease;
-    font-family: Arial, sans-serif !important;
-    font-size: 15px !important;
-    line-height: 1.6 !important;
-    border: 1px solid #ced4da;
-    border-radius: 0.25rem;
-    background-color: white;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+#templateContent, .note-editor {
+    min-height: 800px;
     margin-bottom: 1.5rem;
+    font-family: Arial, sans-serif !important;
+}
+
+.note-editor {
+    border: 1px solid #ced4da !important;
+    border-radius: 0.25rem !important;
+}
+
+.note-toolbar {
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #ced4da !important;
+    padding: 0.5rem !important;
+}
+
+.note-editing-area {
+    background-color: white !important;
+}
+
+.note-statusbar {
+    background-color: #f8f9fa !important;
+    border-top: 1px solid #ced4da !important;
+}
+
+.note-btn {
+    background-color: white !important;
+    border: 1px solid #ced4da !important;
+    padding: 0.25rem 0.5rem !important;
+}
+
+.note-btn:hover {
+    background-color: #e9ecef !important;
 }
 
 .ck-editor__editable_inline {
