@@ -97,6 +97,7 @@ def get_templates():
         templates = query.all()
         return jsonify([template.to_dict() for template in templates])
     except Exception as e:
+        logger.error(f"Erro ao buscar templates: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/templates', methods=['POST'])
@@ -106,18 +107,36 @@ def create_template():
             return jsonify({"error": "Content-Type deve ser application/json"}), 400
 
         data = request.get_json()
+        logger.debug(f"Dados recebidos para salvar template: {data}")
+
+        # Validar dados obrigatórios
+        if not data.get('title'):
+            logger.error("Tentativa de salvar template sem título")
+            return jsonify({"error": "Título é obrigatório"}), 400
+
+        if not data.get('content'):
+            logger.error("Tentativa de salvar template sem conteúdo")
+            return jsonify({"error": "Conteúdo é obrigatório"}), 400
+
         new_template = Template(
-            name=data['name'],
+            name=data['title'],
             content=data['content'],
-            category=data.get('category', 'laudo'),
+            category=data.get('category', 'mascara'),  # Default para 'mascara' se não especificado
             doctor_id=data.get('doctor_id')
         )
 
         db.session.add(new_template)
         db.session.commit()
-        return jsonify(new_template.to_dict()), 201
+        logger.info(f"Novo template salvo com sucesso: ID {new_template.id}")
+
+        return jsonify({
+            "message": "Template salvo com sucesso",
+            "template": new_template.to_dict()
+        }), 201
+
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Erro ao salvar template: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 400
 
 @app.route('/api/doctors', methods=['GET'])

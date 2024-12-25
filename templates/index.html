@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Medidas e Cálculos Ecocardiográficos</title>
 
     <!-- CSS -->
@@ -153,15 +154,15 @@
                     <div class="templates-section mb-4">
                         <div class="row">
                             <div class="col-md-6">
-                                <label for="templateSelect" class="form-label">Modelo de Laudo:</label>
-                                <select id="templateSelect" class="form-select">
-                                    <option value="">Selecione um modelo...</option>
+                                <label for="mascaraSelect" class="form-label">Máscaras:</label>
+                                <select id="mascaraSelect" class="form-select">
+                                    <option value="">Selecione uma máscara...</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label for="phraseSelect" class="form-label">Frases Padrão:</label>
-                                <select id="phraseSelect" class="form-select">
-                                    <option value="">Selecione uma frase...</option>
+                                <label for="fraseSelect" class="form-label">Frases Padrão:</label>
+                                <select id="fraseSelect" class="form-select mb-2">
+                                    <option value="">Selecione uma frase padrão...</option>
                                 </select>
                             </div>
                         </div>
@@ -185,7 +186,7 @@
                             </div>
                             <div class="col-md-6 d-flex align-items-end">
                                 <button onclick="inserirAssinaturaMedico()" class="btn btn-primary">
-                                    Inserir Assinatura
+                                    <i class="fas fa-signature"></i> Inserir Assinatura
                                 </button>
                             </div>
                         </div>
