@@ -508,6 +508,24 @@ def delete_phrase(id):
         return jsonify({"error": str(e)}), 400
 
 
+@app.route('/api/templates/<int:id>', methods=['DELETE'])
+def delete_template(id):
+    """Delete a template with enhanced error handling and logging"""
+    try:
+        template = Template.query.get_or_404(id)
+        template_name = template.name  # Store name for logging
+
+        db.session.delete(template)
+        db.session.commit()
+
+        logger.info(f"Template '{template_name}' (ID: {id}) excluído com sucesso")
+        return jsonify({"message": "Template excluído com sucesso"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Erro ao excluir template {id}: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Erro ao excluir template: {str(e)}"}), 400
+
 @app.route('/phrases')
 def phrases():
     return render_template('phrases.html')

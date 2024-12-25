@@ -20,7 +20,7 @@ function addCSRFToken(headers = {}) {
     return headers;
 }
 
-// Template loading function with enhanced error handling
+// Template loading function with enhanced error handling and delete functionality
 async function loadTemplatesAndPhrases() {
     try {
         const response = await fetch('/api/templates');
@@ -42,16 +42,78 @@ async function loadTemplatesAndPhrases() {
         const mascaras = templates.filter(t => t.category === 'mascara');
         const frases = templates.filter(t => t.category === 'frase');
 
+        // Helper function to create option with delete button
+        function createOptionWithDelete(template, onDelete) {
+            const optionContainer = document.createElement('div');
+            optionContainer.className = 'd-flex justify-content-between align-items-center';
+            optionContainer.innerHTML = `
+                <span class="option-text">${template.name}</span>
+                <button type="button" class="btn btn-sm btn-link text-danger delete-btn" 
+                        onclick="event.stopPropagation();">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+
+            const option = document.createElement('option');
+            option.value = template.id;
+            option.title = template.content;
+            option.text = template.name;
+            option.dataset.template = JSON.stringify(template);
+
+            return option;
+        }
+
+        // Add máscaras with delete buttons
         mascaras.forEach(mascara => {
-            const option = new Option(mascara.name, mascara.id);
-            option.title = mascara.content;
+            const option = createOptionWithDelete(mascara);
             mascaraSelect.add(option);
         });
 
+        // Add frases with delete buttons
         frases.forEach(frase => {
-            const option = new Option(frase.name, frase.id);
-            option.title = frase.content;
+            const option = createOptionWithDelete(frase);
             fraseSelect.add(option);
+        });
+
+        // Add delete handlers
+        [mascaraSelect, fraseSelect].forEach(select => {
+            select.addEventListener('change', async function(e) {
+                const selectedOption = this.options[this.selectedIndex];
+                if (!selectedOption || !selectedOption.value) return;
+
+                const template = JSON.parse(selectedOption.dataset.template);
+                const deleteBtn = selectedOption.querySelector('.delete-btn');
+
+                if (e.target.closest('.delete-btn')) {
+                    e.preventDefault();
+                    if (confirm(`Deseja realmente excluir "${template.name}"?`)) {
+                        try {
+                            const response = await fetch(`/api/templates/${template.id}`, {
+                                method: 'DELETE',
+                                headers: addCSRFToken()
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('Erro ao excluir template');
+                            }
+
+                            showFeedback('Template excluído com sucesso', 'success');
+                            await loadTemplatesAndPhrases(); // Reload lists
+                        } catch (error) {
+                            console.error('Erro ao excluir template:', error);
+                            showFeedback('Erro ao excluir template', 'danger');
+                        }
+                    }
+                } else {
+                    // Normal selection behavior
+                    if (this.id === 'mascaraSelect') {
+                        $('#editor').summernote('code', template.content);
+                    } else {
+                        const currentContent = $('#editor').summernote('code');
+                        $('#editor').summernote('pasteHTML', currentContent + '\n' + template.content);
+                    }
+                }
+            });
         });
 
     } catch (error) {
