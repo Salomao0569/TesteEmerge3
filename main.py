@@ -1,7 +1,6 @@
 import os
 import logging
 from flask import Flask, render_template, request, jsonify, send_file
-from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from models import db, Doctor, Template, Report
 from dotenv import load_dotenv
@@ -181,6 +180,9 @@ def create_report():
 def gerar_doc():
     try:
         data = request.get_json()
+        logger.info("Iniciando geração do documento DOC")
+        logger.debug("Dados recebidos: %s", data)
+
         doc = Document()
 
         # Configuração inicial do documento
@@ -198,6 +200,8 @@ def gerar_doc():
 
         # Adicionar dados do paciente
         paciente = data.get('paciente', {})
+        logger.info("Processando dados do paciente: %s", paciente)
+
         dados_paciente = [
             ('Nome', paciente.get('nome', 'N/D')),
             ('Data de Nascimento', paciente.get('dataNascimento', 'N/D')),
@@ -226,6 +230,7 @@ def gerar_doc():
 
         medidas = data.get('medidas', {})
         calculos = data.get('calculos', {})
+        logger.info("Processando medidas e cálculos")
 
         medidas_calculos = [
             ('Átrio Esquerdo', medidas.get('atrio', 'N/D'), 
@@ -271,6 +276,7 @@ def gerar_doc():
         doc_io = BytesIO()
         doc.save(doc_io)
         doc_io.seek(0)
+        logger.info("Documento DOC gerado com sucesso")
 
         return send_file(
             doc_io,
@@ -288,6 +294,7 @@ def gerar_pdf():
     try:
         data = request.get_json()
         logger.info("Iniciando geração do PDF")
+        logger.debug("Dados recebidos: %s", data)
 
         # Criar PDF em memória
         buffer = BytesIO()
@@ -306,6 +313,7 @@ def gerar_pdf():
 
         # Dados do Paciente
         paciente = data.get('paciente', {})
+        logger.info("Processando dados do paciente: %s", paciente)
         dados_paciente = [
             ['Campo', 'Valor'],
             ['Nome', paciente.get('nome', 'N/D')],
@@ -340,6 +348,7 @@ def gerar_pdf():
         story.append(Paragraph('Medidas e Cálculos', styles['Heading2']))
         medidas = data.get('medidas', {})
         calculos = data.get('calculos', {})
+        logger.info("Processando medidas e cálculos")
 
         medidas_calculos = [
             ['Medida', 'Valor', 'Cálculo', 'Resultado'],
@@ -398,6 +407,7 @@ def gerar_pdf():
         # Gerar PDF
         doc.build(story)
         buffer.seek(0)
+        logger.info("PDF gerado com sucesso")
 
         return send_file(
             buffer,
@@ -414,6 +424,13 @@ def gerar_pdf():
 def add_csrf_header(response):
     if 'text/html' in response.headers.get('Content-Type', ''):
         response.headers.set('X-CSRFToken', generate_csrf())
+        # Adicionar meta tag com CSRF token no HTML
+        if response.is_sequence:
+            response.response = [response.data.replace(
+                b'</head>',
+                f'<meta name="csrf-token" content="{generate_csrf()}"></head>'.encode('utf-8'),
+                1
+            )]
     return response
 
 @app.route('/api/phrases', methods=['POST'])

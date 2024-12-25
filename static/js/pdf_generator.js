@@ -1,5 +1,7 @@
 function gerarPDF() {
     try {
+        console.log("Iniciando geração do PDF...");
+
         // Coletar dados do formulário
         const dataExame = document.getElementById('dataExame').value;
         const dataFormatada = dataExame ? new Date(dataExame).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
@@ -13,6 +15,7 @@ function gerarPDF() {
             altura: document.getElementById('altura').value || 'N/D',
             dataExame: dataFormatada
         };
+        console.log("Dados do paciente:", paciente);
 
         // Medidas
         const medidas = {
@@ -39,7 +42,7 @@ function gerarPDF() {
         // Dados do médico
         const doctorSelect = document.getElementById('selectedDoctor');
         let medico = null;
-        if (doctorSelect.value) {
+        if (doctorSelect && doctorSelect.value) {
             const selectedOption = doctorSelect.selectedOptions[0];
             medico = {
                 nome: selectedOption.text,
@@ -47,10 +50,16 @@ function gerarPDF() {
                 rqe: selectedOption.dataset.rqe
             };
         }
+        console.log("Dados do médico:", medico);
 
         // Conteúdo do laudo
         const editor = document.getElementById('editor');
-        const laudo = editor.innerHTML;
+        const laudo = editor ? editor.innerHTML : '';
+        console.log("Conteúdo do editor recuperado");
+
+        if (!laudo) {
+            throw new Error('O conteúdo do laudo não pode estar vazio');
+        }
 
         // Dados completos para envio
         const dadosLaudo = {
@@ -91,17 +100,20 @@ function gerarPDF() {
             alert('Erro ao gerar o PDF. Por favor, tente novamente.');
         });
     } catch (error) {
-        console.error('Erro ao gerar PDF:', error);
-        alert('Erro ao gerar o PDF. Por favor, tente novamente.');
+        console.error('Erro ao preparar dados:', error);
+        alert('Erro ao gerar o PDF. Por favor, verifique os dados e tente novamente.');
     }
 }
 
 function gerarDOC() {
     try {
-        // Coletar dados do formulário (mesmo código usado no PDF)
+        console.log("Iniciando geração do DOC...");
+
+        // Coletar dados do formulário
         const dataExame = document.getElementById('dataExame').value;
         const dataFormatada = dataExame ? new Date(dataExame).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
 
+        // Dados do paciente
         const paciente = {
             nome: document.getElementById('nome').value || 'N/D',
             dataNascimento: document.getElementById('dataNascimento').value || 'N/D',
@@ -110,7 +122,9 @@ function gerarDOC() {
             altura: document.getElementById('altura').value || 'N/D',
             dataExame: dataFormatada
         };
+        console.log("Dados do paciente:", paciente);
 
+        // Medidas
         const medidas = {
             atrio: document.getElementById('atrio').value || 'N/D',
             aorta: document.getElementById('aorta').value || 'N/D',
@@ -121,6 +135,7 @@ function gerarDOC() {
             vd: document.getElementById('vd').value || 'N/D'
         };
 
+        // Cálculos
         const calculos = {
             volumeDiastFinal: document.getElementById('print_volume_diast_final').textContent || 'N/D',
             volumeSistFinal: document.getElementById('print_volume_sist_final').textContent || 'N/D',
@@ -131,9 +146,10 @@ function gerarDOC() {
             massaVE: document.getElementById('print_massa_ve').textContent || 'N/D'
         };
 
+        // Dados do médico
         const doctorSelect = document.getElementById('selectedDoctor');
         let medico = null;
-        if (doctorSelect.value) {
+        if (doctorSelect && doctorSelect.value) {
             const selectedOption = doctorSelect.selectedOptions[0];
             medico = {
                 nome: selectedOption.text,
@@ -141,10 +157,18 @@ function gerarDOC() {
                 rqe: selectedOption.dataset.rqe
             };
         }
+        console.log("Dados do médico:", medico);
 
+        // Conteúdo do laudo
         const editor = document.getElementById('editor');
-        const laudo = editor.innerHTML;
+        const laudo = editor ? editor.innerHTML : '';
+        console.log("Conteúdo do editor recuperado");
 
+        if (!laudo) {
+            throw new Error('O conteúdo do laudo não pode estar vazio');
+        }
+
+        // Dados completos para envio
         const dadosLaudo = {
             paciente,
             medidas,
@@ -183,15 +207,16 @@ function gerarDOC() {
             alert('Erro ao gerar o documento DOC. Por favor, tente novamente.');
         });
     } catch (error) {
-        console.error('Erro ao gerar DOC:', error);
-        alert('Erro ao gerar o documento DOC. Por favor, tente novamente.');
+        console.error('Erro ao preparar dados:', error);
+        alert('Erro ao gerar o DOC. Por favor, verifique os dados e tente novamente.');
     }
 }
 
 function getCSRFToken() {
-    //Add CSRF token retrieval method here.  This is highly dependent on your backend setup.
-    //Example if CSRF token is stored in a meta tag:
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    return meta ? meta.content : null;
-
+    const element = document.querySelector('meta[name="csrf-token"]');
+    if (!element) {
+        console.error('CSRF token meta tag não encontrada');
+        return '';
+    }
+    return element.getAttribute('content');
 }
