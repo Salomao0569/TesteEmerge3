@@ -1,138 +1,197 @@
 function gerarPDF() {
-    window.jsPDF = window.jspdf.jsPDF;
-
     try {
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4',
-            compress: true
-        });
-        
-        const pageWidth = doc.internal.pageSize.width;
-        const pageHeight = doc.internal.pageSize.height;
-        const margin = 25;
-        const contentWidth = pageWidth - (2 * margin);
-        let currentY = margin;
-
-        // Cabeçalho
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        const titulo = "Laudo de Ecodopplercardiograma";
-        const tituloWidth = doc.getStringUnitWidth(titulo) * 16 / doc.internal.scaleFactor;
-        const tituloX = (pageWidth - tituloWidth) / 2;
-        doc.text(titulo, tituloX, currentY);
-
-        currentY += 15;
-
-        // Dados do Paciente
+        // Coletar dados do formulário
         const dataExame = document.getElementById('dataExame').value;
         const dataFormatada = dataExame ? new Date(dataExame).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
-        
-        const dadosPaciente = [
-            ["Nome", document.getElementById('nome').value || 'N/D'],
-            ["Data Nascimento", document.getElementById('dataNascimento').value || 'N/D'],
-            ["Sexo", document.getElementById('sexo').value || 'N/D'],
-            ["Peso", (document.getElementById('peso').value ? document.getElementById('peso').value + " kg" : 'N/D')],
-            ["Altura", (document.getElementById('altura').value ? document.getElementById('altura').value + " cm" : 'N/D')],
-            ["Data do Exame", dataFormatada]
-        ];
 
-        doc.autoTable({
-            startY: currentY,
-            head: [['Dados do Paciente', 'Valor']],
-            body: dadosPaciente,
-            theme: 'striped',
-            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-            styles: { fontSize: 10 },
-            margin: { left: margin, right: margin }
-        });
+        // Dados do paciente
+        const paciente = {
+            nome: document.getElementById('nome').value || 'N/D',
+            dataNascimento: document.getElementById('dataNascimento').value || 'N/D',
+            sexo: document.getElementById('sexo').value || 'N/D',
+            peso: document.getElementById('peso').value || 'N/D',
+            altura: document.getElementById('altura').value || 'N/D',
+            dataExame: dataFormatada
+        };
 
-        currentY = doc.autoTable.previous.finalY + 15;
+        // Medidas
+        const medidas = {
+            atrio: document.getElementById('atrio').value || 'N/D',
+            aorta: document.getElementById('aorta').value || 'N/D',
+            diamDiastFinal: document.getElementById('diam_diast_final').value || 'N/D',
+            diamSistFinal: document.getElementById('diam_sist_final').value || 'N/D',
+            espDiastSepto: document.getElementById('esp_diast_septo').value || 'N/D',
+            espDiastPPVE: document.getElementById('esp_diast_ppve').value || 'N/D',
+            vd: document.getElementById('vd').value || 'N/D'
+        };
 
-        // Medidas e Cálculos
-        const medidasCalculos = [
-            ["Átrio Esquerdo", document.getElementById('atrio').value || 'N/D', 
-             "Volume Diastólico Final", document.getElementById('print_volume_diast_final').textContent || 'N/D'],
-            ["Aorta", document.getElementById('aorta').value || 'N/D', 
-             "Volume Sistólico Final", document.getElementById('print_volume_sist_final').textContent || 'N/D'],
-            ["Diâmetro Diastólico", document.getElementById('diam_diast_final').value || 'N/D', 
-             "Volume Ejetado", document.getElementById('print_volume_ejetado').textContent || 'N/D'],
-            ["Diâmetro Sistólico", document.getElementById('diam_sist_final').value || 'N/D', 
-             "Fração de Ejeção", document.getElementById('print_fracao_ejecao').textContent || 'N/D'],
-            ["Espessura do Septo", document.getElementById('esp_diast_septo').value || 'N/D',
-             "Percentual Enc. Cavidade", document.getElementById('print_percent_encurt').textContent || 'N/D'],
-            ["Espessura PPVE", document.getElementById('esp_diast_ppve').value || 'N/D',
-             "Espessura Relativa", document.getElementById('print_esp_relativa').textContent || 'N/D'],
-            ["Ventrículo Direito", document.getElementById('vd').value || 'N/D',
-             "Massa do VE", document.getElementById('print_massa_ve').textContent || 'N/D']
-        ];
+        // Cálculos
+        const calculos = {
+            volumeDiastFinal: document.getElementById('print_volume_diast_final').textContent || 'N/D',
+            volumeSistFinal: document.getElementById('print_volume_sist_final').textContent || 'N/D',
+            volumeEjetado: document.getElementById('print_volume_ejetado').textContent || 'N/D',
+            fracaoEjecao: document.getElementById('print_fracao_ejecao').textContent || 'N/D',
+            percentEncurt: document.getElementById('print_percent_encurt').textContent || 'N/D',
+            espRelativa: document.getElementById('print_esp_relativa').textContent || 'N/D',
+            massaVE: document.getElementById('print_massa_ve').textContent || 'N/D'
+        };
 
-        doc.autoTable({
-            startY: currentY,
-            head: [['Medida', 'Valor', 'Cálculo', 'Resultado']],
-            body: medidasCalculos,
-            theme: 'striped',
-            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-            styles: { fontSize: 10 },
-            margin: { left: margin, right: margin }
-        });
-
-        // Nova página para o laudo
-        doc.addPage();
-        currentY = margin;
-
-        // Conteúdo do Laudo
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
-
-        const editor = document.getElementById('editor');
-        const content = editor.innerText;
-        const lines = doc.splitTextToSize(content, contentWidth);
-        
-        lines.forEach(line => {
-            if (currentY > pageHeight - margin) {
-                doc.addPage();
-                currentY = margin;
-            }
-            doc.text(line, margin, currentY);
-            currentY += 7;
-        });
-
-        // Assinatura do Médico
+        // Dados do médico
         const doctorSelect = document.getElementById('selectedDoctor');
+        let medico = null;
         if (doctorSelect.value) {
-            if (currentY > pageHeight - 40) {
-                doc.addPage();
-                currentY = margin;
-            }
-            
             const selectedOption = doctorSelect.selectedOptions[0];
-            const doctorName = selectedOption.text;
-            const doctorCRM = selectedOption.dataset.crm;
-            const doctorRQE = selectedOption.dataset.rqe;
-            
-            currentY += 20;
-            doc.setLineWidth(0.5);
-            doc.line(pageWidth/2 - 40, currentY, pageWidth/2 + 40, currentY);
-            currentY += 10;
-            
-            doc.setFont('helvetica', 'bold');
-            doc.text(doctorName, pageWidth/2, currentY, { align: 'center' });
-            currentY += 7;
-            doc.setFontSize(10);
-            doc.text(`CRM: ${doctorCRM}${doctorRQE ? ` / RQE: ${doctorRQE}` : ''}`, pageWidth/2, currentY, { align: 'center' });
+            medico = {
+                nome: selectedOption.text,
+                crm: selectedOption.dataset.crm,
+                rqe: selectedOption.dataset.rqe
+            };
         }
 
-        // Salvar PDF
-        const nomePaciente = document.getElementById('nome').value;
-        const nomeArquivo = nomePaciente ? 
-            `Laudo_${nomePaciente.trim().replace(/[^a-zA-Z0-9]/g, '_')}.pdf` : 
-            'laudo_ecocardiograma.pdf';
-        
-        doc.save(nomeArquivo);
+        // Conteúdo do laudo
+        const editor = document.getElementById('editor');
+        const laudo = editor.innerHTML;
+
+        // Dados completos para envio
+        const dadosLaudo = {
+            paciente,
+            medidas,
+            calculos,
+            medico,
+            laudo
+        };
+
+        // Fazer requisição para o backend
+        fetch('/gerar_pdf', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(dadosLaudo)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao gerar PDF');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Laudo_${paciente.nome.trim().replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        })
+        .catch(error => {
+            console.error('Erro ao gerar PDF:', error);
+            alert('Erro ao gerar o PDF. Por favor, tente novamente.');
+        });
     } catch (error) {
         console.error('Erro ao gerar PDF:', error);
         alert('Erro ao gerar o PDF. Por favor, tente novamente.');
     }
+}
+
+function gerarDOC() {
+    try {
+        // Coletar dados do formulário (mesmo código usado no PDF)
+        const dataExame = document.getElementById('dataExame').value;
+        const dataFormatada = dataExame ? new Date(dataExame).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
+
+        const paciente = {
+            nome: document.getElementById('nome').value || 'N/D',
+            dataNascimento: document.getElementById('dataNascimento').value || 'N/D',
+            sexo: document.getElementById('sexo').value || 'N/D',
+            peso: document.getElementById('peso').value || 'N/D',
+            altura: document.getElementById('altura').value || 'N/D',
+            dataExame: dataFormatada
+        };
+
+        const medidas = {
+            atrio: document.getElementById('atrio').value || 'N/D',
+            aorta: document.getElementById('aorta').value || 'N/D',
+            diamDiastFinal: document.getElementById('diam_diast_final').value || 'N/D',
+            diamSistFinal: document.getElementById('diam_sist_final').value || 'N/D',
+            espDiastSepto: document.getElementById('esp_diast_septo').value || 'N/D',
+            espDiastPPVE: document.getElementById('esp_diast_ppve').value || 'N/D',
+            vd: document.getElementById('vd').value || 'N/D'
+        };
+
+        const calculos = {
+            volumeDiastFinal: document.getElementById('print_volume_diast_final').textContent || 'N/D',
+            volumeSistFinal: document.getElementById('print_volume_sist_final').textContent || 'N/D',
+            volumeEjetado: document.getElementById('print_volume_ejetado').textContent || 'N/D',
+            fracaoEjecao: document.getElementById('print_fracao_ejecao').textContent || 'N/D',
+            percentEncurt: document.getElementById('print_percent_encurt').textContent || 'N/D',
+            espRelativa: document.getElementById('print_esp_relativa').textContent || 'N/D',
+            massaVE: document.getElementById('print_massa_ve').textContent || 'N/D'
+        };
+
+        const doctorSelect = document.getElementById('selectedDoctor');
+        let medico = null;
+        if (doctorSelect.value) {
+            const selectedOption = doctorSelect.selectedOptions[0];
+            medico = {
+                nome: selectedOption.text,
+                crm: selectedOption.dataset.crm,
+                rqe: selectedOption.dataset.rqe
+            };
+        }
+
+        const editor = document.getElementById('editor');
+        const laudo = editor.innerHTML;
+
+        const dadosLaudo = {
+            paciente,
+            medidas,
+            calculos,
+            medico,
+            laudo
+        };
+
+        // Fazer requisição para o backend
+        fetch('/gerar_doc', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(dadosLaudo)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao gerar documento DOC');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Laudo_${paciente.nome.trim().replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        })
+        .catch(error => {
+            console.error('Erro ao gerar DOC:', error);
+            alert('Erro ao gerar o documento DOC. Por favor, tente novamente.');
+        });
+    } catch (error) {
+        console.error('Erro ao gerar DOC:', error);
+        alert('Erro ao gerar o documento DOC. Por favor, tente novamente.');
+    }
+}
+
+function getCSRFToken() {
+    //Add CSRF token retrieval method here.  This is highly dependent on your backend setup.
+    //Example if CSRF token is stored in a meta tag:
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.content : null;
+
 }

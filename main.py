@@ -13,6 +13,11 @@ from io import BytesIO
 import html2text
 from openai import OpenAI
 import json
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -278,53 +283,132 @@ def gerar_doc():
         logger.error(f"Erro ao gerar documento DOC: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/gerar_texto', methods=['POST'])
-def gerar_texto():
+@app.route('/gerar_pdf', methods=['POST'])
+def gerar_pdf():
     try:
         data = request.get_json()
-        if not data or 'prompt' not in data:
-            logger.error("Erro: Prompt não fornecido na requisição")
-            return jsonify({"error": "Prompt é obrigatório"}), 400
+        logger.info("Iniciando geração do PDF")
 
-        api_key = os.environ.get('OPENAI_API_KEY')
-        if not api_key:
-            logger.error("Erro: OPENAI_API_KEY não está configurada")
-            return jsonify({"error": "API key não configurada. Por favor, configure a chave da API OpenAI."}), 500
+        # Criar PDF em memória
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
 
-        # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
-        # do not change this unless explicitly requested by the user
-        client = OpenAI(api_key=api_key)
+        # Título
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=16,
+            spaceAfter=30
+        )
+        story.append(Paragraph('Laudo de Ecodopplercardiograma', title_style))
 
-        logger.info("CSRF Token recebido: %s", request.headers.get('X-CSRFToken'))
-        logger.info("Headers da requisição: %s", dict(request.headers))
+        # Dados do Paciente
+        paciente = data.get('paciente', {})
+        dados_paciente = [
+            ['Campo', 'Valor'],
+            ['Nome', paciente.get('nome', 'N/D')],
+            ['Data de Nascimento', paciente.get('dataNascimento', 'N/D')],
+            ['Sexo', paciente.get('sexo', 'N/D')],
+            ['Peso', paciente.get('peso', 'N/D')],
+            ['Altura', paciente.get('altura', 'N/D')],
+            ['Data do Exame', paciente.get('dataExame', 'N/D')]
+        ]
 
-        prompt = """
-        Você é um assistente especializado em laudos médicos ecocardiográficos.
-        Por favor, gere um texto profissional e detalhado baseado no seguinte prompt:
+        t = Table(dados_paciente)
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('TOPPADDING', (0, 1), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+        ]))
+        story.append(t)
+        story.append(Spacer(1, 20))
 
-        {}
+        # Medidas e Cálculos
+        story.append(Paragraph('Medidas e Cálculos', styles['Heading2']))
+        medidas = data.get('medidas', {})
+        calculos = data.get('calculos', {})
 
-        O texto deve ser técnico, preciso e seguir as melhores práticas médicas.
-        """.format(data['prompt'])
+        medidas_calculos = [
+            ['Medida', 'Valor', 'Cálculo', 'Resultado'],
+            ['Átrio Esquerdo', medidas.get('atrio', 'N/D'), 
+             'Volume Diastólico Final', calculos.get('volumeDiastFinal', 'N/D')],
+            ['Aorta', medidas.get('aorta', 'N/D'), 
+             'Volume Sistólico Final', calculos.get('volumeSistFinal', 'N/D')],
+            ['Diâmetro Diastólico', medidas.get('diamDiastFinal', 'N/D'), 
+             'Volume Ejetado', calculos.get('volumeEjetado', 'N/D')],
+            ['Diâmetro Sistólico', medidas.get('diamSistFinal', 'N/D'), 
+             'Fração de Ejeção', calculos.get('fracaoEjecao', 'N/D')],
+            ['Espessura do Septo', medidas.get('espDiastSepto', 'N/D'),
+             'Percentual Enc. Cavidade', calculos.get('percentEncurt', 'N/D')],
+            ['Espessura PPVE', medidas.get('espDiastPPVE', 'N/D'),
+             'Espessura Relativa', calculos.get('espRelativa', 'N/D')],
+            ['Ventrículo Direito', medidas.get('vd', 'N/D'),
+             'Massa do VE', calculos.get('massaVE', 'N/D')]
+        ]
 
-        try:
-            logger.info(f"Fazendo chamada para API OpenAI com prompt: {data['prompt'][:50]}...")
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.7,
-                max_tokens=1000
-            )
-            texto_gerado = response.choices[0].message.content
-            logger.info("Texto gerado com sucesso pela API OpenAI")
-            return jsonify({"texto": texto_gerado})
-        except Exception as api_error:
-            logger.error(f"Erro na chamada da API OpenAI: {str(api_error)}")
-            return jsonify({"error": f"Erro ao gerar texto com a API OpenAI: {str(api_error)}"}), 500
+        t = Table(medidas_calculos)
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('TOPPADDING', (0, 1), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+        ]))
+        story.append(t)
+        story.append(Spacer(1, 20))
+
+        # Laudo
+        story.append(Paragraph('Laudo', styles['Heading2']))
+        h = html2text.HTML2Text()
+        h.ignore_links = True
+        laudo_texto = h.handle(data.get('laudo', ''))
+        story.append(Paragraph(laudo_texto, styles['Normal']))
+
+        # Assinatura do Médico
+        if data.get('medico'):
+            story.append(Spacer(1, 30))
+            medico = data['medico']
+            assinatura = f"{medico['nome']}\nCRM: {medico['crm']}"
+            if medico.get('rqe'):
+                assinatura += f"\nRQE: {medico['rqe']}"
+            story.append(Paragraph(assinatura, styles['Normal']))
+
+        # Gerar PDF
+        doc.build(story)
+        buffer.seek(0)
+
+        return send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name='laudo_ecocardiograma.pdf'
+        )
 
     except Exception as e:
-        logger.error(f"Erro ao gerar texto com OpenAI: {str(e)}", exc_info=True)
-        return jsonify({"error": f"Erro interno do servidor: {str(e)}"}), 500
+        logger.error(f"Erro ao gerar PDF: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 @app.after_request
 def add_csrf_header(response):
