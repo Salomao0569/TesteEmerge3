@@ -370,9 +370,10 @@ function inserirAssinaturaMedico() {
     const crm = option.dataset.crm;
     const rqe = option.dataset.rqe;
 
-    const dadosMedico = `\n\n<p style="text-align: center;">
-        <strong>${medicName}</strong><br>
-        CRM: ${crm}${rqe ? `<br>RQE: ${rqe}` : ''}
+    // Formatação padronizada da assinatura
+    const dadosMedico = `\n\n<p style="text-align: center; margin-top: 30px;">
+        <strong>Dr. ${medicName}</strong><br>
+        CRM: ${crm}${rqe ? `/RQE: ${rqe}` : ''}
     </p>`;
 
     // Get current content and add doctor info at the end
