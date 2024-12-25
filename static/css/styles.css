@@ -716,29 +716,3 @@ div[id^="print_"],
 .template-list::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
-
-/* Dictation button styles */
-.dictation-btn {
-    margin-left: 5px;
-    padding: 4px 8px;
-    font-size: 14px;
-}
-
-.dictation-btn i {
-    width: 14px;
-}
-
-.dictation-btn.btn-danger {
-    opacity: 0.8;
-}
-
-/* Measurement input group styling */
-.measurement-group {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.measurement-group input[type="number"] {
-    max-width: 100px;
-}
