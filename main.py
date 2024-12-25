@@ -87,6 +87,17 @@ def templates():
     templates = Template.query.all()
     return render_template('templates.html', doctors=doctors, templates=templates)
 
+@app.route('/doctors')
+def doctors():
+    try:
+        logger.info("Acessando página de médicos")
+        doctors = Doctor.query.all()
+        logger.info(f"Encontrados {len(doctors)} médicos")
+        return render_template('doctors.html', doctors=doctors)
+    except Exception as e:
+        logger.error(f"Erro ao carregar página de médicos: {str(e)}", exc_info=True)
+        return "Erro ao carregar página de médicos", 500
+
 @app.route('/api/templates', methods=['GET'])
 def get_templates():
     try:
@@ -152,10 +163,71 @@ def get_doctors():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/doctors/<int:id>', methods=['PUT'])
+def update_doctor(id):
+    try:
+        doctor = Doctor.query.get_or_404(id)
+        data = request.get_json()
+
+        # Validar dados
+        if not data.get('full_name'):
+            return jsonify({"error": "Nome completo é obrigatório"}), 400
+        if not data.get('crm'):
+            return jsonify({"error": "CRM é obrigatório"}), 400
+
+        # Verificar se o CRM já existe para outro médico
+        existing_doctor = Doctor.query.filter(Doctor.crm == data['crm'], Doctor.id != id).first()
+        if existing_doctor:
+            return jsonify({"error": "CRM já cadastrado para outro médico"}), 400
+
+        # Atualizar dados
+        doctor.full_name = data['full_name']
+        doctor.crm = data['crm']
+        doctor.rqe = data.get('rqe', '')
+
+        db.session.commit()
+        return jsonify(doctor.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+@app.route('/api/doctors/<int:id>', methods=['DELETE'])
+def delete_doctor(id):
+    try:
+        doctor = Doctor.query.get_or_404(id)
+
+        # Verificar se o médico tem laudos ou templates associados
+        if doctor.reports or doctor.templates:
+            return jsonify({
+                "error": "Não é possível excluir o médico pois existem laudos ou templates associados"
+            }), 400
+
+        db.session.delete(doctor)
+        db.session.commit()
+        return jsonify({"message": "Médico excluído com sucesso"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
 @app.route('/api/doctors', methods=['POST'])
 def create_doctor():
     try:
+        if not request.is_json:
+            return jsonify({"error": "Content-Type deve ser application/json"}), 400
+
         data = request.get_json()
+
+        # Validar dados obrigatórios
+        if not data.get('full_name'):
+            return jsonify({"error": "Nome completo é obrigatório"}), 400
+        if not data.get('crm'):
+            return jsonify({"error": "CRM é obrigatório"}), 400
+
+        # Verificar se o CRM já existe
+        existing_doctor = Doctor.query.filter_by(crm=data['crm']).first()
+        if existing_doctor:
+            return jsonify({"error": "CRM já cadastrado"}), 400
+
         new_doctor = Doctor(
             full_name=data['full_name'],
             crm=data['crm'],
