@@ -376,14 +376,82 @@ document.getElementById('phraseSelect').addEventListener('change', insertSelecte
 
 // Função para salvar frase ou modelo
 async function salvarFraseModelo() {
+    // Criar modal para input se ainda não existir
+    if (!document.getElementById('modalSalvarFrase')) {
+        const modalHtml = `
+            <div class="modal fade" id="modalSalvarFrase" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Salvar Frase/Modelo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="salvarFraseForm">
+                                <div class="mb-3">
+                                    <label for="tituloFrase" class="form-label">Título:</label>
+                                    <input type="text" class="form-control" id="tituloFrase" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="categoriaFrase" class="form-label">Categoria:</label>
+                                    <select class="form-select" id="categoriaFrase" required>
+                                        <option value="">Selecione uma categoria...</option>
+                                        <option value="normal">Normal</option>
+                                        <option value="alterado">Alterado</option>
+                                        <option value="conclusao">Conclusão</option>
+                                        <option value="laudo">Laudo Completo</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" onclick="confirmarSalvarFrase()">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
+    // Obter conteúdo selecionado ou todo o conteúdo
     const editor = $('#editor');
-    const conteudo = editor.summernote('code');
-    
-    // Criar modal para input do título
-    const titulo = prompt('Digite um título para a frase/modelo:');
-    if (!titulo) return;
+    const conteudo = editor.summernote('createRange')?.toString() || editor.summernote('code');
+
+    if (!conteudo.trim()) {
+        showFeedback('Por favor, selecione ou digite algum conteúdo antes de salvar.', 'warning');
+        return;
+    }
+
+    // Armazenar temporariamente o conteúdo
+    window.tempContent = conteudo;
+
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('modalSalvarFrase'));
+    modal.show();
+}
+
+// Função para confirmar e salvar a frase/modelo
+async function confirmarSalvarFrase() {
+    const form = document.getElementById('salvarFraseForm');
+    const titulo = document.getElementById('tituloFrase').value.trim();
+    const categoria = document.getElementById('categoriaFrase').value;
+    const conteudo = window.tempContent;
+
+    if (!titulo || !categoria) {
+        showFeedback('Por favor, preencha todos os campos.', 'warning');
+        return;
+    }
 
     try {
+        const loadingBtn = document.querySelector('#modalSalvarFrase .btn-primary');
+        const originalBtnHtml = loadingBtn.innerHTML;
+        loadingBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+        loadingBtn.disabled = true;
+
         const response = await fetch('/api/phrases', {
             method: 'POST',
             headers: {
@@ -392,18 +460,46 @@ async function salvarFraseModelo() {
             },
             body: JSON.stringify({
                 title: titulo,
-                content: conteudo
+                content: conteudo,
+                category: categoria
             })
         });
 
-        if (!response.ok) throw new Error('Erro ao salvar');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erro ao salvar frase/modelo');
+        }
 
-        alert('Frase/modelo salvo com sucesso!');
-        loadTemplatesAndPhrases(); // Recarrega a lista
+        // Fechar modal e limpar form
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modalSalvarFrase'));
+        modal.hide();
+        form.reset();
+        delete window.tempContent;
+
+        // Mostrar feedback de sucesso
+        showFeedback('Frase/modelo salvo com sucesso!', 'success');
+
+        // Recarregar lista de templates e frases
+        await loadTemplatesAndPhrases();
+
     } catch (error) {
         console.error('Erro:', error);
-        alert('Erro ao salvar frase/modelo');
+        showFeedback(error.message, 'danger');
+    } finally {
+        const loadingBtn = document.querySelector('#modalSalvarFrase .btn-primary');
+        loadingBtn.innerHTML = '<i class="fas fa-save"></i> Salvar';
+        loadingBtn.disabled = false;
     }
+}
+
+// Função para mostrar feedback visual
+function showFeedback(message, type = 'success') {
+    const feedbackDiv = document.createElement('div');
+    feedbackDiv.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+    feedbackDiv.style.zIndex = '1050';
+    feedbackDiv.textContent = message;
+    document.body.appendChild(feedbackDiv);
+    setTimeout(() => feedbackDiv.remove(), 3000);
 }
 
 //Assumed functions from other files
