@@ -424,18 +424,6 @@ def gerar_pdf():
         logger.error(f"Erro ao gerar PDF: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-@app.after_request
-def add_csrf_header(response):
-    """Add CSRF token to response headers"""
-    try:
-        if 'text/html' in response.headers.get('Content-Type', ''):
-            csrf_token = generate_csrf()
-            response.headers.set('X-CSRFToken', csrf_token)
-            response.set_cookie('csrf_token', csrf_token, secure=True, httponly=True)
-    except Exception as e:
-        logger.error(f"Erro ao adicionar CSRF header: {str(e)}", exc_info=True)
-    return response
-
 @app.route('/api/phrases', methods=['POST'])
 def save_phrase():
     """Save a new phrase or template"""
@@ -455,25 +443,25 @@ def save_phrase():
             logger.error("Tentativa de salvar frase sem título")
             return jsonify({"error": "Título é obrigatório"}), 400
 
-        new_phrase = Template(
+        new_template = Template(
             name=data['title'],
             content=data['content'],
-            category=data.get('category', 'frase'),
+            category='mascara',  # Sempre salvar como máscara
             doctor_id=data.get('doctor_id')
         )
 
-        db.session.add(new_phrase)
+        db.session.add(new_template)
         db.session.commit()
-        logger.info(f"Nova frase salva com sucesso: ID {new_phrase.id}")
+        logger.info(f"Nova máscara salva com sucesso: ID {new_template.id}")
 
         return jsonify({
-            "message": "Frase salva com sucesso",
-            "phrase": new_phrase.to_dict()
+            "message": "Máscara salva com sucesso",
+            "template": new_template.to_dict()
         }), 201
 
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Erro ao salvar frase: {str(e)}", exc_info=True)
+        logger.error(f"Erro ao salvar máscara: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 400
 
 @app.route('/api/phrases', methods=['GET'])
@@ -499,6 +487,18 @@ def delete_phrase(id):
 @app.route('/phrases')
 def phrases():
     return render_template('phrases.html')
+
+@app.after_request
+def add_csrf_header(response):
+    """Add CSRF token to response headers"""
+    try:
+        if 'text/html' in response.headers.get('Content-Type', ''):
+            csrf_token = generate_csrf()
+            response.headers.set('X-CSRFToken', csrf_token)
+            response.set_cookie('csrf_token', csrf_token, secure=True, httponly=True)
+    except Exception as e:
+        logger.error(f"Erro ao adicionar CSRF header: {str(e)}", exc_info=True)
+    return response
 
 if __name__ == '__main__':
     with app.app_context():

@@ -2,7 +2,7 @@ $(document).ready(function() {
     console.log('Iniciando configuração do editor...');
 
     try {
-        // Configurar Summernote
+        // Configurar Summernote (código existente permanece inalterado)
         $('#editor').summernote({
             height: 500,
             lang: 'pt-BR',
@@ -59,8 +59,8 @@ $(document).ready(function() {
                 salvarFraseModelo: function (context) {
                     var ui = $.summernote.ui;
                     var button = ui.button({
-                        contents: '<i class="fas fa-save"></i> Salvar Frase/Modelo',
-                        tooltip: 'Salvar como Frase ou Modelo',
+                        contents: '<i class="fas fa-save"></i> Salvar Máscara',
+                        tooltip: 'Salvar como Máscara',
                         click: function () {
                             salvarFraseModelo();
                         }
@@ -73,7 +73,6 @@ $(document).ready(function() {
         // Carregar templates e frases
         loadTemplatesAndPhrases();
         loadDoctors();
-
         // Layout com dois painéis
         $('body').append(`
             <div class="modal fade" id="modalGerarTexto" tabindex="-1">
@@ -271,24 +270,23 @@ async function loadTemplatesAndPhrases() {
 
         // Limpar opções existentes
         templateSelect.innerHTML = '<option value="">Selecione um modelo...</option>';
-        phraseSelect.innerHTML = '<option value="">Selecione uma frase...</option>';
+        phraseSelect.innerHTML = '<option value="">Selecione uma máscara...</option>';
 
-        // Adicionar templates
-        templates.filter(t => t.category === 'laudo').forEach(template => {
+        // Adicionar templates e máscaras
+        templates.filter(t => t.category === 'mascara').forEach(template => {
             const option = new Option(template.name, template.id);
             option.title = template.content;
             templateSelect.add(option);
-        });
 
-        // Adicionar frases
-        templates.filter(t => ['normal', 'alterado', 'conclusao'].includes(t.category)).forEach(phrase => {
-            const option = new Option(phrase.name, phrase.id);
-            option.title = phrase.content;
-            phraseSelect.add(option);
+            // Também adicionar à lista de máscaras
+            const phraseOption = new Option(template.name, template.id);
+            phraseOption.title = template.content;
+            phraseSelect.add(phraseOption);
         });
 
     } catch (error) {
         console.error('Erro ao carregar templates:', error);
+        showFeedback('Erro ao carregar templates e máscaras', 'danger');
     }
 }
 
@@ -398,7 +396,7 @@ async function salvarFraseModelo() {
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Salvar Frase/Modelo</h5>
+                                <h5 class="modal-title">Salvar Máscara</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
@@ -408,11 +406,10 @@ async function salvarFraseModelo() {
                                         <input type="text" class="form-control" id="tituloFrase" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="categoriaFrase" class="form-label">Tipo:</label>
+                                        <label for="categoriaFrase" class="form-label">Selecione um tipo...</label>
                                         <select class="form-select" id="categoriaFrase" required>
                                             <option value="">Selecione um tipo...</option>
-                                            <option value="mascara">Máscara</option>
-                                            <option value="frase">Frase Padrão</option>
+                                            <option value="mascara" selected>Máscara</option>
                                         </select>
                                     </div>
                                 </form>
