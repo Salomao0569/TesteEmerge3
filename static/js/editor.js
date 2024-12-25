@@ -15,7 +15,7 @@ $(document).ready(function() {
                 ['table', ['table']],
                 ['insert', ['link', 'picture']],
                 ['view', ['fullscreen', 'codeview']],
-                ['custom', ['gerarTextoIA', 'avaliarLaudo']] // Adicionado botão de avaliação
+                ['custom', ['gerarTextoIA', 'avaliarLaudo', 'salvarFraseModelo']] // Adicionado botão de avaliação
             ],
             fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '24', '36'],
             styleTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
@@ -52,6 +52,17 @@ $(document).ready(function() {
                         tooltip: 'Avaliar Laudo Atual',
                         click: function () {
                             avaliarLaudoAtual();
+                        }
+                    });
+                    return button.render();
+                },
+                salvarFraseModelo: function (context) {
+                    var ui = $.summernote.ui;
+                    var button = ui.button({
+                        contents: '<i class="fas fa-save"></i> Salvar Frase/Modelo',
+                        tooltip: 'Salvar como Frase ou Modelo',
+                        click: function () {
+                            salvarFraseModelo();
                         }
                     });
                     return button.render();
@@ -361,6 +372,39 @@ function showBackupIndicator() {
 // Adicionar event listeners aos selects
 document.getElementById('templateSelect').addEventListener('change', insertSelectedTemplate);
 document.getElementById('phraseSelect').addEventListener('change', insertSelectedPhrase);
+
+
+// Função para salvar frase ou modelo
+async function salvarFraseModelo() {
+    const editor = $('#editor');
+    const conteudo = editor.summernote('code');
+    
+    // Criar modal para input do título
+    const titulo = prompt('Digite um título para a frase/modelo:');
+    if (!titulo) return;
+
+    try {
+        const response = await fetch('/api/phrases', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                title: titulo,
+                content: conteudo
+            })
+        });
+
+        if (!response.ok) throw new Error('Erro ao salvar');
+
+        alert('Frase/modelo salvo com sucesso!');
+        loadTemplatesAndPhrases(); // Recarrega a lista
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao salvar frase/modelo');
+    }
+}
 
 //Assumed functions from other files
 function getCSRFToken(){
