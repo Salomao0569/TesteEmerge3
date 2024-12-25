@@ -135,7 +135,7 @@ async function avaliarLaudoAtual() {
     }
 
     try {
-        const token = getCSRFToken();
+        const token = getCSRFToken(); //This function should be implemented elsewhere
         if (!token) {
             throw new Error('CSRF token não encontrado. Por favor, recarregue a página.');
         }
@@ -145,7 +145,7 @@ async function avaliarLaudoAtual() {
 
         const response = await fetch('/api/gerar_texto', {
             method: 'POST',
-            headers: addCSRFToken({
+            headers: addCSRFToken({ //This function should be implemented elsewhere
                 'Content-Type': 'application/json'
             }),
             body: JSON.stringify({ 
@@ -203,7 +203,7 @@ async function gerarTextoIA() {
     }
 
     try {
-        const token = getCSRFToken();
+        const token = getCSRFToken();//This function should be implemented elsewhere
         if (!token) {
             throw new Error('CSRF token não encontrado. Por favor, recarregue a página.');
         }
@@ -213,7 +213,7 @@ async function gerarTextoIA() {
 
         const response = await fetch('/api/gerar_texto', {
             method: 'POST',
-            headers: addCSRFToken({
+            headers: addCSRFToken({//This function should be implemented elsewhere
                 'Content-Type': 'application/json'
             }),
             body: JSON.stringify({ prompt })
@@ -376,69 +376,76 @@ document.getElementById('phraseSelect').addEventListener('change', insertSelecte
 
 // Função para salvar frase ou modelo
 async function salvarFraseModelo() {
-    // Criar modal para input se ainda não existir
-    if (!document.getElementById('modalSalvarFrase')) {
-        const modalHtml = `
-            <div class="modal fade" id="modalSalvarFrase" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Salvar Frase/Modelo</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="salvarFraseForm">
-                                <div class="mb-3">
-                                    <label for="tituloFrase" class="form-label">Título:</label>
-                                    <input type="text" class="form-control" id="tituloFrase" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="categoriaFrase" class="form-label">Categoria:</label>
-                                    <select class="form-select" id="categoriaFrase" required>
-                                        <option value="">Selecione uma categoria...</option>
-                                        <option value="normal">Normal</option>
-                                        <option value="alterado">Alterado</option>
-                                        <option value="conclusao">Conclusão</option>
-                                        <option value="laudo">Laudo Completo</option>
-                                    </select>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="button" class="btn btn-primary" onclick="confirmarSalvarFrase()">
-                                <i class="fas fa-save"></i> Salvar
-                            </button>
+    try {
+        // Criar modal para input se ainda não existir
+        if (!document.getElementById('modalSalvarFrase')) {
+            const modalHtml = `
+                <div class="modal fade" id="modalSalvarFrase" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Salvar Frase/Modelo</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="salvarFraseForm" onsubmit="return false;">
+                                    <div class="mb-3">
+                                        <label for="tituloFrase" class="form-label">Título:</label>
+                                        <input type="text" class="form-control" id="tituloFrase" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="categoriaFrase" class="form-label">Categoria:</label>
+                                        <select class="form-select" id="categoriaFrase" required>
+                                            <option value="">Selecione uma categoria...</option>
+                                            <option value="normal">Normal</option>
+                                            <option value="alterado">Alterado</option>
+                                            <option value="conclusao">Conclusão</option>
+                                            <option value="laudo">Laudo Completo</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-primary" onclick="confirmarSalvarFrase()">
+                                    <i class="fas fa-save"></i> Salvar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        // Obter conteúdo selecionado ou todo o conteúdo
+        const editor = $('#editor');
+        const conteudo = editor.summernote('createRange')?.toString() || editor.summernote('code');
+
+        if (!conteudo.trim()) {
+            showFeedback('Por favor, selecione ou digite algum conteúdo antes de salvar.', 'warning');
+            return;
+        }
+
+        // Armazenar temporariamente o conteúdo
+        window.tempContent = conteudo;
+
+        // Mostrar modal usando Bootstrap 5
+        const modalElement = document.getElementById('modalSalvarFrase');
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+
+    } catch (error) {
+        console.error('Erro ao preparar modal:', error);
+        showFeedback('Erro ao preparar formulário de salvamento', 'danger');
     }
-
-    // Obter conteúdo selecionado ou todo o conteúdo
-    const editor = $('#editor');
-    const conteudo = editor.summernote('createRange')?.toString() || editor.summernote('code');
-
-    if (!conteudo.trim()) {
-        showFeedback('Por favor, selecione ou digite algum conteúdo antes de salvar.', 'warning');
-        return;
-    }
-
-    // Armazenar temporariamente o conteúdo
-    window.tempContent = conteudo;
-
-    // Mostrar modal
-    const modal = new bootstrap.Modal(document.getElementById('modalSalvarFrase'));
-    modal.show();
 }
 
 // Função para confirmar e salvar a frase/modelo
 async function confirmarSalvarFrase() {
     const form = document.getElementById('salvarFraseForm');
-    const titulo = document.getElementById('tituloFrase').value.trim();
-    const categoria = document.getElementById('categoriaFrase').value;
+    const titulo = document.getElementById('tituloFrase')?.value?.trim();
+    const categoria = document.getElementById('categoriaFrase')?.value;
     const conteudo = window.tempContent;
 
     if (!titulo || !categoria) {
@@ -446,17 +453,28 @@ async function confirmarSalvarFrase() {
         return;
     }
 
+    const loadingBtn = document.querySelector('#modalSalvarFrase .btn-primary');
+    const originalBtnHtml = loadingBtn.innerHTML;
+
     try {
-        const loadingBtn = document.querySelector('#modalSalvarFrase .btn-primary');
-        const originalBtnHtml = loadingBtn.innerHTML;
         loadingBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
         loadingBtn.disabled = true;
+
+        // Obter o CSRF token do cookie
+        const csrfToken = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrf_token='))
+            ?.split('=')[1];
+
+        if (!csrfToken) {
+            throw new Error('CSRF token não encontrado. Por favor, recarregue a página.');
+        }
 
         const response = await fetch('/api/phrases', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
+                'X-CSRFToken': csrfToken
             },
             body: JSON.stringify({
                 title: titulo,
@@ -465,13 +483,15 @@ async function confirmarSalvarFrase() {
             })
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Erro ao salvar frase/modelo');
+            throw new Error(data.error || 'Erro ao salvar frase/modelo');
         }
 
         // Fechar modal e limpar form
-        const modal = bootstrap.Modal.getInstance(document.getElementById('modalSalvarFrase'));
+        const modalElement = document.getElementById('modalSalvarFrase');
+        const modal = bootstrap.Modal.getInstance(modalElement);
         modal.hide();
         form.reset();
         delete window.tempContent;
@@ -483,34 +503,32 @@ async function confirmarSalvarFrase() {
         await loadTemplatesAndPhrases();
 
     } catch (error) {
-        console.error('Erro:', error);
-        showFeedback(error.message, 'danger');
+        console.error('Erro ao salvar:', error);
+        showFeedback(error.message || 'Erro ao salvar frase/modelo', 'danger');
     } finally {
-        const loadingBtn = document.querySelector('#modalSalvarFrase .btn-primary');
-        loadingBtn.innerHTML = '<i class="fas fa-save"></i> Salvar';
-        loadingBtn.disabled = false;
+        if (loadingBtn) {
+            loadingBtn.innerHTML = originalBtnHtml || '<i class="fas fa-save"></i> Salvar';
+            loadingBtn.disabled = false;
+        }
     }
 }
 
 // Função para mostrar feedback visual
 function showFeedback(message, type = 'success') {
-    const feedbackDiv = document.createElement('div');
-    feedbackDiv.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
-    feedbackDiv.style.zIndex = '1050';
-    feedbackDiv.textContent = message;
-    document.body.appendChild(feedbackDiv);
-    setTimeout(() => feedbackDiv.remove(), 3000);
-}
+    try {
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+        feedbackDiv.style.zIndex = '1050';
+        feedbackDiv.textContent = message;
+        document.body.appendChild(feedbackDiv);
 
-//Assumed functions from other files
-function getCSRFToken(){
-    //Implementation to get CSRF token
-    return "token"; //replace with actual implementation
-}
-
-function addCSRFToken(headers){
-    //Implementation to add CSRF token to headers
-    headers["X-CSRFToken"] = getCSRFToken();
-    return headers; //replace with actual implementation
-
+        // Remove after 3 seconds
+        setTimeout(() => {
+            if (feedbackDiv && feedbackDiv.parentNode) {
+                feedbackDiv.remove();
+            }
+        }, 3000);
+    } catch (error) {
+        console.error('Erro ao mostrar feedback:', error);
+    }
 }

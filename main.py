@@ -17,7 +17,6 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
-
 # Carregar variáveis de ambiente
 load_dotenv()
 
@@ -31,37 +30,42 @@ logger = logging.getLogger(__name__)
 def create_app():
     app = Flask(__name__)
 
-    # Configuração detalhada do banco de dados
-    database_url = os.environ.get('DATABASE_URL')
-    if not database_url:
-        logger.error("DATABASE_URL não está definida nas variáveis de ambiente")
-        raise ValueError("DATABASE_URL é obrigatória")
-
-    logger.info("Inicializando aplicação com configurações...")
-    logger.info(f"Database URL: {database_url}")
-
-    # Configuração básica
-    app.config.update(
-        SQLALCHEMY_DATABASE_URI=database_url,
-        SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        SECRET_KEY=os.environ.get('SECRET_KEY', os.urandom(32)),
-        WTF_CSRF_ENABLED=True,
-        WTF_CSRF_CHECK_DEFAULT=False
-    )
-
-    # Inicializar extensões com tratamento de erro detalhado
     try:
+        # Configuração detalhada do banco de dados
+        database_url = os.environ.get('DATABASE_URL')
+        if not database_url:
+            logger.error("DATABASE_URL não está definida nas variáveis de ambiente")
+            raise ValueError("DATABASE_URL é obrigatória")
+
+        logger.info("Inicializando aplicação com configurações...")
+        logger.info(f"Database URL: {database_url}")
+
+        # Configuração básica
+        app.config.update(
+            SQLALCHEMY_DATABASE_URI=database_url,
+            SQLALCHEMY_TRACK_MODIFICATIONS=False,
+            SECRET_KEY=os.environ.get('SECRET_KEY', os.urandom(32)),
+            WTF_CSRF_ENABLED=True,
+            WTF_CSRF_SECRET_KEY=os.environ.get('WTF_CSRF_SECRET_KEY', os.urandom(32)),
+            WTF_CSRF_CHECK_DEFAULT=True,
+            SESSION_COOKIE_SECURE=True,
+            SESSION_COOKIE_HTTPONLY=True,
+            REMEMBER_COOKIE_SECURE=True,
+            REMEMBER_COOKIE_HTTPONLY=True
+        )
+
+        # Inicializar extensões com tratamento de erro detalhado
         logger.info("Inicializando extensões do Flask...")
         db.init_app(app)
         csrf = CSRFProtect()
         csrf.init_app(app)
-        init_assets(app)  # Inicializa o gerenciamento de assets
+        init_assets(app)
         logger.info("Extensões inicializadas com sucesso")
-    except Exception as e:
-        logger.error(f"Erro crítico ao inicializar extensões: {str(e)}", exc_info=True)
-        raise
 
-    return app
+        return app
+    except Exception as e:
+        logger.error(f"Erro crítico ao inicializar aplicação: {str(e)}", exc_info=True)
+        raise
 
 app = create_app()
 
@@ -422,36 +426,44 @@ def gerar_pdf():
 
 @app.after_request
 def add_csrf_header(response):
-    if 'text/html' in response.headers.get('Content-Type', ''):
-        response.headers.set('X-CSRFToken', generate_csrf())
-        # Adicionar meta tag com CSRF token no HTML
-        if response.is_sequence:
-            response.response = [response.data.replace(
-                b'</head>',
-                f'<meta name="csrf-token" content="{generate_csrf()}"></head>'.encode('utf-8'),
-                1
-            )]
+    """Add CSRF token to response headers"""
+    try:
+        if 'text/html' in response.headers.get('Content-Type', ''):
+            csrf_token = generate_csrf()
+            response.headers.set('X-CSRFToken', csrf_token)
+            response.set_cookie('csrf_token', csrf_token, secure=True, httponly=True)
+    except Exception as e:
+        logger.error(f"Erro ao adicionar CSRF header: {str(e)}", exc_info=True)
     return response
 
 @app.route('/api/phrases', methods=['POST'])
 def save_phrase():
+    """Save a new phrase or template"""
     try:
         if not request.is_json:
             return jsonify({"error": "Content-Type deve ser application/json"}), 400
 
         data = request.get_json()
+        logger.debug(f"Dados recebidos para salvar frase: {data}")
+
+        if not data.get('content'):
+            return jsonify({"error": "Conteúdo é obrigatório"}), 400
+
         new_phrase = Template(
-            name=data['title'],
+            name=data.get('title', 'Modelo sem título'),
             content=data['content'],
-            category='frase',
+            category=data.get('category', 'frase'),
             doctor_id=data.get('doctor_id')
         )
 
         db.session.add(new_phrase)
         db.session.commit()
+        logger.info(f"Nova frase salva com sucesso: ID {new_phrase.id}")
         return jsonify(new_phrase.to_dict()), 201
+
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Erro ao salvar frase: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 400
 
 @app.route('/api/phrases', methods=['GET'])
@@ -487,4 +499,6 @@ if __name__ == '__main__':
         except Exception as e:
             logger.error(f"Erro ao criar tabelas do banco de dados: {e}", exc_info=True)
             raise
-    app.run(host='0.0.0.0', port=3001, debug=True)
+
+    port = int(os.environ.get('PORT', 3001))
+    app.run(host='0.0.0.0', port=port, debug=True)
