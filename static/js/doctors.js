@@ -1,3 +1,19 @@
+// Function to get CSRF token from cookie
+function getCSRFToken() {
+    const name = 'csrf_token=';
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const cookieArray = decodedCookie.split(';');
+    for(let cookie of cookieArray) {
+        while (cookie.charAt(0) === ' ') {
+            cookie = cookie.substring(1);
+        }
+        if (cookie.indexOf(name) === 0) {
+            return cookie.substring(name.length, cookie.length);
+        }
+    }
+    return '';
+}
+
 // Function to load doctors
 async function loadDoctors() {
     try {
@@ -169,8 +185,10 @@ async function saveDoctor() {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'X-CSRFToken': getCSRFToken()
             },
+            credentials: 'same-origin',
             body: JSON.stringify(doctorData)
         });
 
@@ -231,8 +249,10 @@ async function deleteDoctor(id) {
         const response = await fetch(`/api/doctors/${id}`, {
             method: 'DELETE',
             headers: {
-                'Accept': 'application/json'
-            }
+                'Accept': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            credentials: 'same-origin'
         });
 
         if (!response.ok) {
