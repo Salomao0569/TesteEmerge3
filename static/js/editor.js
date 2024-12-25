@@ -377,6 +377,20 @@ document.getElementById('phraseSelect').addEventListener('change', insertSelecte
 // Função para salvar frase ou modelo
 async function salvarFraseModelo() {
     try {
+        // Obter conteúdo selecionado ou todo o conteúdo
+        const editor = $('#editor');
+        const conteudo = editor.summernote('createRange')?.toString() || editor.summernote('code');
+
+        if (!conteudo.trim()) {
+            showFeedback('Por favor, selecione ou digite algum conteúdo antes de salvar.', 'warning');
+            return;
+        }
+
+        console.log('Conteúdo a ser salvo:', conteudo);
+
+        // Armazenar temporariamente o conteúdo
+        window.tempContent = conteudo;
+
         // Criar modal para input se ainda não existir
         if (!document.getElementById('modalSalvarFrase')) {
             const modalHtml = `
@@ -416,18 +430,6 @@ async function salvarFraseModelo() {
             document.body.insertAdjacentHTML('beforeend', modalHtml);
         }
 
-        // Obter conteúdo selecionado ou todo o conteúdo
-        const editor = $('#editor');
-        const conteudo = editor.summernote('createRange')?.toString() || editor.summernote('code');
-
-        if (!conteudo.trim()) {
-            showFeedback('Por favor, selecione ou digite algum conteúdo antes de salvar.', 'warning');
-            return;
-        }
-
-        // Armazenar temporariamente o conteúdo
-        window.tempContent = conteudo;
-
         // Mostrar modal usando Bootstrap 5
         const modalElement = document.getElementById('modalSalvarFrase');
         const modal = new bootstrap.Modal(modalElement);
@@ -446,10 +448,12 @@ async function confirmarSalvarFrase() {
     const categoria = document.getElementById('categoriaFrase')?.value;
     const conteudo = window.tempContent;
 
-    if (!titulo || !categoria) {
-        showFeedback('Por favor, preencha todos os campos.', 'warning');
+    if (!titulo || !categoria || !conteudo) {
+        showFeedback('Por favor, preencha todos os campos e selecione algum conteúdo.', 'warning');
         return;
     }
+
+    console.log('Tentando salvar com dados:', { titulo, categoria, conteudo });
 
     const loadingBtn = document.querySelector('#modalSalvarFrase .btn-primary');
     const originalBtnHtml = loadingBtn.innerHTML;
@@ -458,13 +462,19 @@ async function confirmarSalvarFrase() {
         loadingBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
         loadingBtn.disabled = true;
 
-        const headers = addCSRFToken({
-            'Content-Type': 'application/json'
-        });
+        const token = getCSRFToken();
+        if (!token) {
+            throw new Error('CSRF token não encontrado. Por favor, recarregue a página.');
+        }
+
+        console.log('CSRF Token obtido:', token);
 
         const response = await fetch('/api/phrases', {
             method: 'POST',
-            headers,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': token
+            },
             body: JSON.stringify({
                 title: titulo,
                 content: conteudo,
@@ -473,6 +483,7 @@ async function confirmarSalvarFrase() {
         });
 
         const data = await response.json();
+        console.log('Resposta do servidor:', data);
 
         if (!response.ok) {
             throw new Error(data.error || 'Erro ao salvar frase/modelo');
@@ -492,11 +503,11 @@ async function confirmarSalvarFrase() {
         await loadTemplatesAndPhrases();
 
     } catch (error) {
-        console.error('Erro ao salvar:', error);
+        console.error('Erro detalhado ao salvar:', error);
         showFeedback(error.message || 'Erro ao salvar frase/modelo', 'danger');
     } finally {
         if (loadingBtn) {
-            loadingBtn.innerHTML = originalBtnHtml || '<i class="fas fa-save"></i> Salvar';
+            loadingBtn.innerHTML = originalBtnHtml;
             loadingBtn.disabled = false;
         }
     }

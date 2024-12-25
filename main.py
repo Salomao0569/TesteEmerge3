@@ -441,16 +441,22 @@ def save_phrase():
     """Save a new phrase or template"""
     try:
         if not request.is_json:
+            logger.error("Requisição não contém Content-Type: application/json")
             return jsonify({"error": "Content-Type deve ser application/json"}), 400
 
         data = request.get_json()
         logger.debug(f"Dados recebidos para salvar frase: {data}")
 
         if not data.get('content'):
+            logger.error("Tentativa de salvar frase sem conteúdo")
             return jsonify({"error": "Conteúdo é obrigatório"}), 400
 
+        if not data.get('title'):
+            logger.error("Tentativa de salvar frase sem título")
+            return jsonify({"error": "Título é obrigatório"}), 400
+
         new_phrase = Template(
-            name=data.get('title', 'Modelo sem título'),
+            name=data['title'],
             content=data['content'],
             category=data.get('category', 'frase'),
             doctor_id=data.get('doctor_id')
@@ -459,7 +465,11 @@ def save_phrase():
         db.session.add(new_phrase)
         db.session.commit()
         logger.info(f"Nova frase salva com sucesso: ID {new_phrase.id}")
-        return jsonify(new_phrase.to_dict()), 201
+
+        return jsonify({
+            "message": "Frase salva com sucesso",
+            "phrase": new_phrase.to_dict()
+        }), 201
 
     except Exception as e:
         db.session.rollback()
