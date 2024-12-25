@@ -332,6 +332,51 @@ def add_csrf_header(response):
         response.headers.set('X-CSRFToken', generate_csrf())
     return response
 
+@app.route('/api/phrases', methods=['POST'])
+def save_phrase():
+    try:
+        if not request.is_json:
+            return jsonify({"error": "Content-Type deve ser application/json"}), 400
+
+        data = request.get_json()
+        new_phrase = Template(
+            name=data['title'],
+            content=data['content'],
+            category='frase',
+            doctor_id=data.get('doctor_id')
+        )
+
+        db.session.add(new_phrase)
+        db.session.commit()
+        return jsonify(new_phrase.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+@app.route('/api/phrases', methods=['GET'])
+def list_phrases():
+    try:
+        phrases = Template.query.filter_by(category='frase').all()
+        return jsonify([phrase.to_dict() for phrase in phrases])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/phrases/<int:id>', methods=['DELETE'])
+def delete_phrase(id):
+    try:
+        phrase = Template.query.filter_by(id=id, category='frase').first_or_404()
+        db.session.delete(phrase)
+        db.session.commit()
+        return jsonify({"message": "Frase excluída com sucesso"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route('/phrases')
+def phrases():
+    return render_template('phrases.html')
+
 if __name__ == '__main__':
     with app.app_context():
         try:

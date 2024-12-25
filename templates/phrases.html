@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Cadastro de Frases</h5>
+        </div>
+        <div class="card-body">
+            <form id="phraseForm" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label for="phraseTitle" class="form-label">Título da Frase</label>
+                        <input type="text" id="phraseTitle" class="form-control" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label for="phraseContent" class="form-label">Conteúdo</label>
+                        <textarea id="phraseContent" class="form-control" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Salvar Frase</button>
+                </div>
+            </form>
+
+            <!-- Lista de Frases -->
+            <h5 class="mb-3">Frases Cadastradas</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Conteúdo</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="phrasesList">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript para gerenciar frases -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadPhrases();
+    
+    const form = document.getElementById('phraseForm');
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const data = {
+            title: document.getElementById('phraseTitle').value,
+            content: document.getElementById('phraseContent').value
+        };
+
+        try {
+            const response = await fetch('/api/phrases', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error('Erro ao salvar frase');
+            }
+
+            form.reset();
+            loadPhrases();
+            showFeedback('Frase salva com sucesso', 'success');
+        } catch (error) {
+            showFeedback(error.message, 'danger');
+        }
+    });
+});
+
+async function loadPhrases() {
+    try {
+        const response = await fetch('/api/phrases');
+        const phrases = await response.json();
+        
+        const tbody = document.getElementById('phrasesList');
+        tbody.innerHTML = phrases.map(phrase => `
+            <tr>
+                <td>${phrase.name}</td>
+                <td>${phrase.content.substring(0, 100)}...</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="deletePhrase(${phrase.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        showFeedback('Erro ao carregar frases', 'danger');
+    }
+}
+
+async function deletePhrase(id) {
+    if (!confirm('Tem certeza que deseja excluir esta frase?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/phrases/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao excluir frase');
+        }
+
+        loadPhrases();
+        showFeedback('Frase excluída com sucesso', 'success');
+    } catch (error) {
+        showFeedback(error.message, 'danger');
+    }
+}
+
+function showFeedback(message, type = 'success') {
+    const feedbackDiv = document.createElement('div');
+    feedbackDiv.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+    feedbackDiv.style.zIndex = '1050';
+    feedbackDiv.textContent = message;
+    document.body.appendChild(feedbackDiv);
+    setTimeout(() => feedbackDiv.remove(), 3000);
+}
+</script>
+{% endblock %}
