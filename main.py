@@ -211,21 +211,29 @@ def delete_doctor(id):
 
 @app.route('/api/doctors', methods=['POST'])
 def create_doctor():
+    """Create a new doctor with enhanced error handling"""
     try:
         if not request.is_json:
-            return jsonify({"error": "Content-Type deve ser application/json"}), 400
+            logger.error("Request Content-Type is not application/json")
+            return jsonify({
+                "error": "Content-Type must be application/json"
+            }), 400
 
         data = request.get_json()
+        logger.info(f"Attempting to create doctor with data: {data}")
 
-        # Validar dados obrigatórios
+        # Validate required fields
         if not data.get('full_name'):
+            logger.error("Attempt to create doctor without full_name")
             return jsonify({"error": "Nome completo é obrigatório"}), 400
         if not data.get('crm'):
+            logger.error("Attempt to create doctor without CRM")
             return jsonify({"error": "CRM é obrigatório"}), 400
 
-        # Verificar se o CRM já existe
+        # Check for existing CRM
         existing_doctor = Doctor.query.filter_by(crm=data['crm']).first()
         if existing_doctor:
+            logger.error(f"Attempt to create doctor with existing CRM: {data['crm']}")
             return jsonify({"error": "CRM já cadastrado"}), 400
 
         new_doctor = Doctor(
@@ -233,12 +241,17 @@ def create_doctor():
             crm=data['crm'],
             rqe=data.get('rqe', '')
         )
+
         db.session.add(new_doctor)
         db.session.commit()
+        logger.info(f"Successfully created doctor with ID: {new_doctor.id}")
+
         return jsonify(new_doctor.to_dict()), 201
+
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 400
+        logger.error(f"Error creating doctor: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/reports', methods=['POST'])
 def create_report():
