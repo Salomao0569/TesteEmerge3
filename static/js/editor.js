@@ -1,28 +1,53 @@
-// Função para carregar templates e frases
+// Function to get CSRF token from meta tag or cookie
+function getCSRFToken() {
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    if (metaTag) {
+        return metaTag.getAttribute('content');
+    }
+    return document.cookie.split('; ').find(row => row.startsWith('csrf_token='))?.split('=')[1];
+}
+
+// Function to add CSRF token to headers
+function addCSRFToken(headers = {}) {
+    const token = getCSRFToken();
+    if (token) {
+        return {
+            ...headers,
+            'X-CSRF-Token': token,
+            'X-CSRFToken': token
+        };
+    }
+    return headers;
+}
+
+// Template loading function with enhanced error handling
 async function loadTemplatesAndPhrases() {
     try {
         const response = await fetch('/api/templates');
+        if (!response.ok) {
+            throw new Error('Erro ao carregar templates');
+        }
+
         const templates = await response.json();
+        console.log('Templates carregados:', templates);
 
         const mascaraSelect = document.getElementById('mascaraSelect');
         const fraseSelect = document.getElementById('fraseSelect');
 
-        // Limpar opções existentes
+        // Clear existing options
         mascaraSelect.innerHTML = '<option value="">Selecione uma máscara...</option>';
         fraseSelect.innerHTML = '<option value="">Selecione uma frase padrão...</option>';
 
-        // Separar templates por categoria
+        // Separate and add templates by category
         const mascaras = templates.filter(t => t.category === 'mascara');
         const frases = templates.filter(t => t.category === 'frase');
 
-        // Adicionar máscaras
         mascaras.forEach(mascara => {
             const option = new Option(mascara.name, mascara.id);
             option.title = mascara.content;
             mascaraSelect.add(option);
         });
 
-        // Adicionar frases padrão
         frases.forEach(frase => {
             const option = new Option(frase.name, frase.id);
             option.title = frase.content;
@@ -35,7 +60,7 @@ async function loadTemplatesAndPhrases() {
     }
 }
 
-// Função para salvar máscara ou frase
+// Template saving function with improved error handling
 async function salvarMascara() {
     try {
         const editor = $('#editor');
@@ -46,7 +71,10 @@ async function salvarMascara() {
             return;
         }
 
-        // Criar modal para input se ainda não existir
+        // Store content temporarily
+        window.tempContent = conteudo;
+
+        // Create or show modal
         if (!document.getElementById('modalSalvarMascara')) {
             const modalHtml = `
                 <div class="modal fade" id="modalSalvarMascara" tabindex="-1">
@@ -84,10 +112,6 @@ async function salvarMascara() {
             document.body.insertAdjacentHTML('beforeend', modalHtml);
         }
 
-        // Armazenar temporariamente o conteúdo
-        window.tempContent = conteudo;
-
-        // Mostrar modal usando Bootstrap 5
         const modalElement = document.getElementById('modalSalvarMascara');
         const modal = new bootstrap.Modal(modalElement);
         modal.show();
@@ -98,7 +122,7 @@ async function salvarMascara() {
     }
 }
 
-// Função para confirmar e salvar o template
+// Function to confirm and save template with enhanced error handling
 async function confirmarSalvarMascara() {
     const titulo = document.getElementById('tituloMascara')?.value?.trim();
     const tipo = document.getElementById('tipoMascara')?.value;
@@ -116,17 +140,11 @@ async function confirmarSalvarMascara() {
         loadingBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
         loadingBtn.disabled = true;
 
-        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        if (!token) {
-            throw new Error('CSRF token não encontrado. Por favor, recarregue a página.');
-        }
-
         const response = await fetch('/api/templates', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': token
-            },
+            headers: addCSRFToken({
+                'Content-Type': 'application/json'
+            }),
             body: JSON.stringify({
                 title: titulo,
                 content: conteudo,
@@ -140,17 +158,15 @@ async function confirmarSalvarMascara() {
             throw new Error(data.error || 'Erro ao salvar template');
         }
 
-        // Fechar modal e limpar form
+        // Close modal and clean up
         const modalElement = document.getElementById('modalSalvarMascara');
         const modal = bootstrap.Modal.getInstance(modalElement);
         modal.hide();
         document.getElementById('salvarMascaraForm').reset();
         delete window.tempContent;
 
-        // Mostrar feedback de sucesso
+        // Show success feedback and reload templates
         showFeedback('Template salvo com sucesso!', 'success');
-
-        // Recarregar lista de templates e frases
         await loadTemplatesAndPhrases();
 
     } catch (error) {
@@ -360,20 +376,6 @@ async function loadDoctors() {
     }
 }
 
-function getCSRFToken() {
-    //Implementation to get CSRF token from cookie or meta tag
-    return document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-}
-
-function addCSRFToken(headers) {
-    //Implementation to add CSRF token to headers.
-    const token = getCSRFToken();
-    if (token) {
-        headers['X-CSRFToken'] = token;
-    }
-    return headers;
-}
-
 function copiarTextoGerado() {
     const texto = document.getElementById('previewTextoIA').innerText;
     if (texto) {
@@ -400,17 +402,12 @@ async function gerarTextoIA() {
     }
 
     try {
-        const token = getCSRFToken();//This function should be implemented elsewhere
-        if (!token) {
-            throw new Error('CSRF token não encontrado. Por favor, recarregue a página.');
-        }
-
         const previewArea = document.getElementById('previewTextoIA');
         previewArea.innerHTML = '<div class="alert alert-info">Gerando texto, por favor aguarde...</div>';
 
         const response = await fetch('/api/gerar_texto', {
             method: 'POST',
-            headers: addCSRFToken({//This function should be implemented elsewhere
+            headers: addCSRFToken({
                 'Content-Type': 'application/json'
             }),
             body: JSON.stringify({ prompt })
@@ -464,17 +461,12 @@ async function avaliarLaudoAtual() {
     }
 
     try {
-        const token = getCSRFToken(); //This function should be implemented elsewhere
-        if (!token) {
-            throw new Error('CSRF token não encontrado. Por favor, recarregue a página.');
-        }
-
         const previewArea = document.getElementById('previewTextoIA');
         previewArea.innerHTML = '<div class="alert alert-info">Analisando laudo, por favor aguarde...</div>';
 
         const response = await fetch('/api/gerar_texto', {
             method: 'POST',
-            headers: addCSRFToken({ //This function should be implemented elsewhere
+            headers: addCSRFToken({
                 'Content-Type': 'application/json'
             }),
             body: JSON.stringify({ 

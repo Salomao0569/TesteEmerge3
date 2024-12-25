@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, session
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from models import db, Doctor, Template, Report
 from dotenv import load_dotenv
@@ -102,32 +102,37 @@ def get_templates():
 
 @app.route('/api/templates', methods=['POST'])
 def create_template():
+    """Create a new template with enhanced error handling and logging"""
     try:
         if not request.is_json:
+            logger.error("Requisição não contém Content-Type: application/json")
             return jsonify({"error": "Content-Type deve ser application/json"}), 400
 
         data = request.get_json()
-        logger.debug(f"Dados recebidos para salvar template: {data}")
+        logger.debug(f"Dados recebidos para criar template: {data}")
 
         # Validar dados obrigatórios
         if not data.get('title'):
-            logger.error("Tentativa de salvar template sem título")
+            logger.error("Tentativa de criar template sem título")
             return jsonify({"error": "Título é obrigatório"}), 400
 
         if not data.get('content'):
-            logger.error("Tentativa de salvar template sem conteúdo")
+            logger.error("Tentativa de criar template sem conteúdo")
             return jsonify({"error": "Conteúdo é obrigatório"}), 400
+
+        category = data.get('category', 'mascara')
+        logger.info(f"Criando novo template com categoria: {category}")
 
         new_template = Template(
             name=data['title'],
             content=data['content'],
-            category=data.get('category', 'mascara'),  # Default para 'mascara' se não especificado
+            category=category,
             doctor_id=data.get('doctor_id')
         )
 
         db.session.add(new_template)
         db.session.commit()
-        logger.info(f"Novo template salvo com sucesso: ID {new_template.id}")
+        logger.info(f"Template criado com sucesso: ID {new_template.id}")
 
         return jsonify({
             "message": "Template salvo com sucesso",
@@ -136,8 +141,8 @@ def create_template():
 
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Erro ao salvar template: {str(e)}", exc_info=True)
-        return jsonify({"error": str(e)}), 400
+        logger.error(f"Erro ao criar template: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Erro ao salvar template: {str(e)}"}), 400
 
 @app.route('/api/doctors', methods=['GET'])
 def get_doctors():
@@ -509,14 +514,11 @@ def phrases():
 
 @app.after_request
 def add_csrf_header(response):
-    """Add CSRF token to response headers"""
-    try:
-        if 'text/html' in response.headers.get('Content-Type', ''):
-            csrf_token = generate_csrf()
-            response.headers.set('X-CSRFToken', csrf_token)
-            response.set_cookie('csrf_token', csrf_token, secure=True, httponly=True)
-    except Exception as e:
-        logger.error(f"Erro ao adicionar CSRF header: {str(e)}", exc_info=True)
+    """Add CSRF token to response headers and cookies"""
+    if 'text/html' in response.headers.get('Content-Type', ''):
+        csrf_token = generate_csrf()
+        response.headers.set('X-CSRF-Token', csrf_token)
+        response.set_cookie('csrf_token', csrf_token, secure=True, httponly=True, samesite='Strict')
     return response
 
 if __name__ == '__main__':
