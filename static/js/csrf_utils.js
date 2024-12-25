@@ -1,30 +1,15 @@
-// Função para obter o token CSRF da meta tag
+// Função para obter o token CSRF da meta tag ou input hidden
 function getCSRFToken() {
     try {
         // Try to get from meta tag first
-        const csrfMetaTag = document.querySelector('meta[name="csrf-token"]');
-        if (csrfMetaTag) {
-            const token = csrfMetaTag.getAttribute('content');
-            if (token) return token;
-        }
+        const metaToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (metaToken) return metaToken;
 
-        // Try to get from hidden input field
-        const csrfInput = document.querySelector('input[name="csrf_token"]');
-        if (csrfInput) {
-            const token = csrfInput.value;
-            if (token) return token;
-        }
+        // Try to get from form input
+        const inputToken = document.querySelector('input[name="csrf_token"]')?.value;
+        if (inputToken) return inputToken;
 
-        // Try to get from cookie
-        const csrfCookie = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('csrf_token='));
-        if (csrfCookie) {
-            const token = csrfCookie.split('=')[1];
-            if (token) return token;
-        }
-
-        console.error('CSRF token não encontrado em nenhuma fonte');
+        console.error('CSRF token não encontrado');
         return null;
     } catch (error) {
         console.error('Erro ao obter CSRF token:', error);

@@ -211,31 +211,32 @@ def delete_doctor(id):
 
 @app.route('/api/doctors', methods=['POST'])
 def create_doctor():
-    """Create a new doctor with enhanced error handling"""
+    """Create a new doctor with enhanced error handling and validation"""
     try:
         if not request.is_json:
             logger.error("Request Content-Type is not application/json")
             return jsonify({
-                "error": "Content-Type must be application/json"
+                "error": "Content-Type deve ser application/json"
             }), 400
 
         data = request.get_json()
-        logger.info(f"Attempting to create doctor with data: {data}")
+        logger.info(f"Tentativa de criar médico com dados: {data}")
 
-        # Validate required fields
+        # Validação dos campos obrigatórios
         if not data.get('full_name'):
-            logger.error("Attempt to create doctor without full_name")
+            logger.error("Tentativa de criar médico sem nome")
             return jsonify({"error": "Nome completo é obrigatório"}), 400
         if not data.get('crm'):
-            logger.error("Attempt to create doctor without CRM")
+            logger.error("Tentativa de criar médico sem CRM")
             return jsonify({"error": "CRM é obrigatório"}), 400
 
-        # Check for existing CRM
+        # Validação do CRM existente
         existing_doctor = Doctor.query.filter_by(crm=data['crm']).first()
         if existing_doctor:
-            logger.error(f"Attempt to create doctor with existing CRM: {data['crm']}")
+            logger.error(f"Tentativa de criar médico com CRM já existente: {data['crm']}")
             return jsonify({"error": "CRM já cadastrado"}), 400
 
+        # Criar novo médico
         new_doctor = Doctor(
             full_name=data['full_name'],
             crm=data['crm'],
@@ -244,14 +245,17 @@ def create_doctor():
 
         db.session.add(new_doctor)
         db.session.commit()
-        logger.info(f"Successfully created doctor with ID: {new_doctor.id}")
+        logger.info(f"Médico criado com sucesso: ID {new_doctor.id}")
 
-        return jsonify(new_doctor.to_dict()), 201
+        return jsonify({
+            "message": "Médico cadastrado com sucesso",
+            "doctor": new_doctor.to_dict()
+        }), 201
 
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Error creating doctor: {str(e)}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Erro ao criar médico: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Erro ao criar médico: {str(e)}"}), 500
 
 @app.route('/api/reports', methods=['POST'])
 def create_report():

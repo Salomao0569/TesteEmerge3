@@ -14,6 +14,16 @@ function getCSRFToken() {
     return '';
 }
 
+// Helper function to add CSRF token to headers
+function addCSRFToken(headers) {
+    const csrfToken = getCSRFToken();
+    if (csrfToken) {
+        headers['X-CSRFToken'] = csrfToken;
+    }
+    return headers;
+}
+
+
 // Function to load doctors
 async function loadDoctors() {
     try {
@@ -181,24 +191,25 @@ async function saveDoctor() {
         const url = doctorId ? `/api/doctors/${doctorId}` : '/api/doctors';
         const method = doctorId ? 'PUT' : 'POST';
 
+        const headers = addCSRFToken({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        });
+
         const response = await fetch(url, {
             method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
+            headers: headers,
             credentials: 'same-origin',
             body: JSON.stringify(doctorData)
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
+            const data = await response.json();
             console.error('Erro na resposta:', response.status, data);
             throw new Error(data.error || 'Erro ao salvar médico');
         }
 
+        const data = await response.json();
         console.log('Médico salvo com sucesso:', data);
 
         // Close modal and reset form
