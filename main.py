@@ -650,17 +650,32 @@ def export_template_pdf(id):
 
         # Content
         try:
+            # Pre-process HTML with BeautifulSoup
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(template.content, 'html.parser')
+
+            # Clean up HTML
+            for tag in soup.find_all(['script', 'style']):
+                tag.decompose()
+
+            # Convert to markdown
             h = html2text.HTML2Text()
             h.ignore_links = True
             h.unicode_snob = True
-            h.body_width = 0  # Disable line wrapping
-            content_text = h.handle(template.content)
+            h.body_width = 0
+            content_text = h.handle(str(soup))
 
             # Ensure content is properly sanitized
             if not content_text.strip():
                 raise ValueError("Conteúdo do template está vazio após conversão")
 
-            story.append(Paragraph(content_text, styles['Normal']))
+            # Split into paragraphs and add to story
+            paragraphs = content_text.split('\n\n')
+            for para in paragraphs:
+                if para.strip():
+                    story.append(Paragraph(para.strip(), styles['Normal']))
+                    story.append(Spacer(1, 12))
+
             logger.debug("Conteúdo do PDF processado com sucesso")
         except Exception as e:
             logger.error(f"Erro ao processar conteúdo do PDF: {str(e)}")
@@ -720,17 +735,31 @@ def export_template_doc(id):
 
         # Add content
         try:
+            # Pre-process HTML with BeautifulSoup
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(template.content, 'html.parser')
+
+            # Clean up HTML
+            for tag in soup.find_all(['script', 'style']):
+                tag.decompose()
+
+            # Convert to markdown
             h = html2text.HTML2Text()
             h.ignore_links = True
             h.unicode_snob = True
-            h.body_width = 0  # Disable line wrapping
-            content_text = h.handle(template.content)
+            h.body_width = 0
+            content_text = h.handle(str(soup))
 
             # Ensure content is properly sanitized
             if not content_text.strip():
                 raise ValueError("Conteúdo do template está vazio após conversão")
 
-            doc.add_paragraph(content_text)
+            # Split into paragraphs and add to document
+            paragraphs = content_text.split('\n\n')
+            for para in paragraphs:
+                if para.strip():
+                    doc.add_paragraph(para.strip())
+
             logger.debug("Conteúdo do DOCX processado com sucesso")
         except Exception as e:
             logger.error(f"Erro ao processar conteúdo do DOCX: {str(e)}")
