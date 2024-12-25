@@ -7,7 +7,7 @@ function getCSRFToken() {
     return document.cookie.split('; ').find(row => row.startsWith('csrf_token='))?.split('=')[1];
 }
 
-// Function to add CSRF token to headers
+// Function to add CSRF token to headers (now largely redundant)
 function addCSRFToken(headers = {}) {
     const token = getCSRFToken();
     if (token) {
@@ -233,23 +233,32 @@ async function confirmarSalvarMascara() {
         loadingBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
         loadingBtn.disabled = true;
 
+        // Get CSRF token
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (!token) {
+            throw new Error('Token CSRF não encontrado');
+        }
+
         const response = await fetch('/api/templates', {
             method: 'POST',
-            headers: addCSRFToken({
-                'Content-Type': 'application/json'
-            }),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': token,
+                'X-CSRF-Token': token
+            },
             body: JSON.stringify({
-                title: titulo,
+                name: titulo,
                 content: conteudo,
                 category: tipo
             })
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
+            const data = await response.json();
             throw new Error(data.error || 'Erro ao salvar template');
         }
+
+        const data = await response.json();
 
         const modalElement = document.getElementById('modalSalvarMascara');
         const modal = bootstrap.Modal.getInstance(modalElement);

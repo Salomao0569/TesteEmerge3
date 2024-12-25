@@ -112,7 +112,7 @@ def create_template():
         logger.debug(f"Dados recebidos para criar template: {data}")
 
         # Validar dados obrigatórios
-        if not data.get('title'):
+        if not data.get('name'):
             logger.error("Tentativa de criar template sem título")
             return jsonify({"error": "Título é obrigatório"}), 400
 
@@ -124,7 +124,7 @@ def create_template():
         logger.info(f"Criando novo template com categoria: {category}")
 
         new_template = Template(
-            name=data['title'],
+            name=data['name'],
             content=data['content'],
             category=category,
             doctor_id=data.get('doctor_id')
