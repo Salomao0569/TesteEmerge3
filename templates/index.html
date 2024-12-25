@@ -67,7 +67,8 @@
                     <tr>
                         <td>Átrio Esquerdo</td>
                         <td>
-                            <input type="number" id="atrio" class="form-control" step="0.1">
+                            <input type="number" id="atrio_id" class="form-control" step="0.1">
+                            <button class="btn btn-primary btn-sm dictation-button" data-input-id="atrio_id">Dictar</button>
                             <div id="classificacao_ae" class="alert alert-info"></div>
                         </td>
                         <td>Volume Diastólico Final</td>
@@ -76,7 +77,8 @@
                     <tr>
                         <td>Aorta</td>
                         <td>
-                            <input type="number" id="aorta" class="form-control" step="0.1">
+                            <input type="number" id="aorta_id" class="form-control" step="0.1">
+                            <button class="btn btn-primary btn-sm dictation-button" data-input-id="aorta_id">Dictar</button>
                             <div id="classificacao_aorta" class="alert alert-info"></div>
                         </td>
                         <td>Volume Sistólico Final</td>
@@ -85,7 +87,8 @@
                     <tr>
                         <td>Aorta Ascendente</td>
                         <td>
-                            <input type="number" id="aorta_ascendente" class="form-control" step="0.1">
+                            <input type="number" id="aorta_ascendente_id" class="form-control" step="0.1">
+                            <button class="btn btn-primary btn-sm dictation-button" data-input-id="aorta_ascendente_id">Dictar</button>
                             <div id="classificacao_aorta_ascendente" class="alert alert-info"></div>
                         </td>
                         <td>Volume Ejetado</td>
@@ -94,7 +97,8 @@
                     <tr>
                         <td>Diâmetro Diastólico</td>
                         <td>
-                            <input type="number" id="diam_diast_final" class="form-control" step="0.1">
+                            <input type="number" id="diam_diast_final_id" class="form-control" step="0.1">
+                            <button class="btn btn-primary btn-sm dictation-button" data-input-id="diam_diast_final_id">Dictar</button>
                             <div id="classificacao_diastolico" class="alert alert-info"></div>
                         </td>
                         <td>Fração de Ejeção</td>
@@ -106,7 +110,8 @@
                     <tr>
                         <td>Diâmetro Sistólico</td>
                         <td>
-                            <input type="number" id="diam_sist_final" class="form-control" step="0.1">
+                            <input type="number" id="diam_sist_final_id" class="form-control" step="0.1">
+                            <button class="btn btn-primary btn-sm dictation-button" data-input-id="diam_sist_final_id">Dictar</button>
                             <div id="classificacao_sistolico" class="alert alert-info"></div>
                         </td>
                         <td>Percentual de Encurtamento</td>
@@ -115,7 +120,8 @@
                     <tr>
                         <td>Espessura do Septo</td>
                         <td>
-                            <input type="number" id="esp_diast_septo" class="form-control" step="0.1">
+                            <input type="number" id="esp_diast_septo_id" class="form-control" step="0.1">
+                            <button class="btn btn-primary btn-sm dictation-button" data-input-id="esp_diast_septo_id">Dictar</button>
                             <div id="classificacao_septo" class="alert alert-info"></div>
                         </td>
                         <td>Espessura Relativa</td>
@@ -127,7 +133,8 @@
                     <tr>
                         <td>Espessura PPVE</td>
                         <td>
-                            <input type="number" id="esp_diast_ppve" class="form-control" step="0.1">
+                            <input type="number" id="esp_diast_ppve_id" class="form-control" step="0.1">
+                            <button class="btn btn-primary btn-sm dictation-button" data-input-id="esp_diast_ppve_id">Dictar</button>
                             <div id="classificacao_ppve" class="alert alert-info"></div>
                         </td>
                         <td>Massa do VE</td>
@@ -135,7 +142,10 @@
                     </tr>
                     <tr>
                         <td>Ventrículo Direito</td>
-                        <td><input type="number" id="vd" class="form-control" step="0.1"></td>
+                        <td>
+                            <input type="number" id="vd_id" class="form-control" step="0.1">
+                            <button class="btn btn-primary btn-sm dictation-button" data-input-id="vd_id">Dictar</button>
+                        </td>
                         <td>Índice de Massa</td>
                         <td><div id="print_indice_massa" class="result"></div></td>
                     </tr>
@@ -229,6 +239,7 @@
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/jspdf-autotable"></script>
+    <script src="/static/js/dictation.js"></script>
     <script src="/static/js/calculations.js"></script>
     <script src="/static/js/editor.js"></script>
     <script src="/static/js/pdf_generator.js"></script>
