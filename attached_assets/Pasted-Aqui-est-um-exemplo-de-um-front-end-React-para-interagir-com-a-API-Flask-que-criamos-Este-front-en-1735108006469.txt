@@ -1,0 +1,285 @@
+Aqui está um exemplo de um front-end React para interagir com a API Flask que criamos. Este front-end possui:
+
+Formulário para salvar novas frases.
+Lista para visualizar todas as frases salvas.
+Botão de excluir para deletar frases.
+Você pode copiar e colar este código no Replit na seção de front-end. Vamos começar!
+
+Configuração do Front-End
+Crie um arquivo chamado App.js no Replit e cole o código abaixo:
+
+javascript
+Copy code
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+function App() {
+  const [phrases, setPhrases] = useState([]);
+  const [newPhrase, setNewPhrase] = useState({ title: "", content: "" });
+
+  // Fetch phrases from the API
+  useEffect(() => {
+    fetchPhrases();
+  }, []);
+
+  const fetchPhrases = async () => {
+    try {
+      const response = await axios.get("/api/phrases");
+      setPhrases(response.data);
+    } catch (error) {
+      console.error("Error fetching phrases:", error);
+    }
+  };
+
+  const savePhrase = async () => {
+    if (!newPhrase.title || !newPhrase.content) {
+      alert("Both title and content are required.");
+      return;
+    }
+    try {
+      await axios.post("/api/phrases", newPhrase);
+      setNewPhrase({ title: "", content: "" });
+      fetchPhrases(); // Refresh the list
+    } catch (error) {
+      console.error("Error saving phrase:", error);
+    }
+  };
+
+  const deletePhrase = async (id) => {
+    try {
+      await axios.delete(`/api/phrases/${id}`);
+      fetchPhrases(); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting phrase:", error);
+    }
+  };
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <h1>Phrase Repository</h1>
+
+      {/* Form to add new phrase */}
+      <div style={{ marginBottom: "20px" }}>
+        <input
+          type="text"
+          placeholder="Title"
+          value={newPhrase.title}
+          onChange={(e) => setNewPhrase({ ...newPhrase, title: e.target.value })}
+          style={{ marginRight: "10px", padding: "5px" }}
+        />
+        <input
+          type="text"
+          placeholder="Content"
+          value={newPhrase.content}
+          onChange={(e) => setNewPhrase({ ...newPhrase, content: e.target.value })}
+          style={{ marginRight: "10px", padding: "5px" }}
+        />
+        <button onClick={savePhrase} style={{ padding: "5px 10px" }}>
+          Save
+        </button>
+      </div>
+
+      {/* List of phrases */}
+      <ul>
+        {phrases.map((phrase) => (
+          <li key={phrase.id} style={{ marginBottom: "10px" }}>
+            <strong>{phrase.title}</strong>: {phrase.content}
+            <button
+              onClick={() => deletePhrase(phrase.id)}
+              style={{ marginLeft: "10px", padding: "2px 5px" }}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+Configuração do Axios
+Certifique-se de instalar a biblioteca axios no seu ambiente React para fazer requisições à API:
+
+No terminal do Replit, execute:
+
+bash
+Copy code
+npm install axios
+Confirme que o back-end e o front-end estão funcionando na mesma origem.
+
+Instruções Finais
+Certifique-se de que o back-end Flask está rodando.
+No React, ajuste o endpoint /api/phrases se necessário (por exemplo, use o IP ou porta específicos do Flask).
+Abra a interface React e veja o front-end interagir com o banco de dados no Flask.
+Se precisar de mais ajuda, posso ajustar o código ou orientar sobre a integração.
+
+
+
+
+
+You said:
+
+esta funcionando, mas eu preciso do botão para salvar as frases ou modelos de laudos
+ChatGPT said:
+ChatGPT
+Agora vamos integrar o botão para salvar frases ou modelos de laudos diretamente no front-end.
+
+Passos para adicionar o botão:
+Adicionar um botão "Salvar Frase/Modelo" na interface.
+Abrir um modal para o usuário definir título e conteúdo.
+Enviar os dados para a API /api/phrases.
+Aqui está o código atualizado para o front-end:
+
+Código React Atualizado (com botão e modal)
+Adicione ou atualize o arquivo App.js com o seguinte:
+
+javascript
+Copy code
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+function App() {
+  const [phrases, setPhrases] = useState([]);
+  const [newPhrase, setNewPhrase] = useState({ title: "", content: "" });
+  const [showModal, setShowModal] = useState(false);
+
+  // Fetch phrases from the API
+  useEffect(() => {
+    fetchPhrases();
+  }, []);
+
+  const fetchPhrases = async () => {
+    try {
+      const response = await axios.get("/api/phrases");
+      setPhrases(response.data);
+    } catch (error) {
+      console.error("Error fetching phrases:", error);
+    }
+  };
+
+  const savePhrase = async () => {
+    if (!newPhrase.title || !newPhrase.content) {
+      alert("Both title and content are required.");
+      return;
+    }
+    try {
+      await axios.post("/api/phrases", newPhrase);
+      setNewPhrase({ title: "", content: "" });
+      setShowModal(false); // Close modal
+      fetchPhrases(); // Refresh the list
+    } catch (error) {
+      console.error("Error saving phrase:", error);
+    }
+  };
+
+  const deletePhrase = async (id) => {
+    try {
+      await axios.delete(`/api/phrases/${id}`);
+      fetchPhrases(); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting phrase:", error);
+    }
+  };
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <h1>Phrase Repository</h1>
+
+      {/* Button to open modal */}
+      <button onClick={() => setShowModal(true)} style={{ padding: "10px 20px", marginBottom: "20px" }}>
+        Add Phrase/Model
+      </button>
+
+      {/* Modal for adding new phrase */}
+      {showModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            background: "white",
+            padding: "20px",
+            boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)",
+            zIndex: 1000,
+          }}
+        >
+          <h3>Add New Phrase/Model</h3>
+          <input
+            type="text"
+            placeholder="Title"
+            value={newPhrase.title}
+            onChange={(e) => setNewPhrase({ ...newPhrase, title: e.target.value })}
+            style={{ marginBottom: "10px", display: "block", width: "100%", padding: "10px" }}
+          />
+          <textarea
+            placeholder="Content"
+            value={newPhrase.content}
+            onChange={(e) => setNewPhrase({ ...newPhrase, content: e.target.value })}
+            style={{ marginBottom: "10px", display: "block", width: "100%", padding: "10px" }}
+          />
+          <button onClick={savePhrase} style={{ marginRight: "10px", padding: "10px 20px" }}>
+            Save
+          </button>
+          <button onClick={() => setShowModal(false)} style={{ padding: "10px 20px" }}>
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {/* List of phrases */}
+      <ul>
+        {phrases.map((phrase) => (
+          <li key={phrase.id} style={{ marginBottom: "10px" }}>
+            <strong>{phrase.title}</strong>: {phrase.content}
+            <button
+              onClick={() => deletePhrase(phrase.id)}
+              style={{ marginLeft: "10px", padding: "2px 5px" }}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+Novas Funcionalidades Adicionadas
+Botão "Add Phrase/Model":
+Abre um modal para adicionar título e conteúdo.
+Modal Interativo:
+Permite o usuário preencher os detalhes e salvar.
+Integração com API:
+Salva no banco de dados via /api/phrases.
+Estilo Básico do Modal
+Adicione o seguinte no arquivo App.css para melhorar o estilo:
+
+css
+Copy code
+body {
+  font-family: Arial, sans-serif;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+input,
+textarea {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 14px;
+}
+Agora você terá um front-end funcional com o botão de salvar frases e gerenciador de modelos. Teste e, se precisar de ajustes, avise!
