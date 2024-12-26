@@ -42,9 +42,10 @@ function updateDoctorsTable(doctors) {
 
     tbody.innerHTML = doctors.map(doctor => `
         <tr data-id="${doctor.id}">
-            <td>${doctor.full_name}</td>
-            <td>${doctor.crm}</td>
-            <td>${doctor.rqe || '-'}</td>
+            <td>
+                Dr(a). ${doctor.full_name}<br>
+                <small class="text-muted">CRM: ${doctor.crm}${doctor.rqe ? ` RQE: ${doctor.rqe}` : ''}</small>
+            </td>
             <td>
                 <button class="btn btn-sm btn-warning me-1" onclick="editDoctor(${doctor.id})">
                     <i class="fas fa-edit"></i>
@@ -66,7 +67,8 @@ function updateDoctorsSelect(doctors) {
         <option value="">Selecione o médico...</option>
         ${doctors.map(doctor => `
             <option value="${doctor.id}">
-                Dr(a). ${doctor.full_name} - CRM: ${doctor.crm}${doctor.rqe ? ' RQE: ' + doctor.rqe : ''}
+                Dr(a). ${doctor.full_name}
+                CRM: ${doctor.crm}${doctor.rqe ? ` RQE: ${doctor.rqe}` : ''}
             </option>
         `).join('')}
     `;
@@ -81,8 +83,8 @@ function updateSignaturePreview() {
     const preview = document.getElementById('signaturePreview');
     if (preview) {
         preview.innerHTML = `
-            <strong>Dr(a). ${name || 'Nome do Médico'}</strong><br>
-            CRM: ${crm || 'XXXXX'}${rqe ? `/RQE: ${rqe}` : ''}
+            Dr(a). ${name || 'Nome do Médico'}<br>
+            <small>CRM: ${crm || 'XXXXX'}${rqe ? ` RQE: ${rqe}` : ''}</small>
         `;
     }
 }
@@ -144,9 +146,9 @@ function editDoctor(id) {
 
     const cells = row.getElementsByTagName('td');
     document.getElementById('doctorId').value = id;
-    document.getElementById('doctorName').value = cells[0].textContent;
-    document.getElementById('doctorCRM').value = cells[1].textContent;
-    document.getElementById('doctorRQE').value = cells[2].textContent !== '-' ? cells[2].textContent : '';
+    document.getElementById('doctorName').value = cells[0].textContent.trim().replace('Dr(a). ', ''); //remove Dr(a).
+    document.getElementById('doctorCRM').value = cells[0].querySelector('.text-muted').textContent.split('CRM: ')[1].split(' ')[0];
+    document.getElementById('doctorRQE').value = cells[0].querySelector('.text-muted').textContent.includes('RQE:') ? cells[0].querySelector('.text-muted').textContent.split('RQE: ')[1].trim() : '';
 
     updateSignaturePreview();
 }
