@@ -78,6 +78,56 @@ async function saveTemplate() {
     }
 }
 
+// Função para salvar novo template
+async function saveNewTemplate() {
+    try {
+        const templateData = {
+            name: document.getElementById('newTemplateName').value,
+            content: document.getElementById('templateContent').value,
+            category: document.getElementById('newTemplateCategory').value,
+            tags: document.getElementById('newTemplateTags').value
+        };
+
+        if (!templateData.name || !templateData.content) {
+            alert('Por favor, preencha o nome e o conteúdo do template');
+            return;
+        }
+
+        const token = getCSRFToken();
+        if (!token) {
+            throw new Error('Token CSRF não disponível');
+        }
+
+        const response = await fetch('/api/templates', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': token,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(templateData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erro ao salvar template');
+        }
+
+        const savedTemplate = await response.json();
+        alert('Template salvo com sucesso!');
+
+        // Fechar o modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('saveTemplateModal'));
+        modal.hide();
+
+        // Recarregar a lista de templates
+        loadTemplates();
+    } catch (error) {
+        console.error('Erro ao salvar template:', error);
+        alert(error.message);
+    }
+}
+
 // Função para adicionar botões de exportação
 function addExportButtons(templateId) {
     const buttonContainer = document.createElement('div');
@@ -196,3 +246,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('CSRF token não está disponível na página');
     }
 });
+
+// Placeholder function - needs to be implemented in the actual application
+function loadTemplates() {
+    //Implementation to reload templates goes here.  This is a placeholder.
+    console.log("Templates reloaded (placeholder function)");
+}

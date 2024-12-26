@@ -347,6 +347,66 @@
         </div>
     </div>
 
+    <!-- Adicionar antes do fechamento do </body> -->
+    <!-- Modal de Salvamento -->
+    <div class="modal fade" id="saveTemplateModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-fullscreen-lg-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Salvar Novo Template</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-secondary ms-2"
+                        onclick="toggleFullscreen()"
+                    >
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome do Template</label>
+                        <input type="text" class="form-control" id="newTemplateName" placeholder="Ex: Laudo Normal - Adulto">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Conteúdo</label>
+                        <textarea 
+                            id="templateContent" 
+                            class="form-control"
+                            style="min-height: 300px;"
+                            placeholder="Digite o conteúdo do laudo aqui..."
+                        ></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Categoria</label>
+                        <select id="newTemplateCategory" class="form-select">
+                            <option value="normal">Normal</option>
+                            <option value="alterado">Alterado</option>
+                            <option value="conclusao">Conclusão</option>
+                            <option value="completo">Laudo Completo</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tags (opcional)</label>
+                        <input 
+                            type="text" 
+                            id="newTemplateTags"
+                            class="form-control" 
+                            placeholder="Ex: pediatrico, hipertensao, normal"
+                        >
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveNewTemplate()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>

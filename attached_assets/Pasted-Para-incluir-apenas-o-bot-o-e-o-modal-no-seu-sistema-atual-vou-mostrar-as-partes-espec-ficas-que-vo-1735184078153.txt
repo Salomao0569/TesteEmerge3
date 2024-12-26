@@ -1,0 +1,179 @@
+Para incluir apenas o botão e o modal no seu sistema atual, vou mostrar as partes específicas que você precisa adicionar ao seu HTML existente:
+
+Primeiro, adicione o botão logo após a sua barra de ferramentas do editor atual:
+
+htmlCopy<!-- Adicionar após sua barra de ferramentas atual -->
+<div class="editor-toolbar">
+    <!-- Suas ferramentas atuais -->
+    
+    <!-- Novo botão de salvamento -->
+    <button 
+        id="saveTemplateBtn"
+        class="btn btn-primary d-flex align-items-center gap-2"
+        onclick="openSaveModal()"
+    >
+        <i class="fas fa-save"></i>
+        Salvar Template/Frase
+    </button>
+</div>
+
+Adicione o modal ao final do seu HTML, antes do fechamento do </body>:
+
+htmlCopy<!-- Modal de Salvamento -->
+<div class="modal fade" id="saveTemplateModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-fullscreen-lg-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Salvar Novo Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button 
+                    type="button" 
+                    class="btn btn-outline-secondary ms-2"
+                    onclick="toggleFullscreen()"
+                >
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Nome do Template</label>
+                    <input type="text" class="form-control" placeholder="Ex: Laudo Normal - Adulto">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Conteúdo</label>
+                    <textarea 
+                        id="templateContent" 
+                        class="form-control"
+                        style="min-height: 300px;"
+                        placeholder="Digite o conteúdo do laudo aqui..."
+                    ></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-select">
+                        <option value="normal">Normal</option>
+                        <option value="alterado">Alterado</option>
+                        <option value="conclusao">Conclusão</option>
+                        <option value="completo">Laudo Completo</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Tags (opcional)</label>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        placeholder="Ex: pediatrico, hipertensao, normal"
+                    >
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveTemplate()">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+Adicione este JavaScript para controlar o modal:
+
+htmlCopy<script>
+// Inicializa o modal do Bootstrap
+let saveModal;
+let isFullscreen = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    saveModal = new bootstrap.Modal(document.getElementById('saveTemplateModal'));
+});
+
+// Função para abrir o modal
+function openSaveModal() {
+    // Captura o conteúdo atual do editor
+    const editorContent = document.getElementById('editor').innerHTML;
+    document.getElementById('templateContent').value = editorContent;
+    saveModal.show();
+}
+
+// Função para alternar modo tela cheia
+function toggleFullscreen() {
+    const modalDialog = document.querySelector('.modal-dialog');
+    isFullscreen = !isFullscreen;
+    
+    if (isFullscreen) {
+        modalDialog.classList.remove('modal-lg');
+        modalDialog.classList.add('modal-fullscreen');
+    } else {
+        modalDialog.classList.add('modal-lg');
+        modalDialog.classList.remove('modal-fullscreen');
+    }
+}
+
+// Função para salvar o template
+function saveTemplate() {
+    // Aqui você implementa a lógica de salvamento
+    const templateData = {
+        name: document.querySelector('[placeholder="Ex: Laudo Normal - Adulto"]').value,
+        content: document.getElementById('templateContent').value,
+        category: document.querySelector('select').value,
+        tags: document.querySelector('[placeholder="Ex: pediatrico, hipertensao, normal"]').value
+    };
+    
+    console.log('Dados para salvar:', templateData);
+    // Implementar chamada ao backend
+    
+    saveModal.hide();
+}
+
+// Ajusta altura do textarea conforme conteúdo
+document.getElementById('templateContent').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(window.innerHeight * 0.6, this.scrollHeight) + 'px';
+});
+</script>
+
+Adicione estes estilos no seu CSS:
+
+cssCopy/* Estilos adicionais para o modal */
+.modal-fullscreen {
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    margin: 0;
+}
+
+.modal-fullscreen .modal-content {
+    height: 100vh;
+    border: 0;
+    border-radius: 0;
+}
+
+#saveTemplateBtn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 100;
+}
+
+#templateContent {
+    resize: none;
+    transition: height 0.2s ease;
+}
+Esta implementação:
+
+Usa Bootstrap para compatibilidade com seu sistema atual
+Mantém a funcionalidade de tela cheia
+Captura automaticamente o conteúdo do editor
+É responsiva e se adapta a diferentes tamanhos de tela
+Mantém todas as funcionalidades principais do modal de salvamento
+
+Para usar:
+
+Clique no botão "Salvar Template/Frase"
+O modal abrirá com o conteúdo atual do editor
+Preencha as informações necessárias
+Use o botão de expandir para modo tela cheia se necessário
+Clique em Salvar para processar os dados
+
+Precisa de algum ajuste ou esclarecimento adicional?

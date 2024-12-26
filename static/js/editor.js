@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     // Configuração do editor
     if (document.getElementById('editor')) {
@@ -14,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ['table', ['table']],
                 ['insert', ['link', 'hr']],
                 ['view', ['fullscreen', 'codeview']],
-                ['custom', ['templates']]
+                ['custom', ['templates', 'saveTemplate']] // Adicionado botão de salvar template
             ],
             fontNames: ['Arial', 'Times New Roman', 'Helvetica', 'Calibri'],
             fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '24', '36'],
@@ -28,13 +27,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (savedDraft) {
                         $('#editor').summernote('code', savedDraft);
                     }
+
+                    // Adicionar botão de salvar template
+                    const saveButton = createSaveTemplateButton();
+                    $('.note-toolbar').append(saveButton);
                 }
             }
         });
-
-        // Adicionar templates ao editor
-        const templatesButton = createTemplatesButton();
-        $('.note-toolbar').append(templatesButton);
     }
 });
 
@@ -54,6 +53,45 @@ function createTemplatesButton() {
     
     button.append(templatesDropdown);
     return button;
+}
+
+function createSaveTemplateButton() {
+    const button = $('<div class="note-btn-group btn-group">');
+    const saveButton = $(`
+        <button type="button" 
+            id="saveTemplateBtn"
+            class="note-btn btn btn-light btn-sm d-flex align-items-center gap-2"
+            onclick="openSaveModal()"
+        >
+            <i class="fas fa-save"></i>
+            Salvar Template
+        </button>
+    `);
+
+    button.append(saveButton);
+    return button;
+}
+
+// Função para abrir o modal de salvamento
+function openSaveModal() {
+    const editorContent = $('#editor').summernote('code');
+    document.getElementById('templateContent').value = editorContent;
+    const saveModal = new bootstrap.Modal(document.getElementById('saveTemplateModal'));
+    saveModal.show();
+}
+
+// Função para alternar modo tela cheia do modal
+function toggleFullscreen() {
+    const modalDialog = document.querySelector('.modal-dialog');
+    const isFullscreen = modalDialog.classList.contains('modal-fullscreen');
+
+    if (isFullscreen) {
+        modalDialog.classList.remove('modal-fullscreen');
+        modalDialog.classList.add('modal-lg');
+    } else {
+        modalDialog.classList.remove('modal-lg');
+        modalDialog.classList.add('modal-fullscreen');
+    }
 }
 
 function inserirAssinaturaMedico() {
