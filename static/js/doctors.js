@@ -1,4 +1,4 @@
-// Function to get CSRF token from cookie (This function is replaced in the edited code, but kept here for reference in case the meta tag approach fails)
+// Function to get CSRF token from cookie
 function getCSRFToken() {
     const name = 'csrf_token=';
     const decodedCookie = decodeURIComponent(document.cookie);
@@ -22,8 +22,10 @@ function addCSRFToken(headers = {}) {
 
 // Function to format doctor name
 function formatDoctorName(name) {
-    // Remove any existing "Dr." prefix to avoid duplication
-    const cleanName = name.replace(/^Dr\.\s+/i, '');
+    console.log('Formatting doctor name:', name);
+    // Remove any existing "Dr." or "Dr" prefix
+    const cleanName = name.replace(/^Dr\.?\s+/i, '').trim();
+    console.log('Cleaned name:', cleanName);
     return `Dr. ${cleanName}`;
 }
 
@@ -35,6 +37,7 @@ async function loadDoctors() {
             throw new Error('Erro ao carregar médicos');
         }
         const doctors = await response.json();
+        console.log('Loaded doctors:', doctors);
         updateDoctorsTable(doctors);
         updateDoctorsSelect(doctors);
     } catch (error) {
@@ -47,22 +50,26 @@ function updateDoctorsTable(doctors) {
     const tbody = document.querySelector('#doctorsTable tbody');
     if (!tbody) return;
 
-    tbody.innerHTML = doctors.map(doctor => `
-        <tr data-id="${doctor.id}">
-            <td>
-                ${formatDoctorName(doctor.full_name)}<br>
-                <small class="text-muted">CRM: ${doctor.crm} RQE: ${doctor.rqe || ''}</small>
-            </td>
-            <td>
-                <button class="btn btn-sm btn-warning me-1" onclick="editDoctor(${doctor.id})">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteDoctor(${doctor.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = doctors.map(doctor => {
+        const formattedName = formatDoctorName(doctor.full_name);
+        console.log('Formatting for table:', formattedName);
+        return `
+            <tr data-id="${doctor.id}">
+                <td>
+                    ${formattedName}<br>
+                    <small class="text-muted">CRM: ${doctor.crm} RQE: ${doctor.rqe || ''}</small>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-warning me-1" onclick="editDoctor(${doctor.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteDoctor(${doctor.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 // Function to update doctors select
@@ -72,11 +79,16 @@ function updateDoctorsSelect(doctors) {
 
     select.innerHTML = `
         <option value="">Selecione o médico...</option>
-        ${doctors.map(doctor => `
-            <option value="${doctor.id}">
-                ${formatDoctorName(doctor.full_name)} CRM: ${doctor.crm} RQE: ${doctor.rqe || ''}
-            </option>
-        `).join('')}
+        ${doctors.map(doctor => {
+            const formattedName = formatDoctorName(doctor.full_name);
+            console.log('Formatting for select:', formattedName);
+            return `
+                <option value="${doctor.id}">
+                    ${formattedName}<br>
+                    CRM: ${doctor.crm} RQE: ${doctor.rqe || ''}
+                </option>
+            `;
+        }).join('')}
     `;
 }
 
@@ -88,8 +100,10 @@ function updateSignaturePreview() {
 
     const preview = document.getElementById('signaturePreview');
     if (preview) {
+        const formattedName = formatDoctorName(name);
+        console.log('Formatting for preview:', formattedName);
         preview.innerHTML = `
-            ${formatDoctorName(name || 'Nome do Médico')}<br>
+            ${formattedName}<br>
             <small>CRM: ${crm || 'XXXXX'} RQE: ${rqe || ''}</small>
         `;
     }
@@ -111,6 +125,8 @@ async function saveDoctor() {
         crm: document.getElementById('doctorCRM')?.value,
         rqe: document.getElementById('doctorRQE')?.value || null
     };
+
+    console.log('Saving doctor data:', doctorData);
 
     try {
         const response = await fetch(
@@ -151,11 +167,22 @@ function editDoctor(id) {
     if (!row) return;
 
     const cells = row.getElementsByTagName('td');
+    const nameCell = cells[0].childNodes[0].textContent.trim();
+    console.log('Editing doctor, raw name:', nameCell);
+
     document.getElementById('doctorId').value = id;
     // Remove 'Dr.' prefix when editing
-    document.getElementById('doctorName').value = cells[0].textContent.trim().replace(/^Dr\.\s+/i, '');
-    document.getElementById('doctorCRM').value = cells[0].querySelector('.text-muted').textContent.split('CRM: ')[1].split(' ')[0];
-    document.getElementById('doctorRQE').value = cells[0].querySelector('.text-muted').textContent.includes('RQE:') ? cells[0].querySelector('.text-muted').textContent.split('RQE: ')[1].trim() : '';
+    const cleanName = nameCell.replace(/^Dr\.?\s+/i, '').trim();
+    console.log('Cleaned name for editing:', cleanName);
+
+    document.getElementById('doctorName').value = cleanName;
+
+    const crmRqeText = cells[0].querySelector('.text-muted').textContent;
+    const crm = crmRqeText.split('CRM:')[1].split('RQE:')[0].trim();
+    const rqe = crmRqeText.includes('RQE:') ? crmRqeText.split('RQE:')[1].trim() : '';
+
+    document.getElementById('doctorCRM').value = crm;
+    document.getElementById('doctorRQE').value = rqe;
 
     updateSignaturePreview();
 }
