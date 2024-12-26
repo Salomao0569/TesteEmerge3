@@ -74,8 +74,7 @@ function updateDoctorsSelect(doctors) {
         <option value="">Selecione o médico...</option>
         ${doctors.map(doctor => `
             <option value="${doctor.id}">
-                ${formatDoctorName(doctor.full_name)}
-                CRM: ${doctor.crm} RQE: ${doctor.rqe || ''}
+                ${formatDoctorName(doctor.full_name)} CRM: ${doctor.crm} RQE: ${doctor.rqe || ''}
             </option>
         `).join('')}
     `;
