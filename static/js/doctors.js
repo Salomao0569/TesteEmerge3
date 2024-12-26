@@ -43,8 +43,8 @@ function updateDoctorsTable(doctors) {
     tbody.innerHTML = doctors.map(doctor => `
         <tr data-id="${doctor.id}">
             <td>
-                Dr(a). ${doctor.full_name}<br>
-                <small class="text-muted">CRM: ${doctor.crm}${doctor.rqe ? ` RQE: ${doctor.rqe}` : ''}</small>
+                Dr. ${doctor.full_name}<br>
+                <small class="text-muted">CRM: ${doctor.crm} RQE: ${doctor.rqe || ''}</small>
             </td>
             <td>
                 <button class="btn btn-sm btn-warning me-1" onclick="editDoctor(${doctor.id})">
@@ -67,8 +67,8 @@ function updateDoctorsSelect(doctors) {
         <option value="">Selecione o médico...</option>
         ${doctors.map(doctor => `
             <option value="${doctor.id}">
-                Dr(a). ${doctor.full_name}
-                CRM: ${doctor.crm}${doctor.rqe ? ` RQE: ${doctor.rqe}` : ''}
+                Dr. ${doctor.full_name}
+                CRM: ${doctor.crm} RQE: ${doctor.rqe || ''}
             </option>
         `).join('')}
     `;
@@ -83,8 +83,8 @@ function updateSignaturePreview() {
     const preview = document.getElementById('signaturePreview');
     if (preview) {
         preview.innerHTML = `
-            Dr(a). ${name || 'Nome do Médico'}<br>
-            <small>CRM: ${crm || 'XXXXX'}${rqe ? ` RQE: ${rqe}` : ''}</small>
+            Dr. ${name || 'Nome do Médico'}<br>
+            <small>CRM: ${crm || 'XXXXX'} RQE: ${rqe || ''}</small>
         `;
     }
 }
@@ -146,7 +146,7 @@ function editDoctor(id) {
 
     const cells = row.getElementsByTagName('td');
     document.getElementById('doctorId').value = id;
-    document.getElementById('doctorName').value = cells[0].textContent.trim().replace('Dr(a). ', ''); //remove Dr(a).
+    document.getElementById('doctorName').value = cells[0].textContent.trim().replace('Dr. ', ''); //remove Dr.
     document.getElementById('doctorCRM').value = cells[0].querySelector('.text-muted').textContent.split('CRM: ')[1].split(' ')[0];
     document.getElementById('doctorRQE').value = cells[0].querySelector('.text-muted').textContent.includes('RQE:') ? cells[0].querySelector('.text-muted').textContent.split('RQE: ')[1].trim() : '';
 
