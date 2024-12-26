@@ -1,6 +1,7 @@
 // Função para inserir template selecionado no editor
 async function insertSelectedTemplate(templateId) {
     try {
+        console.log('Iniciando inserção do template:', templateId);
         const token = getCSRFToken();
         if (!token) {
             throw new Error('Token CSRF não disponível');
@@ -20,6 +21,7 @@ async function insertSelectedTemplate(templateId) {
         }
 
         const template = await response.json();
+        console.log('Template carregado:', template);
         $('#editor').summernote('code', template.content);
     } catch (error) {
         console.error('Erro ao inserir template:', error);
@@ -27,15 +29,15 @@ async function insertSelectedTemplate(templateId) {
     }
 }
 
-// Função para salvar novo template
+// Função para salvar template existente
 async function saveTemplate() {
     try {
+        console.log('Iniciando salvamento do template existente');
         const templateName = document.getElementById('templateName').value;
-        const doctorId = document.getElementById('doctorId').value;
         const content = $('#editor').summernote('code');
 
-        if (!templateName || !doctorId) {
-            throw new Error('Por favor, preencha todos os campos obrigatórios');
+        if (!templateName) {
+            throw new Error('Por favor, preencha o nome do template');
         }
 
         const token = getCSRFToken();
@@ -46,9 +48,10 @@ async function saveTemplate() {
         const templateData = {
             name: templateName,
             content: content,
-            category: 'laudo',
-            doctor_id: parseInt(doctorId)
+            category: 'laudo'
         };
+
+        console.log('Dados do template para salvar:', templateData);
 
         const response = await fetch('/api/templates', {
             method: 'POST',
@@ -66,10 +69,8 @@ async function saveTemplate() {
         }
 
         const savedTemplate = await response.json();
+        console.log('Template salvo com sucesso:', savedTemplate);
         alert('Template salvo com sucesso!');
-
-        // Adicionar botões de exportação após salvar
-        addExportButtons(savedTemplate.id);
 
         location.reload();
     } catch (error) {
@@ -79,14 +80,17 @@ async function saveTemplate() {
 }
 
 // Função para salvar novo template
-async function saveNewTemplate() {
+window.saveNewTemplate = async function() {
     try {
+        console.log('Iniciando salvamento do novo template');
         const templateData = {
             name: document.getElementById('newTemplateName').value,
             content: document.getElementById('templateContent').value,
             category: document.getElementById('newTemplateCategory').value,
             tags: document.getElementById('newTemplateTags').value
         };
+
+        console.log('Dados do novo template:', templateData);
 
         if (!templateData.name || !templateData.content) {
             alert('Por favor, preencha o nome e o conteúdo do template');
@@ -114,6 +118,7 @@ async function saveNewTemplate() {
         }
 
         const savedTemplate = await response.json();
+        console.log('Novo template salvo com sucesso:', savedTemplate);
         alert('Template salvo com sucesso!');
 
         // Fechar o modal
@@ -121,10 +126,43 @@ async function saveNewTemplate() {
         modal.hide();
 
         // Recarregar a lista de templates
-        loadTemplates();
+        await loadTemplates();
     } catch (error) {
-        console.error('Erro ao salvar template:', error);
+        console.error('Erro ao salvar novo template:', error);
         alert(error.message);
+    }
+};
+
+// Função para carregar templates
+async function loadTemplates() {
+    try {
+        console.log('Iniciando carregamento dos templates');
+        const response = await fetch('/api/templates');
+        if (!response.ok) {
+            throw new Error('Erro ao carregar templates');
+        }
+        const templates = await response.json();
+        console.log('Templates carregados:', templates);
+
+        // Atualizar interface com os templates
+        updateTemplatesList(templates);
+    } catch (error) {
+        console.error('Erro ao carregar templates:', error);
+        alert('Erro ao carregar templates: ' + error.message);
+    }
+}
+
+// Função para atualizar lista de templates na interface
+function updateTemplatesList(templates) {
+    console.log('Atualizando lista de templates na interface');
+    const templateSelect = document.getElementById('templateSelect');
+    if (templateSelect) {
+        templateSelect.innerHTML = `
+            <option value="">Selecione um template...</option>
+            ${templates.map(template => `
+                <option value="${template.id}">${template.name}</option>
+            `).join('')}
+        `;
     }
 }
 
@@ -230,8 +268,18 @@ function getCSRFToken() {
     return token;
 }
 
-// Event Listeners
+// Inicialização quando o documento estiver pronto
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Inicializando handlers de templates');
+
+    // Carregar templates iniciais
+    loadTemplates();
+
+    // Verificar se o token CSRF está disponível
+    const token = getCSRFToken();
+    if (!token) {
+        console.error('CSRF token não está disponível na página');
+    }
     const form = document.getElementById('templateForm');
     if (form) {
         form.addEventListener('submit', function(e) {
@@ -239,16 +287,4 @@ document.addEventListener('DOMContentLoaded', function() {
             saveTemplate();
         });
     }
-
-    // Verificar se o token CSRF está disponível
-    const token = getCSRFToken();
-    if (!token) {
-        console.error('CSRF token não está disponível na página');
-    }
 });
-
-// Placeholder function - needs to be implemented in the actual application
-function loadTemplates() {
-    //Implementation to reload templates goes here.  This is a placeholder.
-    console.log("Templates reloaded (placeholder function)");
-}
