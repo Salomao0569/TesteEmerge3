@@ -20,6 +20,13 @@ function addCSRFToken(headers = {}) {
     return { ...headers, 'X-CSRFToken': token };
 }
 
+// Function to format doctor name
+function formatDoctorName(name) {
+    // Remove any existing "Dr." prefix to avoid duplication
+    const cleanName = name.replace(/^Dr\.\s+/i, '');
+    return `Dr. ${cleanName}`;
+}
+
 // Function to load doctors
 async function loadDoctors() {
     try {
@@ -43,7 +50,7 @@ function updateDoctorsTable(doctors) {
     tbody.innerHTML = doctors.map(doctor => `
         <tr data-id="${doctor.id}">
             <td>
-                Dr. ${doctor.full_name}<br>
+                ${formatDoctorName(doctor.full_name)}<br>
                 <small class="text-muted">CRM: ${doctor.crm} RQE: ${doctor.rqe || ''}</small>
             </td>
             <td>
@@ -67,7 +74,7 @@ function updateDoctorsSelect(doctors) {
         <option value="">Selecione o médico...</option>
         ${doctors.map(doctor => `
             <option value="${doctor.id}">
-                Dr. ${doctor.full_name}
+                ${formatDoctorName(doctor.full_name)}
                 CRM: ${doctor.crm} RQE: ${doctor.rqe || ''}
             </option>
         `).join('')}
@@ -83,7 +90,7 @@ function updateSignaturePreview() {
     const preview = document.getElementById('signaturePreview');
     if (preview) {
         preview.innerHTML = `
-            Dr. ${name || 'Nome do Médico'}<br>
+            ${formatDoctorName(name || 'Nome do Médico')}<br>
             <small>CRM: ${crm || 'XXXXX'} RQE: ${rqe || ''}</small>
         `;
     }
@@ -146,7 +153,8 @@ function editDoctor(id) {
 
     const cells = row.getElementsByTagName('td');
     document.getElementById('doctorId').value = id;
-    document.getElementById('doctorName').value = cells[0].textContent.trim().replace('Dr. ', ''); //remove Dr.
+    // Remove 'Dr.' prefix when editing
+    document.getElementById('doctorName').value = cells[0].textContent.trim().replace(/^Dr\.\s+/i, '');
     document.getElementById('doctorCRM').value = cells[0].querySelector('.text-muted').textContent.split('CRM: ')[1].split(' ')[0];
     document.getElementById('doctorRQE').value = cells[0].querySelector('.text-muted').textContent.includes('RQE:') ? cells[0].querySelector('.text-muted').textContent.split('RQE: ')[1].trim() : '';
 
