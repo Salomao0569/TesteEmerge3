@@ -13,6 +13,29 @@
     <link href="/static/css/styles.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">Sistema de Laudos</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Laudo</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#doctorsModal">Médicos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#templatesModal">Frases</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="header">
             <h1>Medidas e Cálculos Ecocardiográficos</h1>
@@ -222,6 +245,108 @@
         </div>
     </div>
 
+    <!-- Modal para Cadastro de Médicos -->
+    <div class="modal fade" id="doctorsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Gerenciamento de Médicos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="doctorForm" class="needs-validation" novalidate>
+                        <input type="hidden" id="doctorId">
+                        <div class="mb-3">
+                            <label for="doctorName" class="form-label">Nome Completo</label>
+                            <input type="text" class="form-control" id="doctorName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="doctorCRM" class="form-label">CRM</label>
+                            <input type="text" class="form-control" id="doctorCRM" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="doctorRQE" class="form-label">RQE (opcional)</label>
+                            <input type="text" class="form-control" id="doctorRQE">
+                        </div>
+                    </form>
+                    <div class="table-responsive mt-4">
+                        <table class="table table-striped" id="doctorsTable">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>CRM</th>
+                                    <th>RQE</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveDoctor()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Templates -->
+    <div class="modal fade" id="templatesModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Gerenciamento de Frases</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="templateForm" class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="templateName" class="form-label">Nome da Frase</label>
+                                <input type="text" id="templateName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="templateCategory" class="form-label">Categoria</label>
+                                <select id="templateCategory" class="form-select" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="normal">Frase Normal</option>
+                                    <option value="alterado">Frase Alterada</option>
+                                    <option value="conclusao">Frase de Conclusão</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="templateContent" class="form-label">Conteúdo</label>
+                                <textarea id="templateContent" class="form-control" rows="4" required></textarea>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="templatesTable">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Categoria</th>
+                                    <th>Conteúdo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTemplate()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
@@ -231,6 +356,8 @@
     <script src="https://unpkg.com/jspdf-autotable"></script>
     <script src="/static/js/calculations.js"></script>
     <script src="/static/js/editor.js"></script>
+    <script src="/static/js/doctors.js"></script>
+    <script src="/static/js/templates.js"></script>
     <script src="/static/js/pdf_generator.js"></script>
     <script src="/static/js/doc_generator.js"></script>
 </body>
