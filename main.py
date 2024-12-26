@@ -98,6 +98,18 @@ def doctors():
         logger.error(f"Erro ao carregar página de médicos: {str(e)}", exc_info=True)
         return "Erro ao carregar página de médicos", 500
 
+@app.route('/reports')
+def reports():
+    try:
+        logger.info("Acessando página de relatórios")
+        doctors = Doctor.query.all()
+        templates = Template.query.all()
+        logger.info(f"Encontrados {len(doctors)} médicos e {len(templates)} templates")
+        return render_template('reports.html', doctors=doctors, templates=templates)
+    except Exception as e:
+        logger.error(f"Erro ao carregar página de relatórios: {str(e)}", exc_info=True)
+        return "Erro ao carregar página de relatórios", 500
+
 @app.route('/api/templates', methods=['GET'])
 def get_templates():
     try:
@@ -743,7 +755,7 @@ def export_template_doc(id):
             for tag in soup.find_all(['script', 'style']):
                 tag.decompose()
 
-            # Convert to markdown
+                        # Convert to markdown
             h = html2text.HTML2Text()
             h.ignore_links = True
             h.unicode_snob = True
