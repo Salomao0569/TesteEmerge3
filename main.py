@@ -5,17 +5,17 @@ from flask_wtf.csrf import CSRFProtect, generate_csrf
 from models import db, Doctor, Template, Report
 from dotenv import load_dotenv
 from datetime import datetime
-from assets import init_assets
-from docx import Document
-from docx.shared import Inches, Pt
-from io import BytesIO
+from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
+import time
 import html2text
-from openai import OpenAI
-import json
+from docx import Document
+from io import BytesIO
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from bs4 import BeautifulSoup
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -27,16 +27,23 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def get_database_url():
+    """Get database URL with proper SSL configuration"""
+    database_url = os.environ.get('DATABASE_URL')
+    if not database_url:
+        raise ValueError("DATABASE_URL é obrigatória")
+
+    # Adicionar parâmetros SSL se não existirem
+    if 'sslmode=' not in database_url:
+        database_url += '?sslmode=require'
+    return database_url
+
 def create_app():
     app = Flask(__name__)
 
     try:
         # Configuração detalhada do banco de dados
-        database_url = os.environ.get('DATABASE_URL')
-        if not database_url:
-            logger.error("DATABASE_URL não está definida nas variáveis de ambiente")
-            raise ValueError("DATABASE_URL é obrigatória")
-
+        database_url = get_database_url()
         logger.info("Inicializando aplicação com configurações...")
         logger.info(f"Database URL: {database_url}")
 
@@ -44,6 +51,10 @@ def create_app():
         app.config.update(
             SQLALCHEMY_DATABASE_URI=database_url,
             SQLALCHEMY_TRACK_MODIFICATIONS=False,
+            SQLALCHEMY_ENGINE_OPTIONS={
+                'pool_pre_ping': True,
+                'pool_recycle': 300,
+            },
             SECRET_KEY=os.environ.get('SECRET_KEY', os.urandom(32)),
             WTF_CSRF_ENABLED=True,
             WTF_CSRF_SECRET_KEY=os.environ.get('WTF_CSRF_SECRET_KEY', os.urandom(32)),
@@ -59,7 +70,6 @@ def create_app():
         db.init_app(app)
         csrf = CSRFProtect()
         csrf.init_app(app)
-        init_assets(app)
         logger.info("Extensões inicializadas com sucesso")
 
         return app
@@ -68,6 +78,74 @@ def create_app():
         raise
 
 app = create_app()
+
+def retry_database_operation(operation, max_retries=3):
+    """Retry database operations with exponential backoff"""
+    for attempt in range(max_retries):
+        try:
+            return operation()
+        except OperationalError as e:
+            if attempt == max_retries - 1:
+                raise
+            wait_time = 2 ** attempt
+            logger.warning(f"Tentativa {attempt + 1} falhou, tentando novamente em {wait_time}s: {str(e)}")
+            time.sleep(wait_time)
+
+@app.route('/api/doctors', methods=['POST'])
+def create_doctor():
+    """Create a new doctor with enhanced error handling and validation"""
+    try:
+        if not request.is_json:
+            logger.error("Request Content-Type is not application/json")
+            return jsonify({
+                "error": "Content-Type deve ser application/json"
+            }), 400
+
+        data = request.get_json()
+        logger.info(f"Tentativa de criar médico com dados: {data}")
+
+        # Validação dos campos obrigatórios
+        if not data.get('full_name'):
+            logger.error("Tentativa de criar médico sem nome")
+            return jsonify({"error": "Nome completo é obrigatório"}), 400
+        if not data.get('crm'):
+            logger.error("Tentativa de criar médico sem CRM")
+            return jsonify({"error": "CRM é obrigatório"}), 400
+
+        def check_existing_doctor():
+            return Doctor.query.filter_by(crm=data['crm']).first()
+
+        # Validação do CRM existente com retry
+        existing_doctor = retry_database_operation(check_existing_doctor)
+        if existing_doctor:
+            logger.error(f"Tentativa de criar médico com CRM já existente: {data['crm']}")
+            return jsonify({"error": "CRM já cadastrado"}), 400
+
+        # Criar novo médico
+        new_doctor = Doctor(
+            full_name=data['full_name'],
+            crm=data['crm'],
+            rqe=data.get('rqe', '')
+        )
+
+        def save_doctor():
+            db.session.add(new_doctor)
+            db.session.commit()
+            return new_doctor
+
+        # Salvar com retry
+        new_doctor = retry_database_operation(save_doctor)
+        logger.info(f"Médico criado com sucesso: ID {new_doctor.id}")
+
+        return jsonify({
+            "message": "Médico cadastrado com sucesso",
+            "doctor": new_doctor.to_dict()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Erro ao criar médico: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Erro ao criar médico: {str(e)}"}), 500
 
 @app.route('/')
 def index():
@@ -221,53 +299,6 @@ def delete_doctor(id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
-@app.route('/api/doctors', methods=['POST'])
-def create_doctor():
-    """Create a new doctor with enhanced error handling and validation"""
-    try:
-        if not request.is_json:
-            logger.error("Request Content-Type is not application/json")
-            return jsonify({
-                "error": "Content-Type deve ser application/json"
-            }), 400
-
-        data = request.get_json()
-        logger.info(f"Tentativa de criar médico com dados: {data}")
-
-        # Validação dos campos obrigatórios
-        if not data.get('full_name'):
-            logger.error("Tentativa de criar médico sem nome")
-            return jsonify({"error": "Nome completo é obrigatório"}), 400
-        if not data.get('crm'):
-            logger.error("Tentativa de criar médico sem CRM")
-            return jsonify({"error": "CRM é obrigatório"}), 400
-
-        # Validação do CRM existente
-        existing_doctor = Doctor.query.filter_by(crm=data['crm']).first()
-        if existing_doctor:
-            logger.error(f"Tentativa de criar médico com CRM já existente: {data['crm']}")
-            return jsonify({"error": "CRM já cadastrado"}), 400
-
-        # Criar novo médico
-        new_doctor = Doctor(
-            full_name=data['full_name'],
-            crm=data['crm'],
-            rqe=data.get('rqe', '')
-        )
-
-        db.session.add(new_doctor)
-        db.session.commit()
-        logger.info(f"Médico criado com sucesso: ID {new_doctor.id}")
-
-        return jsonify({
-            "message": "Médico cadastrado com sucesso",
-            "doctor": new_doctor.to_dict()
-        }), 201
-
-    except Exception as e:
-        db.session.rollback()
-        logger.error(f"Erro ao criar médico: {str(e)}", exc_info=True)
-        return jsonify({"error": f"Erro ao criar médico: {str(e)}"}), 500
 
 @app.route('/api/reports', methods=['POST'])
 def create_report():
@@ -663,7 +694,6 @@ def export_template_pdf(id):
         # Content
         try:
             # Pre-process HTML with BeautifulSoup
-            from bs4 import BeautifulSoup
             soup = BeautifulSoup(template.content, 'html.parser')
 
             # Clean up HTML
@@ -748,14 +778,13 @@ def export_template_doc(id):
         # Add content
         try:
             # Pre-process HTML with BeautifulSoup
-            from bs4 import BeautifulSoup
             soup = BeautifulSoup(template.content, 'html.parser')
 
             # Clean up HTML
             for tag in soup.find_all(['script', 'style']):
                 tag.decompose()
 
-                        # Convert to markdown
+            # Convert to markdown
             h = html2text.HTML2Text()
             h.ignore_links = True
             h.unicode_snob = True
