@@ -122,14 +122,16 @@ async function saveDoctor() {
         }
 
         showFeedback('Médico salvo com sucesso!', 'success');
-        const modal = bootstrap.Modal.getInstance(document.getElementById('doctorsModal'));
-        modal?.hide();
-
-        form.reset();
-        form.classList.remove('was-validated');
-        document.getElementById('doctorId').value = '';
-
         await loadDoctors();
+
+        // Só fecha o modal se o salvamento foi bem-sucedido
+        const modal = bootstrap.Modal.getInstance(document.getElementById('doctorsModal'));
+        if (modal) {
+            modal.hide();
+            form.reset();
+            form.classList.remove('was-validated');
+            document.getElementById('doctorId').value = '';
+        }
     } catch (error) {
         showFeedback(error.message, 'danger');
     }
@@ -151,10 +153,6 @@ function editDoctor(id) {
 
 // Function to delete doctor
 async function deleteDoctor(id) {
-    if (!confirm('Tem certeza que deseja excluir este médico?')) {
-        return;
-    }
-
     try {
         const response = await fetch(`/api/doctors/${id}`, {
             method: 'DELETE',
