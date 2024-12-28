@@ -10,6 +10,8 @@ from sqlalchemy.exc import OperationalError
 import time
 import html2text
 from docx import Document
+from docx.shared import Inches, Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
@@ -346,13 +348,26 @@ def gerar_doc():
         doc = Document()
         logger.debug("Documento DOC iniciado")
 
-        # Configuração inicial do documento
-        doc.add_heading('Laudo de Ecodopplercardiograma', 0)
+        # Configuração inicial do documento - Ajuste de margens e espaçamento
+        sections = doc.sections
+        for section in sections:
+            section.top_margin = Inches(0.8)
+            section.bottom_margin = Inches(0.8)
+            section.left_margin = Inches(0.8)
+            section.right_margin = Inches(0.8)
 
-        # Dados do Paciente
-        doc.add_heading('Dados do Paciente', level=1)
+        # Título com espaçamento reduzido
+        title = doc.add_heading('Laudo de Ecodopplercardiograma', 0)
+        title.paragraph_format.space_after = Pt(12)
+
+        # Dados do Paciente com espaçamento otimizado
+        patient_heading = doc.add_heading('Dados do Paciente', level=1)
+        patient_heading.paragraph_format.space_before = Pt(6)
+        patient_heading.paragraph_format.space_after = Pt(6)
+
         table = doc.add_table(rows=1, cols=2)
         table.style = 'Table Grid'
+        table.autofit = True
         logger.debug("Tabela inicial criada")
 
         # Cabeçalhos da tabela
@@ -360,7 +375,7 @@ def gerar_doc():
         header_cells[0].text = 'Campo'
         header_cells[1].text = 'Valor'
 
-        # Adicionar dados do paciente
+        # Dados do paciente
         paciente = data.get('paciente', {})
         logger.info("Processando dados do paciente: %s", paciente)
 
@@ -380,10 +395,14 @@ def gerar_doc():
 
         logger.debug("Dados do paciente adicionados à tabela")
 
-        # Medidas e Cálculos
-        doc.add_heading('Medidas e Cálculos', level=1)
+        # Medidas e Cálculos com espaçamento otimizado
+        measures_heading = doc.add_heading('Medidas e Cálculos', level=1)
+        measures_heading.paragraph_format.space_before = Pt(12)
+        measures_heading.paragraph_format.space_after = Pt(6)
+
         table = doc.add_table(rows=1, cols=4)
         table.style = 'Table Grid'
+        table.autofit = True
 
         # Cabeçalhos
         header_cells = table.rows[0].cells
@@ -423,30 +442,54 @@ def gerar_doc():
 
         logger.debug("Medidas e cálculos adicionados à tabela")
 
-        # Laudo
-        doc.add_heading('Laudo', level=1)
+        # Laudo com espaçamento otimizado
+        laudo_heading = doc.add_heading('Laudo', level=1)
+        laudo_heading.paragraph_format.space_before = Pt(12)
+        laudo_heading.paragraph_format.space_after = Pt(6)
+
         laudo_texto = data.get('laudo', '')
         if laudo_texto:
-            # Convert HTML to plain text
+            # Configurar HTML2Text para preservar apenas quebras de linha necessárias
             h = html2text.HTML2Text()
             h.ignore_links = True
+            h.body_width = 0  # Desativar quebra automática de linha
+            h.ignore_emphasis = True
+            h.ignore_tables = True
+            h.single_line_break = True  # Usar apenas uma quebra de linha
+
+            # Converter HTML para texto
             laudo_texto = h.handle(laudo_texto)
-            doc.add_paragraph(laudo_texto)
+
+            # Limpar espaços extras e quebras de linha desnecessárias
+            laudo_texto = '\n'.join(line.strip() for line in laudo_texto.splitlines() if line.strip())
+
+            # Adicionar parágrafos com espaçamento reduzido
+            for paragrafo in laudo_texto.split('\n'):
+                if paragrafo.strip():
+                    p = doc.add_paragraph(paragrafo.strip())
+                    p.paragraph_format.space_after = Pt(6)
+                    p.paragraph_format.space_before = Pt(0)
+                    p.paragraph_format.line_spacing = 1.0
+
             logger.debug("Laudo adicionado ao documento")
         else:
             logger.warning("Laudo vazio recebido")
 
-        # Assinatura do Médico
+        # Assinatura do Médico com espaçamento otimizado
         if data.get('medico'):
             logger.info("Processando dados do médico: %s", data['medico'])
-            doc.add_paragraph('\n\n')
             medico = data['medico']
             if medico.get('nome') and medico.get('crm'):
+                doc.add_paragraph()  # Espaço antes da assinatura
                 assinatura = f"Dr. {medico['nome']}\nCRM: {medico['crm']}"
                 if medico.get('rqe'):
                     assinatura += f"\nRQE: {medico['rqe']}"
-                para = doc.add_paragraph(assinatura)
-                para.alignment = 1  # Centralizado
+
+                para = doc.add_paragraph()
+                para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                run = para.add_run(assinatura)
+                para.paragraph_format.space_before = Pt(12)
+                para.paragraph_format.space_after = Pt(0)
                 logger.debug("Assinatura do médico adicionada")
             else:
                 logger.warning("Dados do médico incompletos: nome ou CRM faltando")
@@ -689,7 +732,7 @@ def export_template_pdf(id):
     try:
         template = Template.query.get_or_404(id)
         logger.info(f"Iniciando exportação do template {id} para PDF")
-        logger.debug(f"Dados do template: nome={template.name}, categoria={template.category}")
+        logger.debug(f"Dados dotemplate: nome={template.name}, categoria={template.category}")
 
         # Create PDF in memory
         buffer = BytesIO()
@@ -838,14 +881,12 @@ def add_csrf_header(response):
     return response
 
 if __name__ == '__main__':
-    with app.app_context():
-        try:
-            logger.info("Tentando criar tabelas do banco de dados...")
+    try:
+        logger.info("Tentando criar tabelas do banco de dados...")
+        with app.app_context():
             db.create_all()
-            logger.info("Tabelas do banco de dados criadas com sucesso")
-        except Exception as e:
-            logger.error(f"Erro ao criar tabelas do banco de dados: {e}", exc_info=True)
-            raise
-
-    port = int(os.environ.get('PORT', 3001))
-    app.run(host='0.0.0.0', port=port, debug=True)
+        logger.info("Tabelas do banco de dados criadas com sucesso")
+        app.run(host='0.0.0.0', port=3001, debug=True)
+    except Exception as e:
+        logger.error(f"Erro ao inicializar aplicação: {str(e)}", exc_info=True)
+        raise
