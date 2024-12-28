@@ -772,3 +772,41 @@ div[id^="print_"],
         min-height: 200px;
     }
 }
+
+/* Estilos para assinatura médica */
+.assinatura {
+    text-align: center;
+    margin: 20px auto;
+    width: 80%;
+    max-width: 400px;
+    font-family: Arial, sans-serif;
+    page-break-inside: avoid;
+}
+
+.assinatura .linha-superior {
+    width: 60%;
+    margin: 0 auto 15px;
+    border-top: 1px solid black;
+}
+
+.assinatura .nome {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+.assinatura .registro {
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Print styles for signature */
+@media print {
+    .assinatura {
+        margin: 30px auto;
+    }
+
+    .assinatura .linha-superior {
+        border-top: 1px solid black !important;
+    }
+}
