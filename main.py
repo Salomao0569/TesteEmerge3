@@ -479,20 +479,43 @@ def gerar_doc():
         if data.get('medico'):
             logger.info("Processando dados do médico: %s", data['medico'])
             medico = data['medico']
-            if medico.get('nome') and medico.get('crm'):
-                doc.add_paragraph()  # Espaço antes da assinatura
-                assinatura = f"Dr. {medico['nome']}\nCRM: {medico['crm']}"
-                if medico.get('rqe'):
-                    assinatura += f"\nRQE: {medico['rqe']}"
 
-                para = doc.add_paragraph()
-                para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                run = para.add_run(assinatura)
-                para.paragraph_format.space_before = Pt(12)
-                para.paragraph_format.space_after = Pt(0)
-                logger.debug("Assinatura do médico adicionada")
+            # Validação mais robusta dos dados do médico
+            nome_medico = medico.get('nome', '').strip()
+            crm = medico.get('crm', '').strip()
+            rqe = medico.get('rqe', '').strip()
+
+            logger.debug(f"Dados do médico extraídos - Nome: {nome_medico}, CRM: {crm}, RQE: {rqe}")
+
+            if nome_medico and crm:
+                doc.add_paragraph()  # Espaço antes da assinatura
+
+                # Linha para assinatura
+                linha = doc.add_paragraph('_' * 40)
+                linha.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                linha.paragraph_format.space_after = Pt(6)
+
+                # Assinatura com formatação melhorada
+                assinatura_para = doc.add_paragraph()
+                assinatura_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                assinatura_para.paragraph_format.space_before = Pt(6)
+                assinatura_para.paragraph_format.space_after = Pt(0)
+
+                # Nome do médico
+                run = assinatura_para.add_run(f"Dr. {nome_medico}")
+                run.bold = True
+                assinatura_para.add_run('\n')
+
+                # CRM e RQE
+                crm_text = f"CRM: {crm}"
+                if rqe:
+                    crm_text += f" / RQE: {rqe}"
+                assinatura_para.add_run(crm_text)
+
+                logger.debug("Assinatura do médico adicionada com sucesso")
             else:
-                logger.warning("Dados do médico incompletos: nome ou CRM faltando")
+                logger.warning(f"Dados incompletos do médico - Nome: {nome_medico}, CRM: {crm}")
+                return jsonify({"error": "Dados do médico incompletos"}), 400
 
         # Salvar documento
         logger.debug("Preparando para salvar o documento")
