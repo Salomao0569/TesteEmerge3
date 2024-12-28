@@ -28,7 +28,6 @@ def init_assets(app: Flask):
         'js/editor.js',
         'js/form_utils.js',
         'js/form_validation.js',
-        'js/pdf_generator.js',
         filters='jsmin',
         output='gen/packed.js'
     )
