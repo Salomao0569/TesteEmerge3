@@ -7,10 +7,11 @@ function criarAssinatura(nome, crm, rqe) {
     const nomeSemPrefixo = nomeLimpo.replace(/^Dr\.?\s+/i, '').trim();
 
     const dadosMedico = `
-        <p style="text-align: center; margin-top: 30px;">
-            <strong>Dr. ${nomeSemPrefixo}</strong><br>
-            CRM: ${crm}${rqe ? `/RQE: ${rqe}` : ''}
-        </p>
+        <div class="assinatura">
+            <hr class="linha-superior">
+            <div class="nome">Dr. ${nomeSemPrefixo}</div>
+            <div class="registro">CRM: ${crm}${rqe ? `/RQE: ${rqe}` : ''}</div>
+        </div>
     `;
 
     return dadosMedico;
@@ -37,6 +38,7 @@ function inserirAssinaturaMedico() {
     // Extract CRM from text if not in dataset
     let crm = option.dataset.crm;
     let rqe = option.dataset.rqe || '';
+    const nome = option.text;
 
     if (!crm && option.text.includes('CRM:')) {
         const match = option.text.match(/CRM:\s*(\d+)/);
@@ -49,9 +51,9 @@ function inserirAssinaturaMedico() {
     }
 
     // Validação dos dados
-    if (!option.text || !crm) {
+    if (!nome || !crm) {
         console.error('Dados do médico incompletos:', { 
-            text: option.text,
+            nome: nome,
             crm: crm,
             rqe: rqe,
             dataset: option.dataset 
@@ -61,13 +63,13 @@ function inserirAssinaturaMedico() {
     }
 
     console.log('Dados do médico extraídos:', { 
-        text: option.text,
+        nome: nome,
         crm: crm,
         rqe: rqe 
     });
 
     const currentContent = $('#editor').summernote('code');
-    const assinaturaHTML = criarAssinatura(option.text, crm, rqe);
+    const assinaturaHTML = criarAssinatura(nome, crm, rqe);
     $('#editor').summernote('code', currentContent + assinaturaHTML);
 
     console.log('Assinatura inserida com sucesso');
