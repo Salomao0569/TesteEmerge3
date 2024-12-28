@@ -21,42 +21,49 @@ function gerarDOC() {
         const doctorSelect = document.getElementById('selectedDoctor');
         let medico = null;
 
-        if (!doctorSelect) {
-            console.error('Elemento select do médico não encontrado');
-            throw new Error('Elemento de seleção do médico não encontrado');
+        // Verifica se o médico já está no texto do laudo
+        const laudoText = $('#editor').summernote('code');
+        const medicoNoLaudo = laudoText.match(/Dr\.\s*([\w\s]+)\s*CRM:\s*(\d+)/i);
+
+        if (medicoNoLaudo) {
+            console.log('Médico encontrado no texto do laudo:', medicoNoLaudo[0]);
+            medico = {
+                nome: medicoNoLaudo[1].trim(),
+                crm: medicoNoLaudo[2].trim(),
+                rqe: '' // RQE é opcional
+            };
+            console.log('Dados do médico extraídos do laudo:', medico);
+        } else if (doctorSelect && doctorSelect.selectedOptions.length > 0) {
+            console.log('Buscando médico do dropdown...');
+            const selectedOption = doctorSelect.selectedOptions[0];
+            const optionText = selectedOption.text;
+            console.log('Texto da opção selecionada:', optionText);
+
+            // Regex melhorada para extrair CRM e RQE
+            const crmMatch = optionText.match(/CRM:\s*([\dA-Za-z-]+)/i);
+            const rqeMatch = optionText.match(/RQE:\s*(\d+)/i);
+            const nomeMedico = optionText.split('CRM:')[0].replace(/^Dr\.?\s+/i, '').trim();
+
+            if (!crmMatch) {
+                console.error('CRM não encontrado no texto:', optionText);
+                throw new Error('CRM do médico não encontrado no texto selecionado');
+            }
+
+            medico = {
+                nome: nomeMedico,
+                crm: crmMatch[1],
+                rqe: rqeMatch ? rqeMatch[1] : ''
+            };
+            console.log('Dados do médico extraídos do dropdown:', medico);
         }
 
-        if (!doctorSelect.value) {
-            console.error('Nenhum médico selecionado');
-            throw new Error('Por favor, selecione um médico responsável');
+        if (!medico) {
+            console.error('Nenhum médico identificado');
+            throw new Error('Por favor, selecione um médico responsável ou inclua os dados no laudo');
         }
-
-        console.log('Opção selecionada:', doctorSelect.selectedOptions[0].text);
-
-        const selectedOption = doctorSelect.selectedOptions[0];
-        const optionText = selectedOption.text;
-
-        // Regex melhorada para extrair CRM e RQE
-        const crmMatch = optionText.match(/CRM:\s*([\dA-Za-z-]+)/i);
-        const rqeMatch = optionText.match(/RQE:\s*(\d+)/i);
-        const nomeMedico = optionText.split('CRM:')[0].replace(/^Dr\.?\s+/i, '').trim();
-
-        if (!crmMatch) {
-            console.error('CRM não encontrado no texto:', optionText);
-            throw new Error('CRM do médico não encontrado no texto selecionado');
-        }
-
-        medico = {
-            nome: nomeMedico,
-            crm: crmMatch[1],
-            rqe: rqeMatch ? rqeMatch[1] : ''
-        };
-
-        console.log('Dados do médico extraídos:', medico);
 
         // Conteúdo do editor
-        const laudoContent = $('#editor').summernote('code');
-        if (!laudoContent.trim()) {
+        if (!laudoText.trim()) {
             throw new Error('O conteúdo do laudo não pode estar vazio');
         }
         console.log('Conteúdo do editor recuperado');
@@ -82,7 +89,7 @@ function gerarDOC() {
                 espRelativa: document.getElementById('print_esp_relativa').textContent || 'N/D',
                 massaVE: document.getElementById('print_massa_ve').textContent || 'N/D'
             },
-            laudo: laudoContent,
+            laudo: laudoText,
             medico: medico
         };
 

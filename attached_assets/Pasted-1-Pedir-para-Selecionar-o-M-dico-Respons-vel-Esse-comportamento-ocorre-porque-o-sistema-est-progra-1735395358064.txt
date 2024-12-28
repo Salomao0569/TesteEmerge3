@@ -1,0 +1,66 @@
+1. Pedir para Selecionar o Médico Responsável
+Esse comportamento ocorre porque o sistema está programado para exigir a seleção de um médico no dropdown, mesmo quando o médico já está preenchido no conteúdo do laudo. Para corrigir isso:
+
+Solução:
+Faça o sistema identificar o médico diretamente do texto do laudo (caso ele já esteja preenchido) em vez de exigir seleção no dropdown.
+Adicione uma verificação condicional para ignorar a seleção se o médico já estiver presente no texto.
+Código Ajustado:
+javascript
+Copy code
+const doctorSelect = document.getElementById('selectedDoctor');
+let medico = null;
+
+// Verifica se o médico já está no texto do laudo
+const laudoText = $('#editor').summernote('code');
+const medicoNoLaudo = laudoText.match(/Dr\.\s*([\w\s]+)\s*CRM:\s*(\d+)/);
+
+if (medicoNoLaudo) {
+    medico = {
+        nome: medicoNoLaudo[1].trim(),
+        crm: medicoNoLaudo[2].trim(),
+        rqe: '' // Opcional, caso não esteja no texto do laudo
+    };
+    console.log('Médico extraído do laudo:', medico);
+} else if (doctorSelect && doctorSelect.selectedOptions.length > 0) {
+    // Caso o médico não esteja no texto, usa o médico selecionado no dropdown
+    const selectedOption = doctorSelect.selectedOptions[0];
+    const nomeMedico = selectedOption.text.split('CRM:')[0].replace(/^Dr\.?\s+/i, '').trim();
+    const crmMatch = selectedOption.text.match(/CRM:\s*(\d+)/);
+    const rqeMatch = selectedOption.text.match(/RQE:\s*(\d+)/);
+
+    medico = {
+        nome: nomeMedico,
+        crm: crmMatch ? crmMatch[1] : 'CRM não informado',
+        rqe: rqeMatch ? rqeMatch[1] : 'N/D'
+    };
+} else {
+    // Se nenhuma das condições for atendida, exibe erro
+    alert('Por favor, selecione um médico responsável ou inclua no laudo.');
+    throw new Error('Nenhum médico foi identificado.');
+}
+2. Nome do Médico Saindo Duplicado
+Esse problema acontece porque o nome do médico está sendo inserido tanto manualmente no conteúdo do laudo quanto automaticamente pelo sistema. A solução é ajustar o código para inserir o nome do médico apenas uma vez.
+
+Solução:
+Verifique se o nome do médico já está presente no texto antes de inseri-lo.
+Remova duplicatas ao final do processamento.
+Código Ajustado:
+javascript
+Copy code
+const medicoNoLaudoMatch = laudoText.match(/Dr\.\s*([\w\s]+)\s*CRM:\s*(\d+)/);
+if (medicoNoLaudoMatch) {
+    const medicoNome = medicoNoLaudoMatch[1].trim();
+    const medicoCRM = medicoNoLaudoMatch[2].trim();
+    console.log(`Médico já presente no laudo: ${medicoNome}, CRM: ${medicoCRM}`);
+} else {
+    // Insere o médico no final do laudo apenas se não estiver presente
+    $('#editor').summernote('code', laudoText + `
+        <br><br>
+        Dr. ${medico.nome} <br>
+        CRM: ${medico.crm} ${medico.rqe ? `/RQE: ${medico.rqe}` : ''}
+    `);
+}
+Resultado Esperado
+O médico só será exigido no dropdown se o sistema não encontrar o nome dele já preenchido no laudo.
+O nome do médico será adicionado ao final do laudo apenas se ele não estiver presente, evitando duplicatas.
+Teste essas alterações no Replit e veja se os problemas foram resolvidos. Se precisar de mais ajuda, estou à disposição!
