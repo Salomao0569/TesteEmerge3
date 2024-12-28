@@ -2,6 +2,12 @@ function gerarDOC() {
     try {
         console.log("Iniciando geração do DOC...");
 
+        // Validar seleção do médico primeiro
+        const doctorSelect = document.getElementById('selectedDoctor');
+        if (!doctorSelect || !doctorSelect.value) {
+            throw new Error('Por favor, selecione um médico responsável');
+        }
+
         // Coletar dados do formulário
         const dataExame = document.getElementById('dataExame').value;
         const dataFormatada = dataExame ? new Date(dataExame).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
@@ -17,58 +23,35 @@ function gerarDOC() {
         };
         console.log('Dados do paciente:', paciente);
 
-        // Dados do médico
-        const doctorSelect = document.getElementById('selectedDoctor');
-        let medico = null;
+        // Extrair dados do médico
+        const selectedOption = doctorSelect.selectedOptions[0];
+        const optionText = selectedOption.text;
+        console.log('Texto do médico selecionado:', optionText);
 
-        // Verifica se o médico já está no texto do laudo
+        // Extrair nome, CRM e RQE do texto da opção
+        const [nomeParte, ...resto] = optionText.split('CRM:');
+        if (!resto.length) {
+            throw new Error('Formato inválido: CRM não encontrado');
+        }
+
+        const nomeMedico = nomeParte.replace(/^Dr\.?\s+/i, '').trim();
+        const crm = resto[0].split('RQE:')[0].trim();
+        const rqeMatch = resto[0].match(/RQE:\s*(\d+)/);
+
+        const medico = {
+            nome: nomeMedico,
+            crm: crm,
+            rqe: rqeMatch ? rqeMatch[1] : ''
+        };
+        console.log('Dados do médico extraídos:', medico);
+
+        // Validar conteúdo do laudo
         const laudoText = $('#editor').summernote('code');
-        const medicoNoLaudo = laudoText.match(/Dr\.\s*([\w\s]+)\s*CRM:\s*(\d+)/i);
-
-        if (medicoNoLaudo) {
-            console.log('Médico encontrado no texto do laudo:', medicoNoLaudo[0]);
-            medico = {
-                nome: medicoNoLaudo[1].trim(),
-                crm: medicoNoLaudo[2].trim(),
-                rqe: '' // RQE é opcional
-            };
-            console.log('Dados do médico extraídos do laudo:', medico);
-        } else if (doctorSelect && doctorSelect.selectedOptions.length > 0) {
-            console.log('Buscando médico do dropdown...');
-            const selectedOption = doctorSelect.selectedOptions[0];
-            const optionText = selectedOption.text;
-            console.log('Texto da opção selecionada:', optionText);
-
-            // Regex melhorada para extrair CRM e RQE
-            const crmMatch = optionText.match(/CRM:\s*([\dA-Za-z-]+)/i);
-            const rqeMatch = optionText.match(/RQE:\s*(\d+)/i);
-            const nomeMedico = optionText.split('CRM:')[0].replace(/^Dr\.?\s+/i, '').trim();
-
-            if (!crmMatch) {
-                console.error('CRM não encontrado no texto:', optionText);
-                throw new Error('CRM do médico não encontrado no texto selecionado');
-            }
-
-            medico = {
-                nome: nomeMedico,
-                crm: crmMatch[1],
-                rqe: rqeMatch ? rqeMatch[1] : ''
-            };
-            console.log('Dados do médico extraídos do dropdown:', medico);
-        }
-
-        if (!medico) {
-            console.error('Nenhum médico identificado');
-            throw new Error('Por favor, selecione um médico responsável ou inclua os dados no laudo');
-        }
-
-        // Conteúdo do editor
         if (!laudoText.trim()) {
             throw new Error('O conteúdo do laudo não pode estar vazio');
         }
-        console.log('Conteúdo do editor recuperado');
 
-        // Preparar dados para envio
+        // Preparar dados completos
         const data = {
             paciente: paciente,
             medidas: {
@@ -105,19 +88,12 @@ function gerarDOC() {
             body: JSON.stringify(data)
         })
         .then(response => {
-            console.log('Resposta recebida:', response);
             if (!response.ok) {
-                if (response.headers.get('content-type')?.includes('application/json')) {
-                    return response.json().then(error => {
-                        throw new Error(error.error || 'Erro ao gerar o documento');
-                    });
-                }
                 throw new Error('Erro ao gerar o documento');
             }
             return response.blob();
         })
         .then(blob => {
-            console.log('Blob recebido:', blob);
             if (!blob) {
                 throw new Error('Documento gerado está vazio');
             }
