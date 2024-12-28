@@ -25,7 +25,7 @@ function inserirAssinaturaMedico() {
         return;
     }
 
-    const medicName = option.text.replace(/^Dr\.?\s+/i, '').trim();
+    const medicName = option.text;
     const crm = option.dataset.crm;
     const rqe = option.dataset.rqe;
 
@@ -34,7 +34,7 @@ function inserirAssinaturaMedico() {
     const assinaturaHTML = criarAssinatura(medicName, crm, rqe);
     const currentContent = $('#editor').summernote('code');
     $('#editor').summernote('code', currentContent + assinaturaHTML);
-    
+
     console.log('Assinatura inserida com sucesso');
 }
 
