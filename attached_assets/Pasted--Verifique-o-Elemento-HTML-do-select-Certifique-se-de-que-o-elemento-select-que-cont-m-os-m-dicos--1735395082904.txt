@@ -1,0 +1,75 @@
+ Verifique o Elemento HTML do select
+Certifique-se de que o elemento <select> que contém os médicos está configurado corretamente. Um exemplo correto seria:
+
+html
+Copy code
+<select id="selectedDoctor">
+    <option value="" disabled selected>Selecione um médico</option>
+    <option value="1">Dr. João Silva CRM: 12345 RQE: 67890</option>
+    <option value="2">Dr. Maria Oliveira CRM: 54321</option>
+</select>
+Verifique se o texto contém o prefixo "CRM:" e o número do CRM, conforme esperado pela regex.
+2. Atualize o Código JavaScript
+Faça ajustes no código para tratar casos em que o CRM não esteja presente ou esteja formatado de forma inesperada:
+
+Código Revisado:
+javascript
+Copy code
+const doctorSelect = document.getElementById('selectedDoctor');
+let medico = null;
+
+if (doctorSelect && doctorSelect.selectedOptions.length > 0) {
+    const selectedOption = doctorSelect.selectedOptions[0];
+    const nomeMedico = selectedOption.text.split('CRM:')[0].replace(/^Dr\.?\s+/i, '').trim();
+
+    // Busca pelo CRM e RQE com tratamento de valores ausentes
+    const crmMatch = selectedOption.text.match(/CRM:\s*([\dA-Za-z]+)/);
+    const rqeMatch = selectedOption.text.match(/RQE:\s*(\d+)/);
+
+    medico = {
+        nome: nomeMedico,
+        crm: crmMatch ? crmMatch[1] : 'CRM não informado',
+        rqe: rqeMatch ? rqeMatch[1] : 'N/D'
+    };
+
+    if (!crmMatch) {
+        console.warn('CRM não encontrado no texto selecionado');
+        throw new Error('CRM do médico não encontrado. Verifique os dados.');
+    }
+} else {
+    alert('Por favor, selecione um médico responsável');
+    throw new Error('Nenhum médico foi selecionado.');
+}
+3. Teste o Fluxo no Replit
+Execute o código no Replit e realize os testes:
+
+Certifique-se de selecionar uma opção válida no campo <select>.
+Confirme que o texto no <option> contém o CRM e que a regex está capturando-o corretamente.
+Observe o console do navegador para verificar logs de possíveis erros adicionais.
+4. Corrija o Problema com Dados Faltantes
+Caso o problema persista, pode ser que o CRM esteja ausente nos dados reais ou formatado de maneira inconsistente. Adicione validação no backend para garantir que o CRM seja obrigatório.
+
+Exemplo no Backend:
+No endpoint /gerar_doc, verifique se os dados enviados incluem um CRM válido:
+
+javascript
+Copy code
+if (!data.medico.crm || data.medico.crm === 'CRM não informado') {
+    return res.status(400).json({ error: 'CRM do médico é obrigatório para gerar o documento' });
+}
+5. Log para Depuração
+Inclua um log do valor selecionado antes de processar:
+
+javascript
+Copy code
+console.log('Médico selecionado:', doctorSelect.selectedOptions[0].text);
+Isso ajudará a identificar se o problema é com o valor que está chegando no script.
+
+6. Recomendação Final
+Certifique-se de que o elemento select e as opções estão sendo renderizadas corretamente no Replit.
+Caso precise de mais ajuda, compartilhe o HTML do campo <select> para que possamos verificar se há problemas de formatação.
+
+
+
+
+

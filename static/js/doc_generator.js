@@ -20,26 +20,39 @@ function gerarDOC() {
         // Dados do médico
         const doctorSelect = document.getElementById('selectedDoctor');
         let medico = null;
-        if (doctorSelect && doctorSelect.selectedOptions.length > 0) {
-            const selectedOption = doctorSelect.selectedOptions[0];
-            // Remove 'Dr.' e qualquer espaço extra do nome
-            const nomeMedico = selectedOption.text.split('CRM:')[0].replace(/^Dr\.?\s+/i, '').trim();
-            const crmMatch = selectedOption.text.match(/CRM:\s*(\d+)/);
-            const rqeMatch = selectedOption.text.match(/RQE:\s*(\d+)/);
 
-            if (!crmMatch) {
-                throw new Error('CRM do médico não encontrado');
-            }
+        if (!doctorSelect) {
+            console.error('Elemento select do médico não encontrado');
+            throw new Error('Elemento de seleção do médico não encontrado');
+        }
 
-            medico = {
-                nome: nomeMedico,
-                crm: crmMatch[1],
-                rqe: rqeMatch ? rqeMatch[1] : ''
-            };
-        } else {
+        if (!doctorSelect.value) {
+            console.error('Nenhum médico selecionado');
             throw new Error('Por favor, selecione um médico responsável');
         }
-        console.log('Dados do médico:', medico);
+
+        console.log('Opção selecionada:', doctorSelect.selectedOptions[0].text);
+
+        const selectedOption = doctorSelect.selectedOptions[0];
+        const optionText = selectedOption.text;
+
+        // Regex melhorada para extrair CRM e RQE
+        const crmMatch = optionText.match(/CRM:\s*([\dA-Za-z-]+)/i);
+        const rqeMatch = optionText.match(/RQE:\s*(\d+)/i);
+        const nomeMedico = optionText.split('CRM:')[0].replace(/^Dr\.?\s+/i, '').trim();
+
+        if (!crmMatch) {
+            console.error('CRM não encontrado no texto:', optionText);
+            throw new Error('CRM do médico não encontrado no texto selecionado');
+        }
+
+        medico = {
+            nome: nomeMedico,
+            crm: crmMatch[1],
+            rqe: rqeMatch ? rqeMatch[1] : ''
+        };
+
+        console.log('Dados do médico extraídos:', medico);
 
         // Conteúdo do editor
         const laudoContent = $('#editor').summernote('code');
@@ -73,7 +86,7 @@ function gerarDOC() {
             medico: medico
         };
 
-        console.log('Dados preparados para envio:', data);
+        console.log('Dados completos para envio:', data);
 
         // Enviar requisição
         fetch('/gerar_doc', {
@@ -109,7 +122,7 @@ function gerarDOC() {
             a.click();
             window.URL.revokeObjectURL(url);
             a.remove();
-            console.log('Download iniciado');
+            console.log('Download iniciado com sucesso');
         })
         .catch(error => {
             console.error('Erro ao gerar DOC:', error);
@@ -123,9 +136,9 @@ function gerarDOC() {
 }
 
 function getCSRFToken() {
-  const metaTag = document.querySelector('meta[name="csrf-token"]');
-  if (!metaTag) {
-    throw new Error('Meta tag CSRF não encontrada');
-  }
-  return metaTag.getAttribute('content');
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    if (!metaTag) {
+        throw new Error('Meta tag CSRF não encontrada');
+    }
+    return metaTag.getAttribute('content');
 }
