@@ -2,8 +2,9 @@
 function criarAssinatura(nome, crm, rqe) {
     console.log('Criando assinatura para:', { nome, crm, rqe });
 
-    // Remove 'Dr.' prefix if it exists to avoid duplication
-    const nomeSemPrefixo = nome.replace(/^Dr\.?\s+/i, '').trim();
+    // Ensure we have clean data
+    const nomeLimpo = nome.split('CRM:')[0].trim();
+    const nomeSemPrefixo = nomeLimpo.replace(/^Dr\.?\s+/i, '').trim();
 
     return `
         <div class="assinatura">
@@ -32,20 +33,39 @@ function inserirAssinaturaMedico() {
     console.log('Opção selecionada:', option);
     console.log('Dataset:', option.dataset);
 
-    const medicName = option.text;
-    const crm = option.dataset.crm;
-    const rqe = option.dataset.rqe || ''; // RQE é opcional
+    // Extract CRM from text if not in dataset
+    let crm = option.dataset.crm;
+    let rqe = option.dataset.rqe || '';
+
+    if (!crm && option.text.includes('CRM:')) {
+        const match = option.text.match(/CRM:\s*(\d+)/);
+        if (match) crm = match[1];
+    }
+
+    if (!rqe && option.text.includes('RQE:')) {
+        const match = option.text.match(/RQE:\s*(\d+)/);
+        if (match) rqe = match[1];
+    }
 
     // Validação dos dados
-    if (!medicName || !crm) {
-        console.error('Dados do médico incompletos:', { medicName, crm, rqe });
+    if (!option.text || !crm) {
+        console.error('Dados do médico incompletos:', { 
+            text: option.text,
+            crm: crm,
+            rqe: rqe,
+            dataset: option.dataset 
+        });
         alert('Dados do médico incompletos. Por favor, verifique o cadastro.');
         return;
     }
 
-    console.log('Dados do médico:', { medicName, crm, rqe });
+    console.log('Dados do médico extraídos:', { 
+        text: option.text,
+        crm: crm,
+        rqe: rqe 
+    });
 
-    const assinaturaHTML = criarAssinatura(medicName, crm, rqe);
+    const assinaturaHTML = criarAssinatura(option.text, crm, rqe);
     const currentContent = $('#editor').summernote('code');
     $('#editor').summernote('code', currentContent + assinaturaHTML);
 
