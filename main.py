@@ -341,9 +341,10 @@ def gerar_doc():
     try:
         data = request.get_json()
         logger.info("Iniciando geração do documento DOC")
-        logger.debug("Dados recebidos: %s", data)
+        logger.debug("Dados recebidos para geração do DOC: %s", data)
 
         doc = Document()
+        logger.debug("Documento DOC iniciado")
 
         # Configuração inicial do documento
         doc.add_heading('Laudo de Ecodopplercardiograma', 0)
@@ -352,6 +353,7 @@ def gerar_doc():
         doc.add_heading('Dados do Paciente', level=1)
         table = doc.add_table(rows=1, cols=2)
         table.style = 'Table Grid'
+        logger.debug("Tabela inicial criada")
 
         # Cabeçalhos da tabela
         header_cells = table.rows[0].cells
@@ -376,6 +378,8 @@ def gerar_doc():
             row_cells[0].text = campo
             row_cells[1].text = str(valor)
 
+        logger.debug("Dados do paciente adicionados à tabela")
+
         # Medidas e Cálculos
         doc.add_heading('Medidas e Cálculos', level=1)
         table = doc.add_table(rows=1, cols=4)
@@ -390,7 +394,8 @@ def gerar_doc():
 
         medidas = data.get('medidas', {})
         calculos = data.get('calculos', {})
-        logger.info("Processando medidas e cálculos")
+        logger.info("Processando medidas: %s", medidas)
+        logger.info("Processando cálculos: %s", calculos)
 
         medidas_calculos = [
             ('Átrio Esquerdo', medidas.get('atrio', 'N/D'), 
@@ -416,24 +421,38 @@ def gerar_doc():
             row_cells[2].text = calculo
             row_cells[3].text = str(valor_calculo)
 
+        logger.debug("Medidas e cálculos adicionados à tabela")
+
         # Laudo
         doc.add_heading('Laudo', level=1)
-        h = html2text.HTML2Text()
-        h.ignore_links = True
-        laudo_texto = h.handle(data.get('laudo', ''))
-        doc.add_paragraph(laudo_texto)
+        laudo_texto = data.get('laudo', '')
+        if laudo_texto:
+            # Convert HTML to plain text
+            h = html2text.HTML2Text()
+            h.ignore_links = True
+            laudo_texto = h.handle(laudo_texto)
+            doc.add_paragraph(laudo_texto)
+            logger.debug("Laudo adicionado ao documento")
+        else:
+            logger.warning("Laudo vazio recebido")
 
         # Assinatura do Médico
         if data.get('medico'):
+            logger.info("Processando dados do médico: %s", data['medico'])
             doc.add_paragraph('\n\n')
             medico = data['medico']
             if medico.get('nome') and medico.get('crm'):
-                assinatura = f"{medico['nome']}\nCRM: {medico['crm']}"
+                assinatura = f"Dr. {medico['nome']}\nCRM: {medico['crm']}"
                 if medico.get('rqe'):
                     assinatura += f"\nRQE: {medico['rqe']}"
-                doc.add_paragraph(assinatura).alignment = 1  # Centralizado
+                para = doc.add_paragraph(assinatura)
+                para.alignment = 1  # Centralizado
+                logger.debug("Assinatura do médico adicionada")
+            else:
+                logger.warning("Dados do médico incompletos: nome ou CRM faltando")
 
         # Salvar documento
+        logger.debug("Preparando para salvar o documento")
         doc_io = BytesIO()
         doc.save(doc_io)
         doc_io.seek(0)
@@ -447,7 +466,7 @@ def gerar_doc():
         )
 
     except Exception as e:
-        logger.error(f"Erro ao gerar documento DOC: {str(e)}", exc_info=True)
+        logger.error("Erro ao gerar documento DOC: %s", str(e), exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 @app.route('/gerar_pdf', methods=['POST'])
@@ -679,74 +698,59 @@ def export_template_pdf(id):
         story = []
 
         # Title
-        try:
-            title_style = ParagraphStyle(
-                'CustomTitle',
-                parent=styles['Heading1'],
-                fontSize=16,
-                spaceAfter=30
-            )
-            story.append(Paragraph(template.name, title_style))
-            story.append(Spacer(1, 20))
-            logger.debug("Título do PDF adicionado com sucesso")
-        except Exception as e:
-            logger.error(f"Erro ao adicionar título do PDF: {str(e)}")
-            raise
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=16,
+            spaceAfter=30
+        )
+        story.append(Paragraph(template.name, title_style))
+        story.append(Spacer(1, 20))
+        logger.debug("Título do PDF adicionado com sucesso")
+
 
         # Content
-        try:
-            # Pre-process HTML with BeautifulSoup
-            soup = BeautifulSoup(template.content, 'html.parser')
+        # Pre-process HTML with BeautifulSoup
+        soup = BeautifulSoup(template.content, 'html.parser')
 
-            # Clean up HTML
-            for tag in soup.find_all(['script', 'style']):
-                tag.decompose()
+        # Clean up HTML
+        for tag in soup.find_all(['script', 'style']):
+            tag.decompose()
 
-            # Convert to markdown
-            h = html2text.HTML2Text()
-            h.ignore_links = True
-            h.unicode_snob = True
-            h.body_width = 0
-            content_text = h.handle(str(soup))
+        # Convert to markdown
+        h = html2text.HTML2Text()
+        h.ignore_links = True
+        h.unicode_snob = True
+        h.body_width = 0
+        content_text = h.handle(str(soup))
 
-            # Ensure content is properly sanitized
-            if not content_text.strip():
-                raise ValueError("Conteúdo do template está vazio após conversão")
+        # Ensure content is properly sanitized
+        if not content_text.strip():
+            raise ValueError("Conteúdo do template está vazio após conversão")
 
-            # Split into paragraphs and add to story
-            paragraphs = content_text.split('\n\n')
-            for para in paragraphs:
-                if para.strip():
-                    story.append(Paragraph(para.strip(), styles['Normal']))
-                    story.append(Spacer(1, 12))
+        # Split into paragraphs and add to story
+        paragraphs = content_text.split('\n\n')
+        for para in paragraphs:
+            if para.strip():
+                story.append(Paragraph(para.strip(), styles['Normal']))
+                story.append(Spacer(1, 12))
 
-            logger.debug("Conteúdo do PDF processado com sucesso")
-        except Exception as e:
-            logger.error(f"Erro ao processar conteúdo do PDF: {str(e)}")
-            raise
+        logger.debug("Conteúdo do PDF processado com sucesso")
 
         # Add metadata
-        try:
-            story.append(Spacer(1, 30))
-            metadata = [
-                f"Categoria: {template.category}",
-                f"Criado em: {template.created_at.strftime('%d/%m/%Y %H:%M')}"
-            ]
-            for meta in metadata:
-                story.append(Paragraph(meta, styles['Normal']))
-            logger.debug("Metadados do PDF adicionados com sucesso")
-        except Exception as e:
-            logger.error(f"Erro ao adicionar metadados do PDF: {str(e)}")
-            raise
+        story.append(Spacer(1, 30))
+        metadata = [
+            f"Categoria: {template.category}",
+            f"Criado em: {template.created_at.strftime('%d/%m/%Y %H:%M')}"
+        ]
+        for meta in metadata:
+            story.append(Paragraph(meta, styles['Normal']))
+        logger.debug("Metadados do PDF adicionados do PDF adicionados com sucesso")
 
         # Generate PDF
-        try:
-            doc.build(story)
-            buffer.seek(0)
-            logger.info(f"PDF do template {id} gerado com sucesso")
-        except Exception as e:
-            logger.error(f"Erro ao gerar PDF final: {str(e)}")
-            raise
+        doc.build(story)
+        buffer.seek(0)
+        logger.info(f"PDF do template {id} gerado com sucesso")
 
         return send_file(
             buffer,
@@ -769,64 +773,48 @@ def export_template_doc(id):
         logger.debug(f"Dados do template: nome={template.name}, categoria={template.category}")
 
         # Create DOCX in memory
-        try:
-            doc = Document()
-            doc.add_heading(template.name, 0)
-            logger.debug("Documento DOCX criado com título")
-        except Exception as e:
-            logger.error(f"Erro ao criar documento DOCX: {str(e)}")
-            raise
+        doc = Document()
+        doc.add_heading(template.name, 0)
+        logger.debug("Documento DOCX criado com título")
 
         # Add content
-        try:
-            # Pre-process HTML with BeautifulSoup
-            soup = BeautifulSoup(template.content, 'html.parser')
+        # Pre-process HTML with BeautifulSoup
+        soup = BeautifulSoup(template.content, 'html.parser')
 
-            # Clean up HTML
-            for tag in soup.find_all(['script', 'style']):
-                tag.decompose()
+        # Clean up HTML
+        for tag in soup.find_all(['script', 'style']):
+            tag.decompose()
 
-            # Convert to markdown
-            h = html2text.HTML2Text()
-            h.ignore_links = True
-            h.unicode_snob = True
-            h.body_width = 0
-            content_text = h.handle(str(soup))
+        # Convert to markdown
+        h = html2text.HTML2Text()
+        h.ignore_links = True
+        h.unicode_snob = True
+        h.body_width = 0
+        content_text = h.handle(str(soup))
 
-            # Ensure content is properly sanitized
-            if not content_text.strip():
-                raise ValueError("Conteúdo do template está vazio após conversão")
+        # Ensure content is properly sanitized
+        if not content_text.strip():
+            raise ValueError("Conteúdo do template está vazio após conversão")
 
-            # Split into paragraphs and add to document
-            paragraphs = content_text.split('\n\n')
-            for para in paragraphs:
-                if para.strip():
-                    doc.add_paragraph(para.strip())
+        # Split into paragraphs and add to document
+        paragraphs = content_text.split('\n\n')
+        for para in paragraphs:
+            if para.strip():
+                doc.add_paragraph(para.strip())
 
-            logger.debug("Conteúdo do DOCX processado com sucesso")
-        except Exception as e:
-            logger.error(f"Erro ao processar conteúdo do DOCX: {str(e)}")
-            raise
+        logger.debug("Conteúdo do DOCX processado com sucesso")
 
         # Add metadata
-        try:
-            doc.add_paragraph()  # Add space
-            doc.add_paragraph(f"Categoria: {template.category}")
-            doc.add_paragraph(f"Criado em: {template.created_at.strftime('%d/%m/%Y %H:%M')}")
-            logger.debug("Metadados do DOCX adicionados com sucesso")
-        except Exception as e:
-            logger.error(f"Erro ao adicionar metadados do DOCX: {str(e)}")
-            raise
+        doc.add_paragraph()  # Add space
+        doc.add_paragraph(f"Categoria: {template.category}")
+        doc.add_paragraph(f"Criado em: {template.created_at.strftime('%d/%m/%Y %H:%M')}")
+        logger.debug("Metadados do DOCX adicionados com sucesso")
 
         # Save to buffer
-        try:
-            doc_io = BytesIO()
-            doc.save(doc_io)
-            doc_io.seek(0)
-            logger.info(f"DOCX do template {id} gerado com sucesso")
-        except Exception as e:
-            logger.error(f"Erro ao salvar DOCX em buffer: {str(e)}")
-            raise
+        doc_io = BytesIO()
+        doc.save(doc_io)
+        doc_io.seek(0)
+        logger.info(f"DOCX do template {id} gerado com sucesso")
 
         return send_file(
             doc_io,

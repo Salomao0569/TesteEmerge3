@@ -1,17 +1,20 @@
 function gerarDOC() {
     try {
-        console.log('Iniciando geração do DOC...');
+        console.log("Iniciando geração do DOC...");
 
-        // Obter dados do formulário
+        // Coletar dados do formulário
+        const dataExame = document.getElementById('dataExame').value;
+        const dataFormatada = dataExame ? new Date(dataExame).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
+
+        // Dados do paciente
         const paciente = {
             nome: document.getElementById('nome').value || 'N/D',
             dataNascimento: document.getElementById('dataNascimento').value || 'N/D',
             sexo: document.getElementById('sexo').value || 'N/D',
             peso: document.getElementById('peso').value ? `${document.getElementById('peso').value} kg` : 'N/D',
             altura: document.getElementById('altura').value ? `${document.getElementById('altura').value} cm` : 'N/D',
-            dataExame: document.getElementById('dataExame').value || new Date().toLocaleDateString('pt-BR')
+            dataExame: dataFormatada
         };
-
         console.log('Dados do paciente:', paciente);
 
         // Dados do médico
@@ -19,27 +22,31 @@ function gerarDOC() {
         let medico = null;
         if (doctorSelect && doctorSelect.selectedOptions.length > 0) {
             const selectedOption = doctorSelect.selectedOptions[0];
-            const nomeMedico = selectedOption.text.split('CRM:')[0].trim();
+            // Remove 'Dr.' e qualquer espaço extra do nome
+            const nomeMedico = selectedOption.text.split('CRM:')[0].replace(/^Dr\.?\s+/i, '').trim();
             const crmMatch = selectedOption.text.match(/CRM:\s*(\d+)/);
             const rqeMatch = selectedOption.text.match(/RQE:\s*(\d+)/);
 
+            if (!crmMatch) {
+                throw new Error('CRM do médico não encontrado');
+            }
+
             medico = {
                 nome: nomeMedico,
-                crm: crmMatch ? crmMatch[1] : '',
+                crm: crmMatch[1],
                 rqe: rqeMatch ? rqeMatch[1] : ''
             };
+        } else {
+            throw new Error('Por favor, selecione um médico responsável');
         }
         console.log('Dados do médico:', medico);
 
         // Conteúdo do editor
         const laudoContent = $('#editor').summernote('code');
-        console.log('Conteúdo do editor recuperado');
-
-        // Obter token CSRF
-        const metaTag = document.querySelector('meta[name="csrf-token"]');
-        if (!metaTag) {
-            throw new Error('Meta tag CSRF não encontrada');
+        if (!laudoContent.trim()) {
+            throw new Error('O conteúdo do laudo não pode estar vazio');
         }
+        console.log('Conteúdo do editor recuperado');
 
         // Preparar dados para envio
         const data = {
@@ -73,7 +80,7 @@ function gerarDOC() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': metaTag.getAttribute('content')
+                'X-CSRFToken': getCSRFToken() // Assuming getCSRFToken() function exists elsewhere
             },
             body: JSON.stringify(data)
         })
@@ -113,4 +120,13 @@ function gerarDOC() {
         console.error('Erro ao preparar dados:', error);
         alert('Erro ao preparar dados para geração do documento: ' + error.message);
     }
+}
+
+function getCSRFToken() {
+  //Implementation to retrieve CSRF token.  This is a placeholder and needs to be replaced with actual implementation.
+  const metaTag = document.querySelector('meta[name="csrf-token"]');
+  if (!metaTag) {
+    throw new Error('Meta tag CSRF não encontrada');
+  }
+  return metaTag.getAttribute('content');
 }
