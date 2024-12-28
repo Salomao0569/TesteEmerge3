@@ -6,12 +6,14 @@ function criarAssinatura(nome, crm, rqe) {
     const nomeLimpo = nome.split('CRM:')[0].trim();
     const nomeSemPrefixo = nomeLimpo.replace(/^Dr\.?\s+/i, '').trim();
 
-    return `
-        <div class="assinatura">
-            <div class="nome">Dr. ${nomeSemPrefixo}</div>
-            <div class="registro">CRM: ${crm}${rqe ? ` / RQE: ${rqe}` : ''}</div>
-        </div>
+    const dadosMedico = `
+        <p style="text-align: center; margin-top: 30px;">
+            <strong>Dr. ${nomeSemPrefixo}</strong><br>
+            CRM: ${crm}${rqe ? `/RQE: ${rqe}` : ''}
+        </p>
     `;
+
+    return dadosMedico;
 }
 
 // Função para inserir assinatura no editor
@@ -65,12 +67,7 @@ function inserirAssinaturaMedico() {
     });
 
     const currentContent = $('#editor').summernote('code');
-    const assinaturaHTML = `
-        <p style="text-align: center; margin-top: 30px;">
-            <strong>Dr. ${nomeSemPrefixo}</strong><br>
-            CRM: ${crm}${rqe ? `/RQE: ${rqe}` : ''}
-        </p>
-    `;
+    const assinaturaHTML = criarAssinatura(option.text, crm, rqe);
     $('#editor').summernote('code', currentContent + assinaturaHTML);
 
     console.log('Assinatura inserida com sucesso');
