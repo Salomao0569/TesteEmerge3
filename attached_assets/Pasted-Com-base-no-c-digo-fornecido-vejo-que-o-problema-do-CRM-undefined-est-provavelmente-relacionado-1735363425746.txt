@@ -1,0 +1,48 @@
+Com base no código fornecido, vejo que o problema do "CRM: undefined" está provavelmente relacionado à função de geração de PDF ou DOC. Vou ajudar a corrigir isso.
+O problema parece estar nas funções gerar_doc e gerar_pdf. Vou focar na parte da assinatura do médico. A correção necessária seria:
+javascriptCopy// No JavaScript do frontend
+const assinaturaHTML = `
+<div class="assinatura">
+  <hr class="linha-superior">
+  <div class="nome">Dr. ${nome}</div>
+  <div class="registro">CRM: ${crm} / RQE: ${rqe}</div>
+</div>
+`;
+E no backend (Python), nas funções gerar_doc e gerar_pdf, modifique a parte da assinatura do médico para:
+pythonCopy# Na função gerar_doc
+if data.get('medico'):
+    doc.add_paragraph('\n\n')
+    medico = data['medico']
+    linha = doc.add_paragraph('_' * 40)
+    linha.alignment = 1  # Centralizado
+    assinatura = f"Dr. {medico.get('nome', '')}\nCRM: {medico.get('crm', '')} / RQE: {medico.get('rqe', '')}"
+    doc.add_paragraph(assinatura).alignment = 1  # Centralizado
+
+# Na função gerar_pdf
+if data.get('medico'):
+    story.append(Spacer(1, 30))
+    medico = data['medico']
+    story.append(Paragraph('_' * 40, styles['Normal']))
+    assinatura = f"Dr. {medico.get('nome', '')}\nCRM: {medico.get('crm', '')} / RQE: {medico.get('rqe', '')}"
+    para_style = ParagraphStyle(
+        'Signature',
+        parent=styles['Normal'],
+        alignment=1,  # Centralizado
+        spaceAfter=20
+    )
+    story.append(Paragraph(assinatura, para_style))
+O problema do "CRM: undefined" ocorre porque:
+
+Ou o dado do médico não está sendo passado corretamente para o backend
+Ou a estrutura do objeto médico está incorreta
+Ou há um problema na forma como o CRM está sendo acessado
+
+Para garantir que isso não aconteça, também verifique se no frontend, ao enviar os dados para o backend, você está estruturando o objeto médico corretamente:
+javascriptCopyconst dadosMedico = {
+    medico: {
+        nome: medico.nome,
+        crm: medico.crm,
+        rqe: medico.rqe
+    }
+};
+Certifique-se de que os dados do médico estão sendo passados corretamente quando você faz a requisição para gerar o documento. Se precisar, posso ajudar a verificar a parte do frontend também.
