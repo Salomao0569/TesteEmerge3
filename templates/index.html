@@ -28,6 +28,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#doctorsModal">Médicos</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#templatesModal">Frases</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -163,21 +166,50 @@
             </table>
         </div>
 
-        <!-- Editor Section -->
+        <!-- Sistema de Laudos -->
         <div class="report-section mt-4">
             <div class="card">
                 <div class="card-header">
-                    <h3>Laudo</h3>
+                    <h3>Sistema de Laudos</h3>
                 </div>
                 <div class="card-body">
+                    <!-- Templates Section -->
+                    <div class="templates-section mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div id="mascaraContainer">
+                                    <label for="mascaraSelect" class="form-label">Máscaras:</label>
+                                    <div class="custom-select-wrapper">
+                                        <select id="mascaraSelect" class="form-select">
+                                            <option value="">Selecione uma máscara...</option>
+                                        </select>
+                                        <div class="template-list"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="fraseContainer">
+                                    <label for="fraseSelect" class="form-label">Frases Padrão:</label>
+                                    <div class="custom-select-wrapper">
+                                        <select id="fraseSelect" class="form-select">
+                                            <option value="">Selecione uma frase padrão...</option>
+                                        </select>
+                                        <div class="template-list"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Editor Section -->
                     <div class="editor-section">
                         <div class="editor-container">
                             <div id="editor"></div>
                         </div>
                     </div>
 
-                    <!-- Doctor Selection and Export -->
-                    <div class="mt-4">
+                    <!-- Doctor Selection and Signature -->
+                    <div class="doctor-section mt-4">
                         <div class="row">
                             <div class="col-md-6">
                                 <label for="selectedDoctor" class="form-label">Médico Responsável:</label>
@@ -186,9 +218,17 @@
                                 </select>
                             </div>
                             <div class="col-md-6 d-flex align-items-end">
-                                <button onclick="inserirAssinaturaMedico()" class="btn btn-primary me-2">
+                                <button onclick="inserirAssinaturaMedico()" class="btn btn-primary">
                                     <i class="fas fa-signature"></i> Inserir Assinatura
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Export Buttons Section -->
+                    <div class="export-section mt-4">
+                        <div class="row">
+                            <div class="col-md-12">
                                 <button onclick="gerarDOC()" class="btn btn-primary">
                                     <i class="fas fa-file-word"></i> Exportar DOC
                                 </button>
@@ -248,15 +288,134 @@
         </div>
     </div>
 
+    <!-- Modal para Templates -->
+    <div class="modal fade" id="templatesModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Gerenciamento de Frases</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="templateForm" class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="templateName" class="form-label">Nome da Frase</label>
+                                <input type="text" id="templateName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="templateCategory" class="form-label">Categoria</label>
+                                <select id="templateCategory" class="form-select" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="normal">Frase Normal</option>
+                                    <option value="alterado">Frase Alterada</option>
+                                    <option value="conclusao">Frase de Conclusão</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="templateContent" class="form-label">Conteúdo</label>
+                                <textarea id="templateContent" class="form-control" rows="4" required></textarea>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="templatesTable">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Categoria</th>
+                                    <th>Conteúdo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTemplate()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Adicionar antes do fechamento do </body> -->
+    <!-- Modal de Salvamento -->
+    <div class="modal fade" id="saveTemplateModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-fullscreen-lg-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Salvar Novo Template</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-secondary ms-2"
+                        onclick="toggleFullscreen()"
+                    >
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome do Template</label>
+                        <input type="text" class="form-control" id="newTemplateName" placeholder="Ex: Laudo Normal - Adulto">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Conteúdo</label>
+                        <textarea 
+                            id="templateContent" 
+                            class="form-control"
+                            style="min-height: 300px;"
+                            placeholder="Digite o conteúdo do laudo aqui..."
+                        ></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Categoria</label>
+                        <select id="newTemplateCategory" class="form-select">
+                            <option value="normal">Normal</option>
+                            <option value="alterado">Alterado</option>
+                            <option value="conclusao">Conclusão</option>
+                            <option value="completo">Laudo Completo</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tags (opcional)</label>
+                        <input 
+                            type="text" 
+                            id="newTemplateTags"
+                            class="form-control" 
+                            placeholder="Ex: pediatrico, hipertensao, normal"
+                        >
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveNewTemplate()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-autotable"></script>
     <script src="/static/js/calculations.js"></script>
     <script src="/static/js/editor.js"></script>
     <script src="/static/js/doctors.js"></script>
+    <script src="/static/js/template-handler.js"></script>
     <script src="/static/js/signature.js"></script>
+    <script src="/static/js/templates.js"></script>
+    <script src="/static/js/pdf_generator.js"></script>
     <script src="/static/js/doc_generator.js"></script>
 </body>
 </html>
