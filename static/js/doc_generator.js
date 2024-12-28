@@ -80,7 +80,7 @@ function gerarDOC() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken() // Assuming getCSRFToken() function exists elsewhere
+                'X-CSRFToken': getCSRFToken()
             },
             body: JSON.stringify(data)
         })
@@ -123,7 +123,6 @@ function gerarDOC() {
 }
 
 function getCSRFToken() {
-  //Implementation to retrieve CSRF token.  This is a placeholder and needs to be replaced with actual implementation.
   const metaTag = document.querySelector('meta[name="csrf-token"]');
   if (!metaTag) {
     throw new Error('Meta tag CSRF não encontrada');
