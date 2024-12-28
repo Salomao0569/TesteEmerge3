@@ -427,10 +427,11 @@ def gerar_doc():
         if data.get('medico'):
             doc.add_paragraph('\n\n')
             medico = data['medico']
-            assinatura = f"{medico['nome']}\nCRM: {medico['crm']}"
-            if medico.get('rqe'):
-                assinatura += f"\nRQE: {medico['rqe']}"
-            doc.add_paragraph(assinatura).alignment = 1  # Centralizado
+            if medico.get('nome') and medico.get('crm'):
+                assinatura = f"{medico['nome']}\nCRM: {medico['crm']}"
+                if medico.get('rqe'):
+                    assinatura += f"\nRQE: {medico['rqe']}"
+                doc.add_paragraph(assinatura).alignment = 1  # Centralizado
 
         # Salvar documento
         doc_io = BytesIO()
@@ -559,10 +560,11 @@ def gerar_pdf():
         if data.get('medico'):
             story.append(Spacer(1, 30))
             medico = data['medico']
-            assinatura = f"{medico['nome']}\nCRM: {medico['crm']}"
-            if medico.get('rqe'):
-                assinatura += f"\nRQE: {medico['rqe']}"
-            story.append(Paragraph(assinatura, styles['Normal']))
+            if medico.get('nome') and medico.get('crm'):
+                assinatura = f"{medico['nome']}\nCRM: {medico['crm']}"
+                if medico.get('rqe'):
+                    assinatura += f"\nRQE: {medico['rqe']}"
+                story.append(Paragraph(assinatura, styles['Normal']))
 
         # Gerar PDF
         doc.build(story)

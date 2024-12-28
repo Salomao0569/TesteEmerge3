@@ -42,12 +42,16 @@ function gerarPDF() {
         // Dados do médico
         const doctorSelect = document.getElementById('selectedDoctor');
         let medico = null;
-        if (doctorSelect && doctorSelect.value) {
+        if (doctorSelect && doctorSelect.selectedOptions.length > 0) {
             const selectedOption = doctorSelect.selectedOptions[0];
+            const nomeMedico = selectedOption.text.split('CRM:')[0].trim();
+            const crmMatch = selectedOption.text.match(/CRM:\s*(\d+)/);
+            const rqeMatch = selectedOption.text.match(/RQE:\s*(\d+)/);
+
             medico = {
-                nome: selectedOption.text,
-                crm: selectedOption.dataset.crm,
-                rqe: selectedOption.dataset.rqe
+                nome: nomeMedico,
+                crm: crmMatch ? crmMatch[1] : '',
+                rqe: rqeMatch ? rqeMatch[1] : ''
             };
         }
         console.log("Dados do médico:", medico);

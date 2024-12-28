@@ -14,17 +14,24 @@ function gerarDOC() {
 
         console.log('Dados do paciente:', paciente);
 
-        // Obter dados do médico
+        // Dados do médico
         const doctorSelect = document.getElementById('selectedDoctor');
-        const doctorData = doctorSelect.value ? {
-            nome: doctorSelect.options[doctorSelect.selectedIndex].text,
-            crm: doctorSelect.options[doctorSelect.selectedIndex].dataset.crm,
-            rqe: doctorSelect.options[doctorSelect.selectedIndex].dataset.rqe
-        } : null;
+        let medico = null;
+        if (doctorSelect && doctorSelect.selectedOptions.length > 0) {
+            const selectedOption = doctorSelect.selectedOptions[0];
+            const nomeMedico = selectedOption.text.split('CRM:')[0].trim();
+            const crmMatch = selectedOption.text.match(/CRM:\s*(\d+)/);
+            const rqeMatch = selectedOption.text.match(/RQE:\s*(\d+)/);
 
-        console.log('Dados do médico:', doctorData);
+            medico = {
+                nome: nomeMedico,
+                crm: crmMatch ? crmMatch[1] : '',
+                rqe: rqeMatch ? rqeMatch[1] : ''
+            };
+        }
+        console.log('Dados do médico:', medico);
 
-        // Obter conteúdo do editor
+        // Conteúdo do editor
         const laudoContent = $('#editor').summernote('code');
         console.log('Conteúdo do editor recuperado');
 
@@ -47,16 +54,16 @@ function gerarDOC() {
                 vd: document.getElementById('vd').value || 'N/D'
             },
             calculos: {
-                volumeDiastFinal: document.getElementById('print_volume_diast_final').textContent,
-                volumeSistFinal: document.getElementById('print_volume_sist_final').textContent,
-                volumeEjetado: document.getElementById('print_volume_ejetado').textContent,
-                fracaoEjecao: document.getElementById('print_fracao_ejecao').textContent,
-                percentEncurt: document.getElementById('print_percent_encurt').textContent,
-                espRelativa: document.getElementById('print_esp_relativa').textContent,
-                massaVE: document.getElementById('print_massa_ve').textContent
+                volumeDiastFinal: document.getElementById('print_volume_diast_final').textContent || 'N/D',
+                volumeSistFinal: document.getElementById('print_volume_sist_final').textContent || 'N/D',
+                volumeEjetado: document.getElementById('print_volume_ejetado').textContent || 'N/D',
+                fracaoEjecao: document.getElementById('print_fracao_ejecao').textContent || 'N/D',
+                percentEncurt: document.getElementById('print_percent_encurt').textContent || 'N/D',
+                espRelativa: document.getElementById('print_esp_relativa').textContent || 'N/D',
+                massaVE: document.getElementById('print_massa_ve').textContent || 'N/D'
             },
             laudo: laudoContent,
-            medico: doctorData
+            medico: medico
         };
 
         console.log('Dados preparados para envio:', data);
